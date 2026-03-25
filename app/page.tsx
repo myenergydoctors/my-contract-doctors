@@ -50,71 +50,6 @@ function FadeUp({ children, delay = 0, style = {} }) {
   );
 }
 
-/* ── NAV ── */
-function Nav() {
-  const [scrolled, setScrolled] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", fn);
-    return () => window.removeEventListener("scroll", fn);
-  }, []);
-
-  const links = ["Demystifier", "The Agreement", "The Invoice", "Our Shop"];
-
-  return (
-    <nav style={{
-      position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-      background: scrolled ? "rgba(12,45,84,0.97)" : "transparent",
-      backdropFilter: scrolled ? "blur(12px)" : "none",
-      borderBottom: scrolled ? `1px solid rgba(255,255,255,0.08)` : "none",
-      transition: "all 0.35s ease",
-      padding: "0 32px",
-    }}>
-      <div style={{
-        maxWidth: 1180, margin: "0 auto",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        height: 68,
-      }}>
-        {/* Logo text */}
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
-          <span style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: 9, fontWeight: 600,
-            letterSpacing: "0.22em", textTransform: "uppercase", color: COLORS.blueLight,
-          }}>My</span>
-          <div style={{ display: "flex", alignItems: "baseline" }}>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, color: "#fff" }}>Contract </span>
-            <span style={{ fontFamily: "'DM Serif Display', serif", fontSize: 22, fontStyle: "italic", color: COLORS.blueLight }}>&nbsp;Doctors</span>
-          </div>
-        </div>
-
-        {/* Desktop links */}
-        <div style={{ display: "flex", alignItems: "center", gap: 32 }} className="nav-links">
-          {links.map(l => (
-            <a key={l} href="#" style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500,
-              color: "rgba(255,255,255,0.82)", textDecoration: "none",
-              transition: "color 0.2s",
-            }}
-              onMouseEnter={e => e.target.style.color = "#fff"}
-              onMouseLeave={e => e.target.style.color = "rgba(255,255,255,0.82)"}
-            >{l}</a>
-          ))}
-          <a href="#" style={{
-            background: COLORS.teal, color: "#fff",
-            fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500,
-            padding: "9px 20px", borderRadius: 8, textDecoration: "none",
-            transition: "background 0.2s",
-          }}
-            onMouseEnter={e => e.target.style.background = "#12907A"}
-            onMouseLeave={e => e.target.style.background = COLORS.teal}
-          >Get Started</a>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
 /* ── HERO ── */
 function Hero() {
   const [count, setCount] = useState(0);
@@ -831,7 +766,6 @@ export default function App() {
           .nav-links { display: none !important; }
         }
       `}</style>
-      <Nav />
       <Hero />
       <HowItWorks />
       <ProductSection
