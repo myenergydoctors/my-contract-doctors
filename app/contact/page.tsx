@@ -10,33 +10,6 @@ const C = {
 const FONTS=`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');`;
 
 
-function Footer(){
-  return(
-    <footer style={{background:C.navyDark,padding:"48px 32px 28px"}}>
-      <div style={{maxWidth:1180,margin:"0 auto"}}>
-        <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",gap:48,marginBottom:48}}>
-          <div>
-            <div style={{marginBottom:14}}>
-              <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.22em",textTransform:"uppercase",color:C.blueLight,display:"block"}}>My</span>
-              <div><span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"#fff"}}>Contract </span><span style={{fontFamily:"'DM Serif Display',serif",fontSize:20,fontStyle:"italic",color:C.blueLight}}>Doctors</span></div>
-            </div>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:300,color:"rgba(255,255,255,0.45)",lineHeight:1.7,maxWidth:260}}>We're on your side, not the vendor's. Helping businesses demystify their uniform and linen agreements since 2026.</p>
-          </div>
-          {[{heading:"Products",links:["The Invoice","The Agreement","The Demystifier","Our Shop"]},{heading:"Company",links:["About Us","Contact","Blog","My Energy Doctors"]},{heading:"Legal",links:["Privacy Policy","Terms & Conditions","ADA Compliance"]}].map(({heading,links})=>(
-            <div key={heading}>
-              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:C.blueLight,marginBottom:16}}>{heading}</div>
-              {links.map(l=><a key={l} href="#" style={{display:"block",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:300,color:"rgba(255,255,255,0.5)",textDecoration:"none",marginBottom:10}}>{l}</a>)}
-            </div>
-          ))}
-        </div>
-        <div style={{borderTop:"1px solid rgba(255,255,255,0.08)",paddingTop:24,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12}}>
-          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.3)"}}>© 2026 My Contract Doctors | Website by OSC Web Design</span>
-          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.3)"}}>A sister company of My Energy Doctors</span>
-        </div>
-      </div>
-    </footer>
-  );
-}
 
 export default function ContactPage(){
   const [form,setForm]=useState({name:"",email:"",phone:"",message:""});
@@ -83,6 +56,8 @@ export default function ContactPage(){
   return(
     <>
       <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} body{background:${C.offWhite};} input::placeholder,textarea::placeholder{color:${C.gray300};}`}</style>
+      
+
       {/* Hero */}
       <section style={{background:`linear-gradient(160deg,${C.navyDark} 0%,${C.navy} 100%)`,padding:"100px 32px 72px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:`linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)`,backgroundSize:"48px 48px"}}/>
@@ -188,7 +163,6 @@ export default function ContactPage(){
         </div>
       </section>
 
-      <Footer/>
     </>
   );
 }

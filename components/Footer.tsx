@@ -82,7 +82,7 @@ export default function Footer() {
           {/* Bottom bar */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-              © 2026 My Contract Doctors | Website by OSC Web Design
+              © 2026 My Contract Doctors | <a href="https://hermosa.design" target="_blank">Website by Hermosa Design</a>
             </span>
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
               A sister company of My Energy Doctors
