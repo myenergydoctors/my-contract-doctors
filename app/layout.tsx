@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "My Contract Doctors | Demystify Your Uniform Contract",
@@ -14,9 +15,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: "#F7F9FC" }}>
+      <body>
         <Nav />
         {children}
+        <Footer />
       </body>
     </html>
   );
