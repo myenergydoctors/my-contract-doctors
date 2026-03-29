@@ -9,24 +9,6 @@ const C = {
 };
 const FONTS=`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');`;
 
-function Nav(){
-  return(
-    <nav style={{background:C.navy,padding:"0 32px",position:"sticky",top:0,zIndex:50,borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
-      <div style={{maxWidth:1180,margin:"0 auto",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",flexDirection:"column",lineHeight:1}}>
-          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.22em",textTransform:"uppercase",color:C.blueLight}}>My</span>
-          <div><span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:"#fff"}}>Contract </span><span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,fontStyle:"italic",color:C.blueLight}}>Doctors</span></div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:32}}>
-          {["Demystifier","The Agreement","The Invoice","Our Shop"].map(l=>(
-            <a key={l} href="#" style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:"rgba(255,255,255,0.75)",textDecoration:"none"}}>{l}</a>
-          ))}
-          <a href="#" style={{background:C.teal,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"9px 20px",borderRadius:8,textDecoration:"none"}}>Get Started</a>
-        </div>
-      </div>
-    </nav>
-  );
-}
 
 function Footer(){
   return(
@@ -101,8 +83,6 @@ export default function ContactPage(){
   return(
     <>
       <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} body{background:${C.offWhite};} input::placeholder,textarea::placeholder{color:${C.gray300};}`}</style>
-      <Nav/>
-
       {/* Hero */}
       <section style={{background:`linear-gradient(160deg,${C.navyDark} 0%,${C.navy} 100%)`,padding:"100px 32px 72px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:`linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)`,backgroundSize:"48px 48px"}}/>

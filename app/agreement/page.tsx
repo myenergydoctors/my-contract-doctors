@@ -51,36 +51,7 @@ function Btn({children,onClick,variant="navy",full=false,size="md",disabled=fals
     >{children}</button>
   );
 }
-
-// ─────────────────────────────────────────
-// NAV
-// ─────────────────────────────────────────
-function Nav(){
-  const [scrolled,setScrolled]=useState(false);
-  useEffect(()=>{
-    const fn=()=>setScrolled(window.scrollY>20);
-    window.addEventListener("scroll",fn);
-    return()=>window.removeEventListener("scroll",fn);
-  },[]);
-  return(
-    <nav style={{position:"fixed",top:0,left:0,right:0,zIndex:100,background:scrolled?"rgba(12,45,84,0.97)":C.navy,backdropFilter:scrolled?"blur(12px)":"none",borderBottom:"1px solid rgba(255,255,255,0.08)",transition:"all 0.3s",padding:"0 32px"}}>
-      <div style={{maxWidth:1180,margin:"0 auto",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",flexDirection:"column",lineHeight:1}}>
-          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.22em",textTransform:"uppercase",color:C.blueLight}}>My</span>
-          <div><span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:"#fff"}}>Contract </span><span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,fontStyle:"italic",color:C.blueLight}}>Doctors</span></div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:32}}>
-          {["Demystifier","The Agreement","The Invoice","Our Shop"].map(l=>(
-            <a key={l} href="#" style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:l==="The Agreement"?600:400,color:l==="The Agreement"?C.blueLight:"rgba(255,255,255,0.75)",textDecoration:"none",borderBottom:l==="The Agreement"?`2px solid ${C.teal}`:"none",paddingBottom:l==="The Agreement"?2:0}}>{l}</a>
-          ))}
-          <a href="#" style={{background:C.teal,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"9px 20px",borderRadius:8,textDecoration:"none"}}>Get Started</a>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
-// ─────────────────────────────────────────
+// ───────────────────────────────────────
 // QR CODE (pure SVG pattern)
 // ─────────────────────────────────────────
 function QRCode({sessionId,size=148}){
@@ -1124,7 +1095,7 @@ export default function AgreementPage(){
         @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
       `}</style>
 
-      {view==="landing"&&<><Nav/><LandingPage onStart={()=>setView("upload")}/></>}
+      {view==="landing"&&<><LandingPage onStart={()=>setView("upload")}/></>}
       {view!=="landing"&&<StepBar step={stepIndex}/>}
       {view==="upload"   &&<StepUpload  onNext={f=>{setFile(f);setView("contact");}}/>}
       {view==="contact"  &&<StepContact onNext={c=>{setContact(c);setView("scanning");}} onBack={()=>setView("upload")}/>}

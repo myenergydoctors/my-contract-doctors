@@ -103,25 +103,6 @@ const POSTS=[
 
 const CATEGORIES=["All","Know Your Contract","Negotiation","Vendor Comparison","Save Money","Resources"];
 
-function Nav(){
-  return(
-    <nav style={{background:C.navy,padding:"0 32px",position:"sticky",top:0,zIndex:50,borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
-      <div style={{maxWidth:1180,margin:"0 auto",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div style={{display:"flex",flexDirection:"column",lineHeight:1}}>
-          <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:9,fontWeight:600,letterSpacing:"0.22em",textTransform:"uppercase",color:C.blueLight}}>My</span>
-          <div><span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:"#fff"}}>Contract </span><span style={{fontFamily:"'DM Serif Display',serif",fontSize:22,fontStyle:"italic",color:C.blueLight}}>Doctors</span></div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:32}}>
-          {["Demystifier","The Agreement","The Invoice","Blog"].map(l=>(
-            <a key={l} href="#" style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:l==="Blog"?600:400,color:l==="Blog"?C.blueLight:"rgba(255,255,255,0.75)",textDecoration:"none",borderBottom:l==="Blog"?`2px solid ${C.teal}`:"none",paddingBottom:l==="Blog"?2:0}}>{l}</a>
-          ))}
-          <a href="#" style={{background:C.teal,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"9px 20px",borderRadius:8,textDecoration:"none"}}>Get Started</a>
-        </div>
-      </div>
-    </nav>
-  );
-}
-
 function CategoryTag({category,color}){
   const map={red:{bg:"#FEE2E2",color:C.red},amber:{bg:"#FEF3C7",color:C.amber},blue:{bg:C.bluePale,color:C.blueMid},teal:{bg:C.tealLight,color:"#0D6E52"},navy:{bg:C.navy,color:C.blueLight}};
   const s=map[color]||map.blue;
@@ -144,7 +125,6 @@ export default function BlogIndex(){
   return(
     <>
       <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} body{background:${C.offWhite};} input::placeholder{color:${C.gray300};}`}</style>
-      <Nav/>
 
       {/* Header */}
       <section style={{background:`linear-gradient(160deg,${C.navyDark},${C.navy})`,padding:"88px 32px 72px",position:"relative",overflow:"hidden"}}>
