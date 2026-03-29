@@ -619,13 +619,21 @@ function StepScanning({contact,onDone}){
 
     const callAI=async()=>{
       try{
-        const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1500,messages:[{role:"user",content:`You are a contract analyst for My Contract Doctors. A business called "${contact?.business||"the customer"}" in "${contact?.location||"their area"}" uses vendor "${contact?.vendor||"a uniform vendor"}". Generate a realistic contract analysis for a uniform/linen service agreement. Return ONLY valid JSON (no markdown fences) with this exact shape:
-{"vendor":"string","business":"string","location":"string","contractNum":"string","weeklyValue":number,"annualValue":number,"contractTerm":number,"autoRenewalDays":number,"score":number(0-100),"scoreLabel":"string(Poor/Below Average/Fair/Good/Excellent)","annualOverpayEstimate":number,"contractLifeOverpay":number,"clauses":[{"id":"string","label":"string","risk":"high|medium|low","contractText":"string(1-2 sentences of realistic contract language)","finding":"string(specific finding for THIS business)","recommendation":"string(specific action)","annualImpact":"number or null","flag":"bad|warn|watch|ok"}],"topActions":["string","string","string","string"]}`}]})});
-        const data=await res.json();
-        resultR.current=JSON.parse((data.content?.[0]?.text||"").replace(/```json|```/g,"").trim());
-      }catch{resultR.current=MOCK;}
-      finish.current();
-    };
+        const callAI=async()=>{
+          try{
+            const res=await fetch("/api/analyze-agreement",{
+              method:"POST",
+              headers:{"Content-Type":"application/json"},
+              body:JSON.stringify({
+                business:contact?.business,
+                vendor:contact?.vendor,
+                location:contact?.location,
+              }),
+            });
+            resultR.current=await res.json();
+          }catch{resultR.current=MOCK;}
+          finish.current();
+        };
     callAI();
     return()=>{clearInterval(phT.current);clearInterval(progT.current);clearInterval(finishT.current);};
   },[]);// eslint-disable-line

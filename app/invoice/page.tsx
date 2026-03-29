@@ -422,30 +422,23 @@ function StepScanning({ contact, onDone }) {
       setProgress(progR.current);
     }, 120);
 
-    // AI call — always resolves (falls back to MOCK on any error)
-    const callAI = async () => {
-      try {
-        const res  = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: "claude-sonnet-4-20250514",
-            max_tokens: 1000,
-            messages: [{ role: "user", content:
-              `You are an analyst for My Contract Doctors. Business: "${contact?.business||"customer"}", vendor: ${contact?.vendor||"a uniform vendor"}. Return ONLY valid JSON (no markdown fences) matching this exact shape:
-{"vendor":"string","invoiceTotal":number,"annualTotal":number,"lineItems":[{"name":"string","weeklyCharge":number,"annualCost":number,"flagged":boolean,"flagReason":"string or null","annualSaving":"number or null"}],"freeRec":{"item":"string","weeklyCharge":number,"annualCost":number,"annualSaving":number,"explanation":"2-3 sentences plain English","action":"string"},"totalPotentialSaving":number,"lockedCount":number,"shopProduct":{"name":"string","theirAnnualCost":number,"ourPrice":number,"quantity":number,"yearlySaving":number,"tip":"string"}}`
-            }],
-          }),
-        });
-        const data = await res.json();
-        const raw  = (data.content?.[0]?.text || "").replace(/```json|```/g, "").trim();
-        resultR.current = JSON.parse(raw);
-      } catch {
-        resultR.current = MOCK;
-      }
-      // Always finish, regardless of success or failure
-      finish.current();
-    };
+    // AI call
+const callAI = async () => {
+  try {
+    const res = await fetch("/api/analyze-invoice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        business: contact?.business,
+        vendor: contact?.vendor,
+      }),
+    });
+    resultR.current = await res.json();
+  } catch {
+    resultR.current = MOCK;
+  }
+  finish.current();
+};
 
     callAI();
 
