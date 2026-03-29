@@ -275,7 +275,32 @@ function Btn({ children, onClick, variant = "navy", full = false, size = "md", d
   );
 }
 
-if", fontSize: 14, fontWeight: 500, padding: "9px 20px", borderRadius: 8, textDecoration: "none" }}>Get Started</a>
+// ─────────────────────────────────────────
+// NAV
+// ─────────────────────────────────────────
+function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn);
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+  const links = ["Demystifier", "The Agreement", "The Invoice", "Our Shop"];
+  return (
+    <nav style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: scrolled ? "rgba(12,45,84,0.97)" : C.navy, backdropFilter: scrolled ? "blur(12px)" : "none", borderBottom: "1px solid rgba(255,255,255,0.08)", transition: "all 0.3s", padding: "0 32px" }}>
+      <div style={{ maxWidth: 1180, margin: "0 auto", height: 64, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}>
+          <span style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: C.blueLight }}>My</span>
+          <div>
+            <span style={{ fontFamily: "'DM Serif Display',serif", fontSize: 22, color: "#fff" }}>Contract </span>
+            <span style={{ fontFamily: "'DM Serif Display',serif", fontSize: 22, fontStyle: "italic", color: C.blueLight }}>Doctors</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          {links.map(l => (
+            <a key={l} href="#" style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 14, fontWeight: l === "Demystifier" ? 600 : 400, color: l === "Demystifier" ? C.blueLight : "rgba(255,255,255,0.75)", textDecoration: "none", borderBottom: l === "Demystifier" ? `2px solid ${C.teal}` : "none", paddingBottom: l === "Demystifier" ? 2 : 0 }}>{l}</a>
+          ))}
+          <a href="#" style={{ background: C.teal, color: "#fff", fontFamily: "'DM Sans',sans-serif", fontSize: 14, fontWeight: 500, padding: "9px 20px", borderRadius: 8, textDecoration: "none" }}>Get Started</a>
         </div>
       </div>
     </nav>
@@ -763,7 +788,7 @@ export default function DemystifierPage() {
   return (
     <>
       <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;} body{background:${C.offWhite};} @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
-
+      
       <PrePurchasePage onPurchase={() => setShowPayment(true)} />
 
       {/* Payment modal */}
