@@ -634,7 +634,7 @@ function StepScanning({contact,onDone}){
           }catch{resultR.current=MOCK;}
           finish.current();
         };
-    callAI(); };
+    callAI(); }; };
     return()=>{clearInterval(phT.current);clearInterval(progT.current);clearInterval(finishT.current);};
   },[]);// eslint-disable-line
 
