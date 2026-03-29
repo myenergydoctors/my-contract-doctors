@@ -1,9 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 
-// ─────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────
 const C = {
   navy:"#0C2D54",navyDark:"#081E38",blue:"#3D80C8",
   blueMid:"#2563A8",blueLight:"#6AAEE0",bluePale:"#E2EEFA",
@@ -17,9 +14,6 @@ const C = {
 const FONTS=`@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');`;
 const mkId=()=>Math.random().toString(36).slice(2,10).toUpperCase();
 
-// ─────────────────────────────────────────
-// SHARED UI PRIMITIVES
-// ─────────────────────────────────────────
 function Tag({children,variant="teal"}){
   const m={teal:{bg:C.tealLight,color:"#0D6E52"},blue:{bg:C.bluePale,color:C.blueMid},navy:{bg:C.navy,color:C.blueLight},red:{bg:C.redLight,color:C.red},amber:{bg:C.amberLight,color:C.amber},green:{bg:C.greenLight,color:C.green}};
   const s=m[variant]||m.teal;
@@ -51,9 +45,7 @@ function Btn({children,onClick,variant="navy",full=false,size="md",disabled=fals
     >{children}</button>
   );
 }
-// ───────────────────────────────────────
-// QR CODE (pure SVG pattern)
-// ─────────────────────────────────────────
+
 function QRCode({sessionId,size=148}){
   const cell=size/21;
   const pat=[[1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],[1,0,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,1,1,1,0,1,0,0,1,1,0,0,0,1,0,1,1,1,0,1],[1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],[0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],[1,0,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,0,1,0],[0,1,0,0,1,0,0,0,1,0,0,1,0,0,0,1,0,0,1,0,1],[1,1,1,0,1,1,1,1,0,1,0,0,1,1,0,1,1,0,1,1,0],[0,0,1,0,0,1,0,0,1,0,1,0,0,1,1,0,0,1,0,0,1],[1,0,0,1,1,0,1,0,0,1,0,1,0,0,0,1,0,0,1,0,1],[0,0,0,0,0,0,0,0,1,1,0,0,1,0,1,0,1,0,0,1,0],[1,1,1,1,1,1,1,0,0,0,1,1,0,1,0,1,0,0,1,0,1],[1,0,0,0,0,0,1,0,1,0,0,1,1,0,1,1,0,1,0,1,0],[1,0,1,1,1,0,1,0,0,1,0,0,0,1,0,0,1,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0],[1,0,1,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0],[1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,0,1]];
@@ -66,9 +58,6 @@ function QRCode({sessionId,size=148}){
   );
 }
 
-// ─────────────────────────────────────────
-// STEP INDICATOR
-// ─────────────────────────────────────────
 function StepBar({step}){
   const steps=["Upload","Your Info","Analyzing","Results"];
   return(
@@ -98,9 +87,6 @@ function StepBar({step}){
   );
 }
 
-// ─────────────────────────────────────────
-// LANDING PAGE
-// ─────────────────────────────────────────
 function LandingPage({onStart}){
   const differences=[
     {demyst:"Generic agreement walkthrough",agreement:"Your actual contract, analyzed line by line"},
@@ -117,8 +103,6 @@ function LandingPage({onStart}){
   ];
   return(
     <div style={{background:C.offWhite}}>
-
-      {/* Hero */}
       <section style={{background:`linear-gradient(160deg,${C.navyDark} 0%,${C.navy} 60%,#153D6B 100%)`,padding:"140px 32px 100px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:`linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)`,backgroundSize:"48px 48px"}}/>
         <div style={{position:"absolute",top:"15%",right:"8%",width:440,height:440,borderRadius:"50%",background:`radial-gradient(circle,rgba(61,128,200,0.15) 0%,transparent 70%)`,pointerEvents:"none"}}/>
@@ -145,8 +129,6 @@ function LandingPage({onStart}){
               ))}
             </div>
           </div>
-
-          {/* Right: sample scorecard preview */}
           <div style={{animation:"slideUp 0.7s ease 0.2s both"}}>
             <div style={{background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:20,padding:28,backdropFilter:"blur(20px)"}}>
               <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:20}}>
@@ -155,7 +137,6 @@ function LandingPage({onStart}){
                 <div style={{width:10,height:10,borderRadius:"50%",background:"#22C55E"}}/>
                 <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.4)",marginLeft:8}}>Agreement Analysis — Your Business</span>
               </div>
-              {/* Score ring */}
               <div style={{textAlign:"center",marginBottom:22}}>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:"rgba(255,255,255,0.4)",marginBottom:8}}>Contract Health Score</div>
                 <div style={{position:"relative",width:100,height:100,margin:"0 auto"}}>
@@ -169,7 +150,6 @@ function LandingPage({onStart}){
                   </div>
                 </div>
               </div>
-              {/* Flags */}
               {[
                 {label:"Contract term",value:"12 months",status:"ok"},
                 {label:"Cancellation penalty",value:"40% × weeks left",status:"warn"},
@@ -191,7 +171,6 @@ function LandingPage({onStart}){
         </div>
       </section>
 
-      {/* Demystifier vs Agreement comparison */}
       <section id="compare" style={{padding:"88px 32px",background:C.white}}>
         <div style={{maxWidth:860,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:48}}>
@@ -201,7 +180,6 @@ function LandingPage({onStart}){
             </h2>
           </div>
           <div style={{border:`1px solid ${C.gray200}`,borderRadius:16,overflow:"hidden"}}>
-            {/* Header */}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",background:C.navy}}>
               <div style={{padding:"16px 20px",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:"rgba(255,255,255,0.4)",letterSpacing:"0.1em",textTransform:"uppercase"}}>Feature</div>
               <div style={{padding:"16px 20px",fontFamily:"'DM Serif Display',serif",fontSize:16,color:"rgba(255,255,255,0.6)",borderLeft:"1px solid rgba(255,255,255,0.08)"}}>The Demystifier</div>
@@ -225,7 +203,6 @@ function LandingPage({onStart}){
         </div>
       </section>
 
-      {/* How it works */}
       <section style={{padding:"88px 32px",background:C.offWhite}}>
         <div style={{maxWidth:1060,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:56}}>
@@ -233,7 +210,7 @@ function LandingPage({onStart}){
             <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,3.5vw,38px)",color:C.navy,lineHeight:1.15}}>From upload to full analysis in minutes</h2>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:20}}>
-            {steps.map(({n,title,body},i)=>(
+            {steps.map(({n,title,body})=>(
               <div key={n} style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:14,padding:"28px 22px",position:"relative",overflow:"hidden"}}>
                 <div style={{fontFamily:"'DM Serif Display',serif",fontSize:64,fontStyle:"italic",color:C.blue,opacity:0.08,position:"absolute",top:-8,right:12,lineHeight:1,userSelect:"none"}}>{n}</div>
                 <div style={{width:36,height:36,borderRadius:9,background:C.bluePale,display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16}}>
@@ -247,7 +224,6 @@ function LandingPage({onStart}){
         </div>
       </section>
 
-      {/* What's in the report */}
       <section style={{padding:"88px 32px",background:C.white}}>
         <div style={{maxWidth:860,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:48}}>
@@ -272,7 +248,6 @@ function LandingPage({onStart}){
               </div>
             ))}
           </div>
-          {/* CTA */}
           <div style={{background:`linear-gradient(135deg,${C.navy},#153D6B)`,borderRadius:18,padding:"40px 48px",textAlign:"center"}}>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:32,color:"#fff",marginBottom:10}}>Ready to see your contract's real cost?</div>
             <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:"rgba(255,255,255,0.65)",marginBottom:28,maxWidth:480,margin:"0 auto 28px"}}>Upload your agreement and get your personalized analysis in minutes.</p>
@@ -285,9 +260,6 @@ function LandingPage({onStart}){
   );
 }
 
-// ─────────────────────────────────────────
-// STEP 0 — UPLOAD
-// ─────────────────────────────────────────
 function StepUpload({onNext}){
   const [method,setMethod]=useState("desktop");
   const [dragging,setDragging]=useState(false);
@@ -325,8 +297,6 @@ function StepUpload({onNext}){
         </h1>
         <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,lineHeight:1.75,maxWidth:500,margin:"0 auto"}}>Upload your PDF or photograph your paper agreement. Our AI reads every clause and generates a personalized analysis specific to your contract.</p>
       </div>
-
-      {/* Method tabs */}
       <div style={{display:"flex",background:C.gray100,borderRadius:12,padding:4,marginBottom:24,gap:4}}>
         {[{key:"desktop",label:"📄  Upload a file",sub:"PDF or image from this device"},{key:"qr",label:"📱  Scan with phone",sub:"Paper agreement? Use your camera"}].map(({key,label,sub})=>(
           <button key={key} onClick={()=>{setMethod(key);setFile(null);setPreview(null);setLinked(false);}} style={{flex:1,padding:"12px 16px",borderRadius:9,border:"none",cursor:"pointer",background:method===key?C.white:"transparent",boxShadow:method===key?"0 1px 6px rgba(12,45,84,0.08)":"none",transition:"all 0.2s",textAlign:"center"}}>
@@ -335,8 +305,6 @@ function StepUpload({onNext}){
           </button>
         ))}
       </div>
-
-      {/* Desktop upload */}
       {method==="desktop"&&(
         <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)}
           onDrop={e=>{e.preventDefault();setDragging(false);handleFile(e.dataTransfer.files[0]);}}
@@ -360,8 +328,6 @@ function StepUpload({onNext}){
           )}
         </div>
       )}
-
-      {/* QR mobile */}
       {method==="qr"&&(
         <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:18,overflow:"hidden",marginBottom:20}}>
           {!mobileLinked?(
@@ -404,15 +370,12 @@ function StepUpload({onNext}){
           )}
         </div>
       )}
-
       <Btn variant="teal" full size="lg" disabled={!file} onClick={()=>onNext(file)}>Continue — Add Your Details →</Btn>
       <div style={{display:"flex",justifyContent:"center",gap:28,marginTop:20,flexWrap:"wrap"}}>
         {[{icon:"🔒",text:"Encrypted & never shared"},{icon:"⚡",text:"Analysis in under 3 minutes"},{icon:"📄",text:"All vendors supported"}].map(({icon,text})=>(
           <div key={text} style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:14}}>{icon}</span><span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500}}>{text}</span></div>
         ))}
       </div>
-
-      {/* Mobile demo modal */}
       {showDemo&&(
         <div style={{position:"fixed",inset:0,zIndex:999,background:"rgba(8,30,56,0.8)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",gap:20}} onClick={e=>{if(e.target===e.currentTarget)setShowDemo(false);}}>
           <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:"#fff",textAlign:"center"}}>Mobile upload experience</div>
@@ -424,9 +387,6 @@ function StepUpload({onNext}){
   );
 }
 
-// ─────────────────────────────────────────
-// MOBILE VIEW (phone simulator)
-// ─────────────────────────────────────────
 function MobileView({sessionId,label="agreement",storageKey,onUploaded}){
   const [mFile,setMFile]=useState(null);
   const [preview,setPreview]=useState(null);
@@ -489,9 +449,6 @@ function MobileView({sessionId,label="agreement",storageKey,onUploaded}){
   );
 }
 
-// ─────────────────────────────────────────
-// STEP 1 — CONTACT
-// ─────────────────────────────────────────
 function StepContact({onNext,onBack}){
   const [form,setForm]=useState({name:"",email:"",phone:"",business:"",vendor:"",location:""});
   const set=k=>e=>setForm(f=>({...f,[k]:e.target.value}));
@@ -525,18 +482,14 @@ function StepContact({onNext,onBack}){
           <input style={iSt} type="text" placeholder="Portland, ME" value={form.location} onChange={set("location")} onFocus={fo} onBlur={bl}/>
         </div>
       </div>
-
-      {/* Why we ask for location */}
       <div style={{background:C.bluePale,border:`1px solid rgba(61,128,200,0.2)`,borderRadius:10,padding:"13px 16px",marginBottom:26,display:"flex",gap:12,alignItems:"flex-start"}}>
         <span style={{fontSize:16,flexShrink:0}}>📍</span>
         <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.blueMid,lineHeight:1.6}}>Your location helps us benchmark your contract terms against other businesses in your region — so we can tell you if you're paying above-average rates for your area.</span>
       </div>
-
       <div style={{background:C.offWhite,border:`1px solid ${C.gray200}`,borderRadius:10,padding:"13px 16px",marginBottom:26,display:"flex",gap:12,alignItems:"flex-start"}}>
         <input type="checkbox" defaultChecked style={{marginTop:2,accentColor:C.teal,flexShrink:0,cursor:"pointer"}}/>
         <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,lineHeight:1.6}}>Send me my analysis report by email and keep me updated on ways to reduce my uniform costs. Unsubscribe anytime.</span>
       </div>
-
       <div style={{display:"flex",gap:12}}>
         <Btn variant="ghost" onClick={onBack}>← Back</Btn>
         <div style={{flex:1}}><Btn variant="teal" full size="lg" disabled={!valid} onClick={()=>onNext(form)}>Analyze My Agreement →</Btn></div>
@@ -546,9 +499,6 @@ function StepContact({onNext,onBack}){
   );
 }
 
-// ─────────────────────────────────────────
-// STEP 2 — SCANNING (ref-based, no stale closures)
-// ─────────────────────────────────────────
 function StepScanning({contact,onDone}){
   const [phase,setPhase]=useState(0);
   const [progress,setProgress]=useState(0);
@@ -576,19 +526,19 @@ function StepScanning({contact,onDone}){
     annualOverpayEstimate:2840,
     contractLifeOverpay:5680,
     clauses:[
-      {id:"rental",label:"Rental Terms & Liability",risk:"medium",contractText:`All items are and will remain the property of Company, and the customer agrees to return such items on demand and to be liable for any loss or destruction of such items, including such loss or destruction caused by customer's employees, except as a result of normal wear...`,finding:"Replacement costs are at vendor's 'prevailing rate' with no cap defined. This gives the vendor discretion to charge premium replacement pricing.",recommendation:"Negotiate a cap on replacement costs at 2× the weekly rental rate per item. Add a definition of 'normal wear' in writing.",annualImpact:null,flag:"watch"},
-      {id:"term",label:"Contract Term & Auto-Renewal",risk:"medium",contractText:`The term of this agreement is for twelve (12) months from the date of the first delivery and thereafter for the same time period unless cancelled by either party, in writing, at least ninety (90) days prior to any termination date.`,finding:"12-month term with 90-day written cancellation notice required. Auto-renews for another full 12 months if you miss the window. Renewal date: approx. November 2025.",recommendation:"Set a calendar reminder for August 2025 (95 days before renewal). Request reduction of notice period to 30 days and month-to-month after initial term.",annualImpact:null,flag:"warn"},
-      {id:"cancellation",label:"Minimum Billing & Cancellation",risk:"high",contractText:`There will be a minimum weekly billing of 80% of this agreement value or 80% of the current invoice amount whichever is greater. Customer may discontinue service at any time provided customer pays Company a cancellation charge of 40% of the agreement value or the current invoice amount, whichever is greater, multiplied by the number of weeks remaining under the agreement.`,finding:`CRITICAL: 80% minimum billing even if you reduce staff or orders. Early exit penalty = 40% × $70.53 × weeks remaining. With 26 weeks left: ~$733. With 52 weeks left: ~$1,467.`,recommendation:"Negotiate minimum billing down to 50% of current invoice (not agreement value). Cap cancellation penalty at a flat dollar maximum of $500.",annualImpact:1467,flag:"bad"},
-      {id:"pricing",label:"Price Escalation",risk:"high",contractText:`The price in effect may be changed by Company annually and/or otherwise from time to time. A finance charge of 1 1/2% per month, which is equal to 18% per year will be added to all balances not paid within terms.`,finding:"Vendor can raise prices at ANY time — your weekly invoice serves as the only required notice. No cap on increases. Finance charge of 18%/year on unpaid balances.",recommendation:"Add language: 'All pricing, fees, and service charges shall not increase more than 3% per calendar year.' Strike 'and/or otherwise from time to time.'",annualImpact:220,flag:"bad"},
-      {id:"ldp",label:"LDP Protection Charge",risk:"medium",contractText:`LOSSPROTECT 2.16% — LDP Protection — $1.28 weekly ($1.40 on current invoice)`,finding:"LDP is billed automatically every week at $1.40, regardless of whether any items are actually lost or damaged. This is $72.80/year in automatic charges.",recommendation:"Request removal of LDP. If vendor insists, negotiate that LDP only applies when items are actually reported lost or damaged that week.",annualImpact:73,flag:"warn"},
-      {id:"arbitration",label:"Arbitration & Jury Waiver",risk:"high",contractText:`Any dispute or matter arising in connection with or relating to this agreement shall be resolved by binding and final arbitration in Philadelphia, PA... the parties hereby expressly waive the right to a trial by jury...`,finding:"Binding arbitration in Philadelphia, PA — regardless of where your business is located. You waive your right to a jury trial. 12-month statute of limitations (shorter than most state laws).",recommendation:"Request arbitration venue be changed to your state or conducted virtually. Ask for mutual arbitration rights. Note: this clause is standard — focus negotiation energy on financial clauses.",annualImpact:null,flag:"bad"},
-      {id:"governing",label:"Governing Law & Successors",risk:"low",contractText:`This agreement shall be binding upon present and or future owners, successors or assigns of customer and Company... This agreement shall be governed by the laws of the Commonwealth of Pennsylvania...`,finding:"Agreement binds future owners of your business. Pennsylvania law governs all disputes. No oral modifications are binding — everything must be in writing.",recommendation:"Before signing, write all verbal commitments from your sales rep into the 'Other' section or an addendum. If selling your business, factor in existing vendor agreements.",annualImpact:null,flag:"watch"},
+      {id:"rental",label:"Rental Terms & Liability",risk:"medium",contractText:`All items are and will remain the property of Company...`,finding:"Replacement costs are at vendor's 'prevailing rate' with no cap defined.",recommendation:"Negotiate a cap on replacement costs at 2× the weekly rental rate per item.",annualImpact:null,flag:"watch"},
+      {id:"term",label:"Contract Term & Auto-Renewal",risk:"medium",contractText:`The term of this agreement is for twelve (12) months...`,finding:"12-month term with 90-day written cancellation notice required.",recommendation:"Set a calendar reminder 95 days before renewal. Request reduction to 30 days notice.",annualImpact:null,flag:"warn"},
+      {id:"cancellation",label:"Minimum Billing & Cancellation",risk:"high",contractText:`There will be a minimum weekly billing of 80%...`,finding:"CRITICAL: 80% minimum billing even if you reduce staff. Early exit penalty = 40% × $70.53 × weeks remaining.",recommendation:"Negotiate minimum billing down to 50%. Cap cancellation penalty at $500.",annualImpact:1467,flag:"bad"},
+      {id:"pricing",label:"Price Escalation",risk:"high",contractText:`The price in effect may be changed by Company annually...`,finding:"Vendor can raise prices at ANY time with no cap on increases.",recommendation:"Add language capping increases at 3% per calendar year.",annualImpact:220,flag:"bad"},
+      {id:"ldp",label:"LDP Protection Charge",risk:"medium",contractText:`LOSSPROTECT 2.16% — LDP Protection — $1.40/week`,finding:"LDP is billed automatically every week regardless of actual losses.",recommendation:"Request removal of LDP charge entirely.",annualImpact:73,flag:"warn"},
+      {id:"arbitration",label:"Arbitration & Jury Waiver",risk:"high",contractText:`Disputes resolved by binding arbitration in Philadelphia, PA...`,finding:"Binding arbitration in Philadelphia, PA. You waive your right to a jury trial.",recommendation:"Request arbitration venue changed to your state or conducted virtually.",annualImpact:null,flag:"bad"},
+      {id:"governing",label:"Governing Law & Successors",risk:"low",contractText:`Agreement governed by laws of Commonwealth of Pennsylvania...`,finding:"Agreement binds future owners. Pennsylvania law governs. No oral modifications.",recommendation:"Get all verbal commitments in writing before signing.",annualImpact:null,flag:"watch"},
     ],
     topActions:[
       "Negotiate cancellation penalty cap — potential savings up to $1,467",
       "Add price increase cap of 3%/year — saves ~$220/year",
       "Remove LDP charge — saves $72.80/year",
-      "Set auto-renewal calendar reminder for 95 days before November 2025",
+      "Set auto-renewal calendar reminder for 95 days before renewal date",
     ],
   };
 
@@ -619,22 +569,20 @@ function StepScanning({contact,onDone}){
 
     const callAI=async()=>{
       try{
-        const callAI=async()=>{
-          try{
-            const res=await fetch("/api/analyze-agreement",{
-              method:"POST",
-              headers:{"Content-Type":"application/json"},
-              body:JSON.stringify({
-                business:contact?.business,
-                vendor:contact?.vendor,
-                location:contact?.location,
-              }),
-            });
-            resultR.current=await res.json();
-          }catch{resultR.current=MOCK;}
-          finish.current();
-        };
-    callAI(); }; };
+        const res=await fetch("/api/analyze-agreement",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({
+            business:contact?.business,
+            vendor:contact?.vendor,
+            location:contact?.location,
+          }),
+        });
+        resultR.current=await res.json();
+      }catch{resultR.current=MOCK;}
+      finish.current();
+    };
+    callAI();
     return()=>{clearInterval(phT.current);clearInterval(progT.current);clearInterval(finishT.current);};
   },[]);// eslint-disable-line
 
@@ -663,59 +611,33 @@ function StepScanning({contact,onDone}){
   );
 }
 
-// ─────────────────────────────────────────
-// STEP 3 — RESULTS (scorecard + split-screen + report)
-// ─────────────────────────────────────────
 function StepResults({result,contact}){
   const [activeId,setActiveId]=useState(result?.clauses?.[0]?.id||"rental");
   const [showEmailModal,setShowEmailModal]=useState(false);
   const [emailClause,setEmailClause]=useState(null);
   const [reportDownloaded,setReportDownloaded]=useState(false);
-  const [view,setView]=useState("scorecard"); // "scorecard" | "viewer"
+  const [view,setView]=useState("scorecard");
   if(!result)return null;
 
   const active=result.clauses?.find(c=>c.id===activeId)||result.clauses?.[0];
   const flagColor={bad:C.red,warn:C.amber,watch:C.blue,ok:C.teal};
   const scoreColor=result.score<40?C.red:result.score<65?C.amber:C.teal;
-  const highRisk=result.clauses?.filter(c=>c.risk==="high")||[];
-  const totalImpact=result.clauses?.reduce((sum,c)=>sum+(c.annualImpact||0),0)||0;
-
   const openEmail=clause=>{setEmailClause(clause);setShowEmailModal(true);};
 
   const downloadReport=()=>{
-    // Build a text report and trigger download
     const lines=[
       `MY CONTRACT DOCTORS — Agreement Analysis Report`,
       `${"─".repeat(50)}`,
-      `Business: ${result.business}`,
-      `Vendor: ${result.vendor}`,
-      `Location: ${result.location}`,
-      `Contract #: ${result.contractNum}`,
-      `Weekly Value: $${result.weeklyValue}`,
-      `Annual Value: $${result.annualValue?.toLocaleString()}`,
-      ``,
+      `Business: ${result.business}`,`Vendor: ${result.vendor}`,`Location: ${result.location}`,
+      `Contract #: ${result.contractNum}`,`Weekly Value: $${result.weeklyValue}`,`Annual Value: $${result.annualValue?.toLocaleString()}`,``,
       `CONTRACT HEALTH SCORE: ${result.score}/100 — ${result.scoreLabel}`,
       `Estimated annual overpayment: $${result.annualOverpayEstimate?.toLocaleString()}`,
-      `Over contract life: $${result.contractLifeOverpay?.toLocaleString()}`,
-      ``,
-      `TOP PRIORITY ACTIONS`,
-      `${"─".repeat(50)}`,
-      ...(result.topActions||[]).map((a,i)=>`${i+1}. ${a}`),
-      ``,
-      `CLAUSE-BY-CLAUSE ANALYSIS`,
-      `${"─".repeat(50)}`,
-      ...(result.clauses||[]).flatMap(c=>[
-        ``,
-        `[${c.risk.toUpperCase()} RISK] ${c.label}`,
-        `Contract language: "${c.contractText}"`,
-        `Finding: ${c.finding}`,
-        `Recommendation: ${c.recommendation}`,
-        c.annualImpact?`Estimated annual impact: $${c.annualImpact.toLocaleString()}`:"",
-      ].filter(Boolean)),
-      ``,
-      `${"─".repeat(50)}`,
+      `Over contract life: $${result.contractLifeOverpay?.toLocaleString()}`,``,
+      `TOP PRIORITY ACTIONS`,`${"─".repeat(50)}`,
+      ...(result.topActions||[]).map((a,i)=>`${i+1}. ${a}`),``,
+      `CLAUSE-BY-CLAUSE ANALYSIS`,`${"─".repeat(50)}`,
+      ...(result.clauses||[]).flatMap(c=>[``,`[${c.risk.toUpperCase()} RISK] ${c.label}`,`Finding: ${c.finding}`,`Recommendation: ${c.recommendation}`,c.annualImpact?`Annual impact: $${c.annualImpact.toLocaleString()}`:""].filter(Boolean)),``,
       `Generated by My Contract Doctors — mycontractdoctors.com`,
-      `We're on your side, not the vendor's.`,
     ];
     const blob=new Blob([lines.join("\n")],{type:"text/plain"});
     const url=URL.createObjectURL(blob);
@@ -727,17 +649,11 @@ function StepResults({result,contact}){
 
   return(
     <div style={{maxWidth:1100,margin:"0 auto",padding:"44px 24px 80px"}}>
-
-      {/* Top banner */}
       <div style={{background:`linear-gradient(135deg,${C.navy},#153D6B)`,borderRadius:18,padding:"28px 36px",marginBottom:28,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:20}}>
         <div>
           <Tag variant="teal">Analysis complete</Tag>
-          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(22px,3vw,34px)",color:"#fff",margin:"12px 0 6px",lineHeight:1.1}}>
-            {result.business} — {result.vendor}
-          </h2>
-          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:"rgba(255,255,255,0.6)"}}>
-            {result.location} · Contract #{result.contractNum} · ${result.weeklyValue}/week · ${result.annualValue?.toLocaleString()}/year
-          </p>
+          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(22px,3vw,34px)",color:"#fff",margin:"12px 0 6px",lineHeight:1.1}}>{result.business} — {result.vendor}</h2>
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:"rgba(255,255,255,0.6)"}}>{result.location} · Contract #{result.contractNum} · ${result.weeklyValue}/week · ${result.annualValue?.toLocaleString()}/year</p>
         </div>
         <div style={{display:"flex",gap:16,alignItems:"center"}}>
           <div style={{textAlign:"center"}}>
@@ -766,27 +682,17 @@ function StepResults({result,contact}){
         </div>
       </div>
 
-      {/* View toggle + download */}
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24,flexWrap:"wrap",gap:12}}>
         <div style={{display:"flex",background:C.gray100,borderRadius:10,padding:3,gap:3}}>
           {[{key:"scorecard",label:"📊  Scorecard"},{key:"viewer",label:"📄  Clause Viewer"}].map(({key,label})=>(
-            <button key={key} onClick={()=>setView(key)} style={{padding:"9px 20px",borderRadius:8,border:"none",cursor:"pointer",background:view===key?C.white:"transparent",boxShadow:view===key?"0 1px 4px rgba(12,45,84,0.1)":"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:view===key?500:400,color:view===key?C.navy:C.gray500,transition:"all 0.2s"}}>
-              {label}
-            </button>
+            <button key={key} onClick={()=>setView(key)} style={{padding:"9px 20px",borderRadius:8,border:"none",cursor:"pointer",background:view===key?C.white:"transparent",boxShadow:view===key?"0 1px 4px rgba(12,45,84,0.1)":"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:view===key?500:400,color:view===key?C.navy:C.gray500,transition:"all 0.2s"}}>{label}</button>
           ))}
         </div>
-        <div style={{display:"flex",gap:10}}>
-          <Btn variant={reportDownloaded?"ghost":"navy"} size="sm" onClick={downloadReport}>
-            {reportDownloaded?"✓ Report Downloaded":"⬇ Download Full Report"}
-          </Btn>
-        </div>
+        <Btn variant={reportDownloaded?"ghost":"navy"} size="sm" onClick={downloadReport}>{reportDownloaded?"✓ Report Downloaded":"⬇ Download Full Report"}</Btn>
       </div>
 
-      {/* ── SCORECARD VIEW ── */}
       {view==="scorecard"&&(
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
-
-          {/* Top actions */}
           <div style={{gridColumn:"1/-1"}}>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:C.teal,marginBottom:12}}>Priority actions</div>
             <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:14,padding:"20px 24px"}}>
@@ -800,13 +706,11 @@ function StepResults({result,contact}){
               </div>
             </div>
           </div>
-
-          {/* Clause risk cards */}
           {(result.clauses||[]).map(clause=>{
             const fc=flagColor[clause.flag]||C.gray500;
             const bg={bad:C.redLight,warn:C.amberLight,watch:C.bluePale,ok:C.greenLight}[clause.flag]||C.offWhite;
             return(
-              <div key={clause.id} style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:14,padding:"20px 22px",cursor:"pointer",transition:"all 0.2s",boxShadow:"none"}}
+              <div key={clause.id} style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:14,padding:"20px 22px",cursor:"pointer",transition:"all 0.2s"}}
                 onMouseEnter={e=>{e.currentTarget.style.boxShadow="0 4px 20px rgba(12,45,84,0.08)";e.currentTarget.style.borderColor=C.blue;}}
                 onMouseLeave={e=>{e.currentTarget.style.boxShadow="none";e.currentTarget.style.borderColor=C.gray200;}}
                 onClick={()=>{setActiveId(clause.id);setView("viewer");}}>
@@ -830,10 +734,8 @@ function StepResults({result,contact}){
         </div>
       )}
 
-      {/* ── CLAUSE VIEWER ── */}
       {view==="viewer"&&(
         <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:16,overflow:"hidden",display:"grid",gridTemplateColumns:"240px 1fr 1fr",minHeight:600}}>
-          {/* Index */}
           <div style={{borderRight:`1px solid ${C.gray200}`,overflowY:"auto"}}>
             <div style={{padding:"14px 16px 10px",borderBottom:`1px solid ${C.gray100}`}}>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.gray500}}>Clauses</div>
@@ -852,8 +754,6 @@ function StepResults({result,contact}){
               );
             })}
           </div>
-
-          {/* Contract text */}
           <div style={{borderRight:`1px solid ${C.gray200}`,overflowY:"auto",padding:"22px"}}>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.gray500,marginBottom:14}}>Your contract language</div>
             {(result.clauses||[]).map(clause=>{
@@ -871,31 +771,25 @@ function StepResults({result,contact}){
               );
             })}
           </div>
-
-          {/* Analysis panel */}
           {active&&(
             <div style={{overflowY:"auto",padding:"22px",background:C.offWhite}}>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.gray500,marginBottom:14}}>Personalized analysis</div>
               <RiskBadge risk={active.risk}/>
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.navy,margin:"10px 0 4px",lineHeight:1.2}}>{active.label}</div>
               {active.annualImpact&&<div style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.red,marginBottom:12}}>−${active.annualImpact.toLocaleString()}<span style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.gray500}}>/year</span></div>}
-
               <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:10,padding:"16px 18px",marginBottom:14}}>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:C.gray500,marginBottom:8}}>What we found in your contract</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:C.gray500,marginBottom:8}}>What we found</div>
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:300,color:C.gray700,lineHeight:1.8,margin:0}}>{active.finding}</p>
               </div>
-
               <div style={{background:C.amberLight,border:`1px solid ${C.amber}`,borderRadius:10,padding:"14px 16px",marginBottom:14}}>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:C.amber,marginBottom:8}}>Our recommendation</div>
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:300,color:C.gray700,lineHeight:1.75,margin:0}}>{active.recommendation}</p>
               </div>
-
               <div style={{background:C.navy,borderRadius:10,padding:"16px 18px",marginBottom:14}}>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.1em",textTransform:"uppercase",color:C.blueLight,marginBottom:8}}>Take action</div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.6,marginBottom:12}}>We've drafted a negotiation email using your specific contract terms and dollar amounts.</div>
+                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.65)",lineHeight:1.6,marginBottom:12}}>We've drafted a negotiation email using your specific contract terms.</div>
                 <Btn variant="teal" full size="sm" onClick={()=>openEmail(active)}>✉ Draft Negotiation Email</Btn>
               </div>
-
               {(result.clauses||[]).findIndex(c=>c.id===activeId)<(result.clauses||[]).length-1&&(
                 <button onClick={()=>{const idx=(result.clauses||[]).findIndex(c=>c.id===activeId);setActiveId(result.clauses[idx+1].id);}}
                   style={{width:"100%",background:"none",border:`1px solid ${C.gray300}`,borderRadius:9,padding:"10px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:500,color:C.gray500,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",transition:"border-color 0.2s"}}
@@ -910,16 +804,11 @@ function StepResults({result,contact}){
         </div>
       )}
 
-      {/* Invoice cross-sell */}
       <div style={{marginTop:28,background:`linear-gradient(135deg,${C.offWhite},${C.bluePale})`,border:`1px solid ${C.gray200}`,borderRadius:16,padding:"28px 32px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"center"}}>
         <div>
           <Tag variant="teal">Next step — The Invoice</Tag>
-          <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:C.navy,margin:"10px 0 8px"}}>
-            Now see exactly what you're overpaying on every line item.
-          </h3>
-          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.7,maxWidth:540}}>
-            Your agreement shows the rules of the game. Your weekly invoice shows the score. Upload your latest invoice and we'll identify specific products where you're being overcharged — starting with one free recommendation right now.
-          </p>
+          <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:C.navy,margin:"10px 0 8px"}}>Now see exactly what you're overpaying on every line item.</h3>
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.7,maxWidth:540}}>Upload your latest invoice and we'll identify specific products where you're being overcharged — starting with one free recommendation right now.</p>
         </div>
         <div style={{textAlign:"center",flexShrink:0}}>
           <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:C.teal,marginBottom:6}}>Free to start</div>
@@ -928,7 +817,6 @@ function StepResults({result,contact}){
         </div>
       </div>
 
-      {/* Email modal */}
       {showEmailModal&&emailClause&&(
         <EmailModal clause={emailClause} contact={contact} result={result} onClose={()=>{setShowEmailModal(false);setEmailClause(null);}}/>
       )}
@@ -936,135 +824,27 @@ function StepResults({result,contact}){
   );
 }
 
-// ─────────────────────────────────────────
-// EMAIL MODAL (personalized with actual contract terms)
-// ─────────────────────────────────────────
 function EmailModal({clause,contact,result,onClose}){
   const [copied,setCopied]=useState(false);
+  const vendor=result?.vendor||"[Vendor Name]";
+  const business=contact?.business||"[Business Name]";
+  const name=contact?.name||"[Your Name]";
 
-  // Build personalized email body
-  const getEmail=()=>{
-    const vendor=result?.vendor||"[Vendor Name]";
-    const business=contact?.business||"[Business Name]";
-    const name=contact?.name||"[Your Name]";
-
-    const bodies={
-      rental:`Dear ${vendor} Representative,
-
-I'm reviewing our service agreement and would like to add a few clarifying terms before we finalize.
-
-Specifically regarding item replacement and liability, I'd like the following language added:
-- "Normal wear" shall be defined as gradual deterioration from standard use over a minimum of 6 months of service.
-- Replacement costs for lost or damaged items shall not exceed 200% of the item's weekly rental fee multiplied by 52 weeks.
-- All replacement items must be approved by an authorized company representative at ${business} prior to being placed into service.
-
-Please confirm these additions can be included before we sign.
-
-Thank you,
-${name}
-${business}`,
-
-      term:`Dear ${vendor} Representative,
-
-Before finalizing our service agreement, I'd like to discuss the renewal terms.
-
-I'd like to request the following modifications:
-1. Reduce the written cancellation notice period from 90 days to 30 days.
-2. After the initial ${result?.contractTerm||12}-month term, the agreement converts to month-to-month rather than auto-renewing for another full term.
-
-Please confirm these adjustments can be made.
-
-Thank you,
-${name}
-${business}`,
-
-      cancellation:`Dear ${vendor} Representative,
-
-I have concerns about the minimum billing and cancellation provisions in our agreement at $${result?.weeklyValue}/week.
-
-I'd like to negotiate the following:
-1. Minimum billing: Reduce from 80% of agreement value to 50% of current invoice amount.
-2. Cancellation penalty: Cap the early termination fee at a maximum of $500, regardless of weeks remaining.
-
-At current rates, the uncapped cancellation clause represents significant exposure. A $500 cap brings this into a fair and standard range.
-
-Thank you for your consideration,
-${name}
-${business}`,
-
-      pricing:`Dear ${vendor} Representative,
-
-I'd like to address the price adjustment language in our service agreement before signing.
-
-I'd like to add the following language: "All pricing, service charges, and fees shall not increase by more than 3% per calendar year during the initial term. Any proposed increase beyond this cap requires 60 days written notice."
-
-This is a reasonable protection that allows ${business} to plan and budget appropriately.
-
-Best regards,
-${name}
-${business}`,
-
-      ldp:`Dear ${vendor} Representative,
-
-I'd like to request that the LDP Protection charge ($${result?.clauses?.find(c=>c.id==="ldp")?.annualImpact||73}/year) be removed from our agreement.
-
-I prefer to track actual item losses weekly and address them individually as they occur, rather than paying a blanket weekly protection fee.
-
-Please advise whether this charge can be removed.
-
-Thank you,
-${name}
-${business}`,
-
-      arbitration:`Dear ${vendor} Representative,
-
-Before signing, I'd like to address the arbitration clause, specifically the requirement that all disputes be resolved in Philadelphia, PA.
-
-Given that ${business} is located in ${result?.location||"[our city]"}, I'd like to request one of the following modifications:
-1. Change the arbitration venue to ${result?.location||"our state"} or conducted via video conference.
-2. Either party may initiate arbitration, not just the customer.
-
-I'm open to arbitration as a dispute resolution method with these location modifications.
-
-Thank you,
-${name}
-${business}`,
-
-      governing:`Dear ${vendor} Representative,
-
-Before we finalize our agreement, I'd like to confirm in writing all commitments discussed during our sales conversation.
-
-Specifically, please confirm the following in writing as an addendum to our agreement:
-[List all verbal commitments from your sales rep here]
-
-I understand that the agreement supersedes all oral understandings, so I want to make sure everything we've discussed is captured in writing before we sign.
-
-Thank you,
-${name}
-${business}`,
-    };
-
-    return bodies[clause.id]||`Dear ${vendor} Representative,\n\nRegarding the ${clause.label} section of our service agreement, I'd like to discuss the following:\n\n${clause.recommendation}\n\nPlease let me know if these modifications can be accommodated.\n\nThank you,\n${name}\n${business}`;
-  };
-
-  const emailText=getEmail();
+  const emailText=`Dear ${vendor} Representative,\n\nRegarding the ${clause.label} section of our service agreement:\n\n${clause.recommendation}\n\nPlease let me know if these modifications can be accommodated.\n\nThank you,\n${name}\n${business}`;
   const copy=()=>{navigator.clipboard.writeText(emailText).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});};
 
   return(
     <div style={{position:"fixed",inset:0,zIndex:999,background:"rgba(8,30,56,0.8)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}}
       onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
-      <div style={{background:C.white,borderRadius:18,width:"100%",maxWidth:620,maxHeight:"85vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 24px 80px rgba(12,45,84,0.25)",animation:"popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards"}}>
+      <div style={{background:C.white,borderRadius:18,width:"100%",maxWidth:620,maxHeight:"85vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 24px 80px rgba(12,45,84,0.25)"}}>
         <div style={{background:C.navy,padding:"18px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}}>
           <div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.blueLight,marginBottom:3}}>Personalized Negotiation Email</div>
+            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.blueLight,marginBottom:3}}>Negotiation Email</div>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:"#fff"}}>{clause.label}</div>
           </div>
           <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.5)",fontSize:22,cursor:"pointer",lineHeight:1}}>×</button>
         </div>
         <div style={{padding:"22px",overflowY:"auto",flex:1}}>
-          <div style={{background:C.bluePale,border:`1px solid rgba(61,128,200,0.2)`,borderRadius:10,padding:"12px 16px",marginBottom:16,fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.blueMid,lineHeight:1.6}}>
-            💡 This email has been personalized with your vendor name, business name, and contract terms. Update the bracketed fields and send directly from your email client.
-          </div>
           <div style={{background:C.offWhite,border:`1px solid ${C.gray200}`,borderRadius:10,padding:"20px"}}>
             <pre style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray700,lineHeight:1.8,whiteSpace:"pre-wrap",margin:0}}>{emailText}</pre>
           </div>
@@ -1078,15 +858,11 @@ ${business}`,
   );
 }
 
-// ─────────────────────────────────────────
-// ROOT
-// ─────────────────────────────────────────
 export default function AgreementPage(){
-  const [view,setView]=useState("landing"); // "landing"|"upload"|"contact"|"scanning"|"results"
+  const [view,setView]=useState("landing");
   const [file,setFile]=useState(null);
   const [contact,setContact]=useState(null);
   const [result,setResult]=useState(null);
-
   const stepIndex={"landing":-1,"upload":0,"contact":1,"scanning":2,"results":3}[view];
 
   return(
@@ -1102,13 +878,12 @@ export default function AgreementPage(){
         @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}
         @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
       `}</style>
-
-      {view==="landing"&&<><LandingPage onStart={()=>setView("upload")}/></>}
+      {view==="landing"&&<LandingPage onStart={()=>setView("upload")}/>}
       {view!=="landing"&&<StepBar step={stepIndex}/>}
-      {view==="upload"   &&<StepUpload  onNext={f=>{setFile(f);setView("contact");}}/>}
-      {view==="contact"  &&<StepContact onNext={c=>{setContact(c);setView("scanning");}} onBack={()=>setView("upload")}/>}
-      {view==="scanning" &&<StepScanning contact={contact} onDone={r=>{setResult(r);setView("results");}}/>}
-      {view==="results"  &&<StepResults result={result} contact={contact}/>}
+      {view==="upload"&&<StepUpload onNext={f=>{setFile(f);setView("contact");}}/>}
+      {view==="contact"&&<StepContact onNext={c=>{setContact(c);setView("scanning");}} onBack={()=>setView("upload")}/>}
+      {view==="scanning"&&<StepScanning contact={contact} onDone={r=>{setResult(r);setView("results");}}/>}
+      {view==="results"&&<StepResults result={result} contact={contact}/>}
     </>
   );
 }
