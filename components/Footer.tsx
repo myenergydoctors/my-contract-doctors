@@ -85,7 +85,7 @@ export default function Footer() {
               © 2026 My Contract Doctors | <a href="https://hermosa.design" target="_blank">Website by Hermosa Design</a>
             </span>
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
-              A sister company of My Energy Doctors
+              A sister company of <a href="https://myenegydoctors.com" target="_blank">My Energy Doctors</a>
             </span>
           </div>
         </div>
