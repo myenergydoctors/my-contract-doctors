@@ -32,10 +32,13 @@ export default function ContactPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.detail || data?.error || "Failed");
+      }
       setSubmitted(true);
-    } catch {
-      setServerError("Something went wrong. Please try again or email us directly.");
+    } catch (err: any) {
+      setServerError(err?.message ? `Something went wrong: ${err.message}` : "Something went wrong. Please try again or email us directly.");
     } finally {
       setLoading(false);
     }

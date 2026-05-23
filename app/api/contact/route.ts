@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import sgMail from "@sendgrid/mail";
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
-
 export async function POST(req: NextRequest) {
   try {
+    const apiKey = process.env.SENDGRID_API_KEY;
+    if (!apiKey) {
+      console.error("SENDGRID_API_KEY is not set");
+      return NextResponse.json(
+        { error: "Email service is not configured. Missing SENDGRID_API_KEY." },
+        { status: 500 }
+      );
+    }
+    sgMail.setApiKey(apiKey);
+
     const { name, email, phone, message } = await req.json();
 
     if (!name || !email || !message) {
@@ -102,8 +110,21 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("SendGrid error:", error);
-    return NextResponse.json({ error: "Failed to send message" }, { status: 500 });
+  } catch (error: any) {
+    const sgBody = error?.response?.body;
+    const sgErrors = sgBody?.errors;
+    const detail =
+      (Array.isArray(sgErrors) && sgErrors.map((e: any) => e.message).join("; ")) ||
+      error?.message ||
+      "Unknown error";
+    console.error("SendGrid error:", {
+      message: error?.message,
+      code: error?.code,
+      responseBody: sgBody,
+    });
+    return NextResponse.json(
+      { error: "Failed to send message", detail },
+      { status: 500 }
+    );
   }
 }
