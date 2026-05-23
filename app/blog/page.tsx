@@ -99,7 +99,7 @@ export default function BlogIndex(){
           <div style={{marginBottom:56}}>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:C.gray500,marginBottom:16}}>Featured article</div>
             <a href={`/blog/${featured.slug}`} style={{textDecoration:"none",display:"block"}}>
-              <div style={{background:C.navy,borderRadius:18,overflow:"hidden",display:"grid",gridTemplateColumns:"1fr 1fr",transition:"transform 0.2s"}}
+              <div className="grid grid-cols-1 md:grid-cols-2 overflow-hidden transition-transform" style={{background:C.navy,borderRadius:18}}
                 onMouseEnter={e=>(e.currentTarget as HTMLElement).style.transform="translateY(-3px)"}
                 onMouseLeave={e=>(e.currentTarget as HTMLElement).style.transform="translateY(0)"}>
                 <div style={{padding:"48px"}}>
@@ -125,7 +125,7 @@ export default function BlogIndex(){
 
         {/* Post grid */}
         {rest.length>0?(
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:24}}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {rest.map(post=><PostCard key={post.slug} post={post}/>)}
           </div>
         ):(

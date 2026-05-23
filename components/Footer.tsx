@@ -44,14 +44,14 @@ export default function Footer() {
         .footer-link:hover { color: #fff; }
       `}</style>
 
-      <footer style={{ background: "#081E38", padding: "48px 32px 28px" }}>
+      <footer className="px-5 md:px-8 pt-12 pb-7" style={{ background: "#081E38" }}>
         <div style={{ maxWidth: 1180, margin: "0 auto" }}>
 
           {/* Top grid */}
-          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-10 md:gap-12 mb-12">
 
             {/* Brand */}
-            <div>
+            <div className="sm:col-span-2 lg:col-span-1">
               <div style={{ marginBottom: 14 }}>
                 <span style={{ display: "block", fontFamily: "'DM Sans', sans-serif", fontSize: 9, fontWeight: 600, letterSpacing: "0.22em", textTransform: "uppercase", color: "#6AAEE0" }}>My</span>
                 <div>
@@ -80,7 +80,7 @@ export default function Footer() {
           </div>
 
           {/* Bottom bar */}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div className="pt-6 flex flex-col sm:flex-row justify-between sm:items-center gap-3" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: "rgba(255,255,255,0.3)" }}>
               © 2026 My Contract Doctors | <a href="https://hermosa.design" target="_blank">Website by Hermosa Design</a>
             </span>

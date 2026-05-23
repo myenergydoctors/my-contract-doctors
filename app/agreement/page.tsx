@@ -106,7 +106,7 @@ function LandingPage({onStart}){
       <section style={{background:`linear-gradient(160deg,${C.navyDark} 0%,${C.navy} 60%,#153D6B 100%)`,padding:"140px 32px 100px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:`linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)`,backgroundSize:"48px 48px"}}/>
         <div style={{position:"absolute",top:"15%",right:"8%",width:440,height:440,borderRadius:"50%",background:`radial-gradient(circle,rgba(61,128,200,0.15) 0%,transparent 70%)`,pointerEvents:"none"}}/>
-        <div style={{maxWidth:1100,margin:"0 auto",display:"grid",gridTemplateColumns:"1fr 1fr",gap:80,alignItems:"center",position:"relative",zIndex:2}}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center relative z-[2]" style={{maxWidth:1100,margin:"0 auto"}}>
           <div>
             <Tag variant="blue">Personalized contract analysis</Tag>
             <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(34px,4.5vw,54px)",color:"#fff",lineHeight:1.1,margin:"18px 0 20px"}}>
@@ -209,7 +209,7 @@ function LandingPage({onStart}){
             <Eyebrow color={C.teal}>How it works</Eyebrow>
             <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,3.5vw,38px)",color:C.navy,lineHeight:1.15}}>From upload to full analysis in minutes</h2>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:20}}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {steps.map(({n,title,body})=>(
               <div key={n} style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:14,padding:"28px 22px",position:"relative",overflow:"hidden"}}>
                 <div style={{fontFamily:"'DM Serif Display',serif",fontSize:64,fontStyle:"italic",color:C.blue,opacity:0.08,position:"absolute",top:-8,right:12,lineHeight:1,userSelect:"none"}}>{n}</div>
@@ -230,7 +230,7 @@ function LandingPage({onStart}){
             <Eyebrow>What you receive</Eyebrow>
             <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(26px,3.5vw,38px)",color:C.navy,lineHeight:1.15}}>Your complete contract analysis package</h2>
           </div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginBottom:48}}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
             {[
               {icon:"🏆",title:"Contract health scorecard",body:"An overall score plus a clause-by-clause risk rating — High, Medium, Low — so you know exactly what needs attention."},
               {icon:"📄",title:"Downloadable PDF report",body:"A formatted report with all findings, recommendations, and negotiation scripts you can reference any time."},
@@ -331,8 +331,8 @@ function StepUpload({onNext}){
       {method==="qr"&&(
         <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:18,overflow:"hidden",marginBottom:20}}>
           {!mobileLinked?(
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr"}}>
-              <div style={{padding:"32px",borderRight:`1px solid ${C.gray200}`}}>
+            <div className="grid grid-cols-1 md:grid-cols-2">
+              <div className="p-8 border-b md:border-b-0 md:border-r" style={{borderColor:C.gray200}}>
                 <Eyebrow color={C.teal}>Step 1</Eyebrow>
                 <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:C.navy,marginBottom:10,lineHeight:1.2}}>Scan this QR code with your phone</div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,lineHeight:1.7,marginBottom:20}}>Opens a mobile page where you can photograph your paper agreement and send it directly to this session.</div>
@@ -466,7 +466,7 @@ function StepContact({onNext,onBack}){
         <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:34,color:C.navy,margin:"14px 0 8px"}}>Tell us about your business</h2>
         <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,lineHeight:1.7}}>We use this to personalize your analysis and benchmark your contract against others in your area.</p>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[18px] mb-[18px]">
         {[{k:"name",l:"Full name *",p:"Jane Smith",t:"text"},{k:"business",l:"Business name *",p:"Acme Restaurant Group",t:"text"},{k:"email",l:"Email address *",p:"jane@acme.com",t:"email"},{k:"phone",l:"Phone number",p:"(555) 000-0000",t:"tel"}].map(({k,l,p,t})=>(
           <div key={k}><label style={lSt}>{l}</label><input style={iSt} type={t} placeholder={p} value={form[k]} onChange={set(k)} onFocus={fo} onBlur={bl}/></div>
         ))}
@@ -692,11 +692,11 @@ function StepResults({result,contact}){
       </div>
 
       {view==="scorecard"&&(
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22}}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-[22px]">
           <div style={{gridColumn:"1/-1"}}>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.14em",textTransform:"uppercase",color:C.teal,marginBottom:12}}>Priority actions</div>
             <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:14,padding:"20px 24px"}}>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(result.topActions||[]).map((action,i)=>(
                   <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start",padding:"12px 14px",background:i===0?C.redLight:i===1?C.amberLight:C.offWhite,borderRadius:10,border:`1px solid ${i===0?"rgba(220,38,38,0.2)":i===1?"rgba(217,119,6,0.2)":C.gray200}`}}>
                     <div style={{width:22,height:22,borderRadius:"50%",background:i===0?C.red:i===1?C.amber:C.blue,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:700,color:"#fff"}}>{i+1}</div>
@@ -735,8 +735,8 @@ function StepResults({result,contact}){
       )}
 
       {view==="viewer"&&(
-        <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:16,overflow:"hidden",display:"grid",gridTemplateColumns:"240px 1fr 1fr",minHeight:600}}>
-          <div style={{borderRight:`1px solid ${C.gray200}`,overflowY:"auto"}}>
+        <div className="grid grid-cols-1 lg:[grid-template-columns:240px_1fr_1fr] overflow-hidden" style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:16,minHeight:600}}>
+          <div className="lg:border-r border-b lg:border-b-0 overflow-y-auto" style={{borderColor:C.gray200}}>
             <div style={{padding:"14px 16px 10px",borderBottom:`1px solid ${C.gray100}`}}>
               <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.gray500}}>Clauses</div>
             </div>
@@ -754,7 +754,7 @@ function StepResults({result,contact}){
               );
             })}
           </div>
-          <div style={{borderRight:`1px solid ${C.gray200}`,overflowY:"auto",padding:"22px"}}>
+          <div className="lg:border-r border-b lg:border-b-0 overflow-y-auto p-[22px]" style={{borderColor:C.gray200}}>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:C.gray500,marginBottom:14}}>Your contract language</div>
             {(result.clauses||[]).map(clause=>{
               const isActive=clause.id===activeId;
@@ -804,7 +804,7 @@ function StepResults({result,contact}){
         </div>
       )}
 
-      <div style={{marginTop:28,background:`linear-gradient(135deg,${C.offWhite},${C.bluePale})`,border:`1px solid ${C.gray200}`,borderRadius:16,padding:"28px 32px",display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"center"}}>
+      <div className="mt-7 p-6 md:p-8 grid grid-cols-1 md:[grid-template-columns:1fr_auto] gap-6 md:items-center" style={{background:`linear-gradient(135deg,${C.offWhite},${C.bluePale})`,border:`1px solid ${C.gray200}`,borderRadius:16}}>
         <div>
           <Tag variant="teal">Next step — The Invoice</Tag>
           <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:C.navy,margin:"10px 0 8px"}}>Now see exactly what you're overpaying on every line item.</h3>

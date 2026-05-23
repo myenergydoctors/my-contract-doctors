@@ -243,9 +243,9 @@ function StepUpload({ onNext }) {
       {method==="qr" && (
         <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:18,overflow:"hidden",marginBottom:20}}>
           {!mobileLinked ? (
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr"}}>
+            <div className="grid grid-cols-1 md:grid-cols-2">
               {/* Left — QR */}
-              <div style={{padding:"36px 32px",borderRight:`1px solid ${C.gray200}`}}>
+              <div className="p-8 md:p-9 border-b md:border-b-0 md:border-r" style={{borderColor:C.gray200}}>
                 <Eyebrow color={C.teal}>Step 1</Eyebrow>
                 <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.navy,marginBottom:10,lineHeight:1.2}}>Scan this QR code with your phone</div>
                 <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,lineHeight:1.7,marginBottom:22}}>Your camera app will open a mobile-optimized page where you can photograph your paper invoice — it'll link automatically to this session.</div>
@@ -337,7 +337,7 @@ function StepContact({ onNext, onBack }) {
         <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:34,color:C.navy,margin:"14px 0 8px"}}>Tell us about your business</h2>
         <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,lineHeight:1.7}}>We use this to personalize your analysis and send your free recommendation.</p>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:18,marginBottom:18}}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[18px] mb-[18px]">
         {[{k:"name",l:"Full name *",p:"Jane Smith",t:"text"},{k:"business",l:"Business name *",p:"Acme Restaurant Group",t:"text"},{k:"email",l:"Email address *",p:"jane@acme.com",t:"email"},{k:"phone",l:"Phone number",p:"(555) 000-0000",t:"tel"}].map(({k,l,p,t})=>(
           <div key={k}><label style={lSt}>{l}</label><input style={iSt} type={t} placeholder={p} value={form[k]} onChange={set(k)} onFocus={fo} onBlur={bl}/></div>
         ))}
@@ -495,13 +495,13 @@ function StepResults({ result, contact }) {
         </div>
       </div>
 
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:22,marginBottom:22}}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-[22px] mb-[22px]">
         {/* Free rec */}
         <div style={{gridColumn:"1 / -1"}}>
           <Eyebrow color={C.teal}>Your free recommendation</Eyebrow>
           <div style={{background:C.white,border:`2px solid ${C.teal}`,borderRadius:16,padding:28,position:"relative",overflow:"hidden"}}>
             <div style={{position:"absolute",top:0,right:0,background:C.teal,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,padding:"5px 14px",borderRadius:"0 14px 0 10px"}}>FREE</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:24,alignItems:"start"}}>
+            <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_auto] gap-6 items-start">
               <div>
                 <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.navy,marginBottom:10}}>{free?.item}</div>
                 <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.75,marginBottom:16}}>{free?.explanation}</p>
@@ -575,7 +575,7 @@ function StepResults({ result, contact }) {
             <Tag variant="teal">Unlock all savings</Tag>
             <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.navy,margin:"14px 0 10px"}}>${result.totalPotentialSaving?.toLocaleString()} is waiting</h3>
             <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.7,marginBottom:22}}>Get the full breakdown — every flagged item, exact overpayments, and step-by-step instructions to fix each one.</p>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:22}}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[22px]">
               {[{key:"onetime",label:"One-time report",price:"$29.99",sub:"Full analysis, single invoice"},{key:"sub",label:"Monthly monitoring",price:"$19.99/mo",sub:"Ongoing analysis + alerts"}].map(({key,label,price,sub})=>(
                 <div key={key} onClick={()=>setUpgradeType(key)} style={{border:`2px solid ${upgradeType===key?C.teal:C.gray200}`,background:upgradeType===key?C.tealLight:C.white,borderRadius:10,padding:"14px 12px",cursor:"pointer",transition:"all 0.2s"}}>
                   <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:C.navy,marginBottom:4}}>{label}</div>

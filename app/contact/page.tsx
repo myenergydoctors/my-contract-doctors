@@ -54,21 +54,21 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-navy-dark to-navy pt-24 pb-18 px-8 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-navy-dark to-navy px-5 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div className="max-w-2xl mx-auto text-center relative z-10" style={{ padding: "64px 0 48px" }}>
+        <div className="max-w-2xl mx-auto text-center relative z-10">
           <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">Get in touch</span>
-          <h1 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(32px,4.5vw,50px)" }}>
+          <h1 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(28px,4.5vw,50px)" }}>
             We're on your side.<br />
             <em className="italic text-blue-light">Ask us anything.</em>
           </h1>
-          <p className="font-sans font-light text-white/70 leading-relaxed text-lg">Have a question about your contract, our products, or how we can help? We'd love to hear from you.</p>
+          <p className="font-sans font-light text-white/70 leading-relaxed text-base md:text-lg">Have a question about your contract, our products, or how we can help? We'd love to hear from you.</p>
         </div>
       </section>
 
       {/* Main */}
-      <section className="px-8 py-20 bg-off-white">
-        <div className="max-w-5xl mx-auto grid gap-16" style={{ gridTemplateColumns: "1fr 1fr" }}>
+      <section className="px-5 md:px-8 py-14 md:py-20 bg-off-white">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
 
           {/* Form */}
           <div>
@@ -77,12 +77,12 @@ export default function ContactPage() {
             <p className="font-sans font-light text-gray-500 leading-relaxed text-sm mb-8">Fill out the form and one of our contract specialists will get back to you within one business day.</p>
 
             {!submitted ? (
-              <div className="bg-white border border-gray-200 rounded-2xl p-8">
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8">
                 {serverError && (
                   <div className="bg-red-light border border-red text-red font-sans text-sm rounded-lg p-3 mb-5">{serverError}</div>
                 )}
 
-                <div className="grid gap-5 mb-5" style={{ gridTemplateColumns: "1fr 1fr" }}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                   <div>
                     <label className="font-sans text-xs font-semibold text-gray-700 block mb-1.5">Full name *</label>
                     <input
@@ -187,14 +187,14 @@ export default function ContactPage() {
             </div>
 
             {/* Sister company */}
-            <div className="mt-8 rounded-2xl p-6 flex gap-4 items-center" style={{ background: "linear-gradient(135deg,#0C2D54,#153D6B)" }}>
+            <div className="mt-8 rounded-2xl p-6 flex flex-col sm:flex-row gap-4 sm:items-center" style={{ background: "linear-gradient(135deg,#0C2D54,#153D6B)" }}>
               <div className="flex-1">
                 <div className="font-sans text-[11px] font-semibold tracking-[0.1em] uppercase text-blue-light mb-1">Sister company</div>
                 <div className="font-serif text-white mb-1" style={{ fontSize: 18 }}>My Energy Doctors</div>
                 <div className="font-sans font-light text-white/60 text-sm leading-relaxed">Save 15–30% on your commercial energy bills. Same trusted team, different expertise.</div>
               </div>
               <a href="https://myenergydoctors.com" target="_blank" rel="noopener noreferrer"
-                className="font-sans text-sm font-medium text-white no-underline flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg transition-colors"
+                className="font-sans text-sm font-medium text-white no-underline flex-shrink-0 whitespace-nowrap px-4 py-2.5 rounded-lg transition-colors text-center self-start sm:self-auto"
                 style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}>
                 Visit Site →
               </a>

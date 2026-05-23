@@ -359,7 +359,7 @@ function PrePurchasePage({ onPurchase }) {
               <em style={{ fontStyle: "italic", color: C.blue }}>never read until it's too late</em>
             </h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {risks.map(({ icon, label, sub }) => (
               <div key={label} style={{ background: C.offWhite, border: `1px solid ${C.gray200}`, borderRadius: 14, padding: "24px 22px" }}>
                 <div style={{ fontSize: 26, marginBottom: 12 }}>{icon}</div>
@@ -395,9 +395,9 @@ function PrePurchasePage({ onPurchase }) {
               <Tag variant="teal">Preview mode</Tag>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", minHeight: 460 }}>
+            <div className="grid grid-cols-1 md:grid-cols-2" style={{ minHeight: 460 }}>
               {/* Left: contract */}
-              <div style={{ borderRight: `1px solid ${C.gray200}`, padding: "28px 28px 0" }}>
+              <div className="px-7 pt-7 pb-0 border-b md:border-b-0 md:border-r" style={{ borderColor: C.gray200 }}>
                 <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: C.gray500, marginBottom: 16 }}>Contract text — click any highlighted clause</div>
 
                 {/* Free teaser clause */}
@@ -448,7 +448,7 @@ function PrePurchasePage({ onPurchase }) {
           <div style={{ textAlign: "center", marginBottom: 52 }}>
             <h2 style={{ fontFamily: "'DM Serif Display',serif", fontSize: "clamp(26px,3.5vw,38px)", color: C.navy, lineHeight: 1.15 }}>Everything included for $49.99</h2>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 48 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12">
             {[
               { icon: "📄", title: "Full contract walkthrough", body: "Every clause in a standard uniform agreement explained in plain English — no legal degree required." },
               { icon: "🎯", title: "Risk ratings for every clause", body: "Each section is rated High, Medium, or Low risk so you know exactly where to focus your attention." },
@@ -619,10 +619,10 @@ function DemystifierApp() {
       </div>
 
       {/* Main split */}
-      <div style={{ display: "grid", gridTemplateColumns: "280px 1fr 1fr", flex: 1, overflow: "hidden" }}>
+      <div className="grid grid-cols-1 lg:[grid-template-columns:280px_1fr_1fr] flex-1 overflow-hidden">
 
         {/* ── Column 1: Clause index ── */}
-        <div style={{ background: C.white, borderRight: `1px solid ${C.gray200}`, overflowY: "auto" }}>
+        <div className="lg:border-r border-b lg:border-b-0 overflow-y-auto" style={{ background: C.white, borderColor: C.gray200 }}>
           <div style={{ padding: "16px 18px 8px", borderBottom: `1px solid ${C.gray100}` }}>
             <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: C.gray500 }}>Agreement clauses</div>
           </div>
@@ -653,12 +653,12 @@ function DemystifierApp() {
         </div>
 
         {/* ── Column 2: Contract text ── */}
-        <div style={{ background: "#FAFAF8", borderRight: `1px solid ${C.gray200}`, overflowY: "auto", padding: "24px" }}>
+        <div className="lg:border-r border-b lg:border-b-0 overflow-y-auto p-6" style={{ background: "#FAFAF8", borderColor: C.gray200 }}>
           <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: C.gray500, marginBottom: 16 }}>Contract language</div>
 
           {/* Contract header (always visible) */}
           <div style={{ background: C.white, border: `1px solid ${C.gray200}`, borderRadius: 10, padding: "16px 18px", marginBottom: 16, opacity: 0.7 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2.5">
               <div><div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: C.gray500 }}>VENDOR</div><div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, color: C.navy }}>Berstein-Magoon-Gay, LLC (ImageFirst)</div></div>
               <div><div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: C.gray500 }}>CUSTOMER</div><div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, color: C.navy }}>Ragged Coast Chocolates</div></div>
               <div><div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, color: C.gray500 }}>CONTRACT #</div><div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, color: C.navy }}>63-JL00212</div></div>
@@ -812,7 +812,7 @@ export default function DemystifierPage() {
                   <input value={cardNum} onChange={e => setCardNum(e.target.value.replace(/\D/g, "").slice(0, 16))} placeholder="1234 5678 9012 3456"
                     style={{ width: "100%", padding: "12px 14px", borderRadius: 8, border: `1.5px solid ${C.gray300}`, fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: C.navy, outline: "none" }} />
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 12, fontWeight: 600, color: C.gray700, marginBottom: 6, display: "block" }}>Expiry</label>
                     <input placeholder="MM / YY" style={{ width: "100%", padding: "12px 14px", borderRadius: 8, border: `1.5px solid ${C.gray300}`, fontFamily: "'DM Sans',sans-serif", fontSize: 14, color: C.navy, outline: "none" }} />

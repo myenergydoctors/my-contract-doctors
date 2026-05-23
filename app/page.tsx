@@ -99,8 +99,8 @@ function Hero() {
         pointerEvents: "none",
       }} />
 
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "120px 32px 80px", width: "100%", position: "relative", zIndex: 2 }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+      <div className="px-5 md:px-8 pt-28 md:pt-[120px] pb-16 md:pb-20" style={{ maxWidth: 1180, margin: "0 auto", width: "100%", position: "relative", zIndex: 2 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
 
           {/* Left: copy */}
           <div>
@@ -274,7 +274,7 @@ function HowItWorks() {
   ];
 
   return (
-    <section style={{ background: COLORS.offWhite, padding: "96px 32px" }}>
+    <section className="px-5 md:px-8 py-16 md:py-24" style={{ background: COLORS.offWhite }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <FadeUp>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
@@ -292,7 +292,7 @@ function HowItWorks() {
           </div>
         </FadeUp>
 
-        <div ref={ref} style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24 }}>
+        <div ref={ref} className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {steps.map(({ num, title, body, color }, i) => (
             <div key={num} style={{
               background: COLORS.white, borderRadius: 16, padding: 36,
@@ -336,12 +336,9 @@ function HowItWorks() {
 function ProductSection({ eyebrow, headline, subhead, body, cta, ctaHref, accent, reverse, badge, children }) {
   const [ref, inView] = useInView();
   return (
-    <section style={{ background: COLORS.white, padding: "96px 32px", borderTop: `1px solid ${COLORS.gray100}` }}>
+    <section className="px-5 md:px-8 py-16 md:py-24" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.gray100}` }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
-        <div ref={ref} style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center",
-          direction: reverse ? "rtl" : "ltr",
-        }}>
+        <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center" style={{ direction: reverse ? "rtl" : "ltr" }}>
           <div style={{ direction: "ltr" }}>
             <div style={{
               opacity: inView ? 1 : 0, transform: inView ? "translateY(0)" : "translateY(24px)",
@@ -464,8 +461,8 @@ function DemystifierCard() {
       <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: COLORS.blueLight }}>Contract Demystifier</div>
       </div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-        <div style={{ borderRight: "1px solid rgba(255,255,255,0.08)", padding: 20 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2">
+        <div className="p-5 border-b sm:border-b-0 sm:border-r border-white/10">
           <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 14 }}>Agreement terms</div>
           {terms.map(({ term, risk }, i) => (
             <div key={i}
@@ -562,9 +559,8 @@ function AgreementCard() {
 function CTABand() {
   const [ref, inView] = useInView();
   return (
-    <section style={{
+    <section className="px-5 md:px-8 py-16 md:py-24 relative overflow-hidden" style={{
       background: `linear-gradient(135deg, ${COLORS.navy} 0%, #153D6B 100%)`,
-      padding: "96px 32px", position: "relative", overflow: "hidden",
     }}>
       <div style={{
         position: "absolute", top: "-30%", right: "-5%", width: 500, height: 500,
