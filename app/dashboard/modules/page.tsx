@@ -46,12 +46,12 @@ const modules: Module[] = [
   {
     id: "marketing",
     name: "Marketing Services",
-    description: "Web design, branding, and digital marketing for small businesses ready to look like the leaders they're becoming. Our sister agency builds sites that do the selling for you.",
+    description: "Web design, app design, digital marketing, analytics, and social — all from a Maine-based agency serving retail, wholesale, B2B, and service businesses ready to grow online.",
     status: "available",
     sister: true,
     icon: "✦",
     accent: "from-blue-light to-navy",
-    url: "https://oscwebdesign.com",
+    url: "https://oscwebdesign.biz",
     cta: "Visit OSC Web Design →",
   },
   {

@@ -30,7 +30,7 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    price: "$49",
+    price: "$29",
     cadence: "per month",
     description: "For businesses serious about controlling their service spend.",
     features: [
@@ -121,10 +121,10 @@ export default function BillingPage() {
         <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Billing history</div>
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
           {[
-            { date: "Apr 14, 2026", desc: "Pro plan — monthly", amount: "$49.00", status: "Paid" },
-            { date: "Mar 14, 2026", desc: "Pro plan — monthly", amount: "$49.00", status: "Paid" },
-            { date: "Feb 14, 2026", desc: "Pro plan — monthly", amount: "$49.00", status: "Paid" },
-            { date: "Jan 14, 2026", desc: "Pro plan — monthly", amount: "$49.00", status: "Paid" },
+            { date: "Apr 14, 2026", desc: "Pro plan — monthly", amount: "$29.00", status: "Paid" },
+            { date: "Mar 14, 2026", desc: "Pro plan — monthly", amount: "$29.00", status: "Paid" },
+            { date: "Feb 14, 2026", desc: "Pro plan — monthly", amount: "$29.00", status: "Paid" },
+            { date: "Jan 14, 2026", desc: "Pro plan — monthly", amount: "$29.00", status: "Paid" },
           ].map((row, i) => (
             <div key={i} className="flex justify-between items-center px-5 py-3 border-b last:border-b-0 border-gray-100">
               <div>
