@@ -71,7 +71,7 @@ export default function FreeGuidePage() {
                         onChange={e => setEmail(e.target.value)}
                         placeholder="you@yourbusiness.com"
                         required
-                        className="w-full font-sans text-sm text-navy rounded-lg px-3.5 py-3 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors"
+                        className="w-full font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-3 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors placeholder:text-gray-400"
                       />
                     </div>
                     <div>
@@ -82,7 +82,7 @@ export default function FreeGuidePage() {
                         onChange={e => setBusiness(e.target.value)}
                         placeholder="Acme Restaurant Group"
                         required
-                        className="w-full font-sans text-sm text-navy rounded-lg px-3.5 py-3 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors"
+                        className="w-full font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-3 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors placeholder:text-gray-400"
                       />
                     </div>
                     <button

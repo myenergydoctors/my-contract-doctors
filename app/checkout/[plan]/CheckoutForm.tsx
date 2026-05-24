@@ -139,7 +139,7 @@ function Field({ label, defaultValue, placeholder, type = "text", required }: { 
         defaultValue={defaultValue}
         placeholder={placeholder}
         required={required}
-        className="w-full font-sans text-sm text-navy rounded-lg px-3.5 py-2.5 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors"
+        className="w-full font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-2.5 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors placeholder:text-gray-400"
       />
     </div>
   );

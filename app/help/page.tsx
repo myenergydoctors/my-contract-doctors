@@ -103,7 +103,7 @@ export default function HelpPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search the help center…"
-              className="w-full font-sans text-base text-navy rounded-xl px-5 py-4 outline-none shadow-xl"
+              className="w-full font-sans text-base text-navy bg-white rounded-xl px-5 py-4 outline-none shadow-xl placeholder:text-gray-400"
             />
             <span className="absolute right-5 top-1/2 -translate-y-1/2 font-sans text-sm text-gray-400">⌕</span>
           </div>

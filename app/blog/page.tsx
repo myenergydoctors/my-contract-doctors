@@ -141,7 +141,7 @@ export default function BlogIndex(){
           <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:"#fff",marginBottom:10}}>Get contract tips in your inbox</h3>
           <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:"rgba(255,255,255,0.6)",marginBottom:28,maxWidth:460,margin:"0 auto 28px"}}>New articles, negotiation scripts, and savings tips — delivered monthly. No spam.</p>
           <div style={{display:"flex",gap:10,justifyContent:"center",maxWidth:420,margin:"0 auto"}}>
-            <input type="email" placeholder="your@email.com" style={{flex:1,padding:"13px 16px",borderRadius:8,border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.navy,outline:"none"}}/>
+            <input type="email" placeholder="your@email.com" style={{flex:1,padding:"13px 16px",borderRadius:8,border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.navy,background:"#fff",outline:"none"}}/>
             <button style={{background:C.teal,color:"#fff",border:"none",borderRadius:8,padding:"13px 22px",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,cursor:"pointer",whiteSpace:"nowrap"}}>Subscribe</button>
           </div>
         </div>
