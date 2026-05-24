@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const links = [
   { label: "Demystifier",   href: "/demystifier" },
@@ -11,8 +12,11 @@ const links = [
 ];
 
 export default function Nav() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+
+  if (pathname?.startsWith("/dashboard") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -56,6 +60,12 @@ export default function Nav() {
               {label}
             </Link>
           ))}
+          <Link
+            href="/sign-in"
+            className="font-sans text-sm font-medium text-white/80 hover:text-white no-underline transition-colors"
+          >
+            Sign in
+          </Link>
           <Link
             href="/invoice"
             className="font-sans text-sm font-medium bg-teal text-white px-6 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity"
@@ -101,6 +111,13 @@ export default function Nav() {
               {label}
             </Link>
           ))}
+          <Link
+            href="/sign-in"
+            onClick={() => setOpen(false)}
+            className="font-sans text-base font-medium text-white/85 hover:text-white no-underline px-2 py-3 rounded-lg hover:bg-white/5 transition-colors"
+          >
+            Sign in
+          </Link>
           <Link
             href="/invoice"
             onClick={() => setOpen(false)}

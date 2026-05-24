@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 const columns = [
   {
@@ -30,6 +31,9 @@ const columns = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/dashboard") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
+
   return (
     <footer className="px-6 md:px-8 pt-12 pb-7" style={{ background: "#081E38" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
