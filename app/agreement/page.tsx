@@ -121,7 +121,7 @@ function LandingPage({onStart}){
               <a href="#compare" style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(255,255,255,0.1)",color:"#fff",border:"1px solid rgba(255,255,255,0.2)",fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:500,padding:"15px 28px",borderRadius:9,textDecoration:"none"}}>See what's included ↓</a>
             </div>
             <div style={{display:"flex",gap:24,flexWrap:"wrap"}}>
-              {[{val:"2 min",label:"to upload & get results"},{val:"$XX",label:"one-time · no subscription"},{val:"100%",label:"personalized to your contract"}].map(({val,label})=>(
+              {[{val:"2 min",label:"to upload & get results"},{val:"$49",label:"one-time · no subscription"},{val:"100%",label:"personalized to your contract"}].map(({val,label})=>(
                 <div key={val}>
                   <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:"#fff",lineHeight:1}}>{val}</div>
                   <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.5)",marginTop:3,maxWidth:120}}>{label}</div>

@@ -10,14 +10,25 @@ const columns = [
       { label: "The Invoice",     href: "/invoice" },
       { label: "The Agreement",   href: "/agreement" },
       { label: "The Demystifier", href: "/demystifier" },
+      { label: "Pricing",         href: "/pricing" },
+    ],
+  },
+  {
+    heading: "Solutions",
+    links: [
+      { label: "Industries",   href: "/industries" },
+      { label: "Customers",    href: "/customers" },
+      { label: "Free guide",   href: "/free-guide" },
+      { label: "Help center",  href: "/help" },
     ],
   },
   {
     heading: "Company",
     links: [
+      { label: "About",             href: "/about" },
       { label: "Blog",              href: "/blog" },
       { label: "Contact",           href: "/contact" },
-      { label: "My Energy Doctors", href: "https://myenergydoctors.com" },
+      { label: "Sister sites",      href: "/about#sisters" },
     ],
   },
   {
@@ -32,14 +43,14 @@ const columns = [
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/dashboard") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
 
   return (
     <footer className="px-6 md:px-8 pt-12 pb-7" style={{ background: "#081E38" }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
 
         {/* Desktop: 4-col grid. Mobile: brand only, link columns rendered as accordions below. */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-12 mb-10 lg:mb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr_1fr_1fr_1fr] gap-10 lg:gap-8 mb-10 lg:mb-12">
 
           {/* Brand */}
           <div className="text-center lg:text-left">

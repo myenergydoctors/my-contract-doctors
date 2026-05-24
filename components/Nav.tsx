@@ -7,8 +7,9 @@ const links = [
   { label: "Demystifier",   href: "/demystifier" },
   { label: "The Agreement", href: "/agreement" },
   { label: "The Invoice",   href: "/invoice" },
+  { label: "Pricing",       href: "/pricing" },
+  { label: "Customers",     href: "/customers" },
   { label: "Blog",          href: "/blog" },
-  { label: "Contact",       href: "/contact" },
 ];
 
 export default function Nav() {
@@ -16,7 +17,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  if (pathname?.startsWith("/dashboard") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);

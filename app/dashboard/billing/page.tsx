@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { mockUser } from "@/lib/mock-data";
 
 const plans = [
@@ -100,18 +101,29 @@ export default function BillingPage() {
                 </li>
               ))}
             </ul>
-            <button
-              disabled={mockUser.plan === plan.id}
-              className={`font-sans text-sm font-medium px-5 py-3 rounded-lg cursor-pointer transition-all ${
-                mockUser.plan === plan.id
-                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  : plan.highlighted
-                  ? "bg-teal text-white hover:opacity-90"
-                  : "bg-navy text-white hover:opacity-90"
-              }`}
-            >
-              {mockUser.plan === plan.id ? "Current plan" : `Switch to ${plan.name}`}
-            </button>
+            {mockUser.plan === plan.id ? (
+              <button
+                disabled
+                className="font-sans text-sm font-medium px-5 py-3 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+              >
+                Current plan
+              </button>
+            ) : plan.id === "free" ? (
+              <button
+                className="font-sans text-sm font-medium px-5 py-3 rounded-lg bg-navy text-white hover:opacity-90 transition-opacity cursor-pointer"
+              >
+                Downgrade to Free
+              </button>
+            ) : (
+              <Link
+                href={`/checkout/${plan.id}`}
+                className={`font-sans text-sm font-medium px-5 py-3 rounded-lg text-center no-underline transition-opacity hover:opacity-90 ${
+                  plan.highlighted ? "bg-teal text-white" : "bg-navy text-white"
+                }`}
+              >
+                Switch to {plan.name}
+              </Link>
+            )}
           </div>
         ))}
       </div>

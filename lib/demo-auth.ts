@@ -33,3 +33,11 @@ export function isSignedIn(): boolean {
   if (typeof window === "undefined") return false;
   return window.localStorage.getItem(STORAGE_KEY) === "1";
 }
+
+// For onboarding / preview flows that should land the user inside the demo
+// dashboard without entering credentials.
+export function setDemoSession() {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(STORAGE_KEY, "1");
+  }
+}

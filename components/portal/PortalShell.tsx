@@ -6,13 +6,14 @@ import { mockUser } from "@/lib/mock-data";
 import { isSignedIn, signOut } from "@/lib/demo-auth";
 
 const nav = [
-  { label: "Overview",   href: "/dashboard",            icon: "▦" },
-  { label: "Invoices",   href: "/dashboard/invoices",   icon: "▤" },
-  { label: "Agreements", href: "/dashboard/agreements", icon: "▥" },
-  { label: "Insights",   href: "/dashboard/insights",   icon: "◬", badge: "Pro" },
-  { label: "Modules",    href: "/dashboard/modules",    icon: "◫" },
-  { label: "Billing",    href: "/dashboard/billing",    icon: "◉" },
-  { label: "Settings",   href: "/dashboard/settings",   icon: "◐" },
+  { label: "Overview",      href: "/dashboard",               icon: "▦" },
+  { label: "Notifications", href: "/dashboard/notifications", icon: "◔", badge: "2" },
+  { label: "Invoices",      href: "/dashboard/invoices",      icon: "▤" },
+  { label: "Agreements",    href: "/dashboard/agreements",    icon: "▥" },
+  { label: "Insights",      href: "/dashboard/insights",      icon: "◬", badge: "Pro" },
+  { label: "Modules",       href: "/dashboard/modules",       icon: "◫" },
+  { label: "Billing",       href: "/dashboard/billing",       icon: "◉" },
+  { label: "Settings",      href: "/dashboard/settings",      icon: "◐" },
 ];
 
 export default function PortalShell({ children }: { children: React.ReactNode }) {
