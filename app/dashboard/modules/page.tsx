@@ -1,6 +1,18 @@
 import Link from "next/link";
 
-const modules = [
+type Module = {
+  id: string;
+  name: string;
+  description: string;
+  status: "active" | "available" | "coming-soon";
+  sister?: boolean;
+  icon: string;
+  accent: string;
+  url?: string;       // external link for "available" modules
+  cta?: string;       // button label for "available" modules
+};
+
+const modules: Module[] = [
   {
     id: "uniform",
     name: "Uniform & Linen Contracts",
@@ -17,6 +29,30 @@ const modules = [
     sister: true,
     icon: "◬",
     accent: "from-amber-500 to-red",
+    url: "https://myenergydoctors.com",
+    cta: "Visit My Energy Doctors →",
+  },
+  {
+    id: "fleet-fuel",
+    name: "Fleet Fueling Services",
+    description: "Fleet fuel cards with nationwide discounts, online tracking, and security controls. No card or annual fees on the small-business option — backed by 60+ years of combined fuel-industry experience.",
+    status: "available",
+    sister: true,
+    icon: "⬢",
+    accent: "from-amber-600 to-amber-800",
+    url: "https://360fuelcard.com",
+    cta: "Visit 360 Fuel Card →",
+  },
+  {
+    id: "marketing",
+    name: "Marketing Services",
+    description: "Web design, branding, and digital marketing for small businesses ready to look like the leaders they're becoming. Our sister agency builds sites that do the selling for you.",
+    status: "available",
+    sister: true,
+    icon: "✦",
+    accent: "from-blue-light to-navy",
+    url: "https://oscwebdesign.com",
+    cta: "Visit OSC Web Design →",
   },
   {
     id: "telecom",
@@ -50,6 +86,14 @@ const modules = [
     icon: "▥",
     accent: "from-red to-amber-600",
   },
+  {
+    id: "shipping",
+    name: "Shipping & Logistics",
+    description: "Audit your FedEx, UPS, and freight invoices for late-delivery refunds, dimensional weight games, and accessorial surcharges most businesses never claim back.",
+    status: "coming-soon",
+    icon: "▰",
+    accent: "from-gray-500 to-navy-dark",
+  },
 ];
 
 export default function ModulesPage() {
@@ -80,9 +124,9 @@ export default function ModulesPage() {
                   Open module
                 </Link>
               )}
-              {m.status === "available" && (
-                <a href="https://myenergydoctors.com" target="_blank" rel="noopener noreferrer" className="font-sans text-sm font-medium bg-teal text-white px-4 py-2.5 rounded-lg no-underline text-center hover:opacity-90 transition-opacity">
-                  Visit My Energy Doctors →
+              {m.status === "available" && m.url && (
+                <a href={m.url} target="_blank" rel="noopener noreferrer" className="font-sans text-sm font-medium bg-teal text-white px-4 py-2.5 rounded-lg no-underline text-center hover:opacity-90 transition-opacity">
+                  {m.cta || "Visit site →"}
                 </a>
               )}
               {m.status === "coming-soon" && (
