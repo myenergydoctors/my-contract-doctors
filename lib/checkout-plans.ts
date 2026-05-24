@@ -28,6 +28,21 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
     ],
     postPurchaseRedirect: "/dashboard",
   },
+  "pro-annual": {
+    id: "pro-annual",
+    name: "Pro plan — annual",
+    price: "$348.00",
+    priceCents: 34800,
+    cadence: "billed yearly · pay upfront and save",
+    description: "Everything in Pro, billed once a year instead of monthly. Eligible for one-time discount codes from our chat assistant.",
+    features: [
+      "Everything in Pro monthly",
+      "Pay $348 once instead of 12 × $29",
+      "Best price for the year",
+      "Eligible for chat assistant discount codes",
+    ],
+    postPurchaseRedirect: "/dashboard",
+  },
   agreement: {
     id: "agreement",
     name: "Agreement analysis",

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import ChatWidget from "@/components/chat/ChatWidget";
 
 export const metadata: Metadata = {
   title: "My Contract Doctors | Demystify Your Uniform Contract",
@@ -19,6 +20,7 @@ export default function RootLayout({
         <Nav />
         {children}
         <Footer />
+        <ChatWidget />
       </body>
     </html>
   );

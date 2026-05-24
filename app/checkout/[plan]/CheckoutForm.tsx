@@ -3,14 +3,37 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
+import { validateDiscount, redeemDiscount, type DiscountCode } from "@/lib/discount-codes";
 
 export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [codeInput, setCodeInput] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [codeError, setCodeError] = useState("");
+
+  const subtotalCents = plan.priceCents;
+  const discountCents = appliedDiscount ? Math.round(subtotalCents * appliedDiscount.discountPct) : 0;
+  const totalCents = subtotalCents - discountCents;
+
+  const fmt = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const applyCode = () => {
+    setCodeError("");
+    const result = validateDiscount(codeInput, plan.id);
+    if (!result.ok) {
+      setCodeError(result.reason);
+      setAppliedDiscount(null);
+      return;
+    }
+    setAppliedDiscount(result.discount);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    // Mark the discount redeemed BEFORE redirecting so success page reflects it
+    if (appliedDiscount) redeemDiscount(appliedDiscount.code);
     // Simulate processing — replace with Stripe in Phase 2
     setTimeout(() => {
       router.push(`/checkout/success?plan=${plan.id}`);
@@ -80,12 +103,51 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
               </div>
             </div>
 
+            {/* Discount code */}
+            <div className="bg-white border border-gray-200 rounded-2xl p-5">
+              <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Discount code</div>
+              {appliedDiscount ? (
+                <div className="flex justify-between items-center bg-teal-light border border-teal/30 rounded-lg p-3">
+                  <div>
+                    <div className="font-sans text-sm font-medium text-navy">{appliedDiscount.code}</div>
+                    <div className="font-sans text-xs text-teal">{Math.round(appliedDiscount.discountPct * 100)}% off applied</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setAppliedDiscount(null); setCodeInput(""); }}
+                    className="font-sans text-xs text-gray-500 hover:text-red bg-transparent border-none cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={codeInput}
+                    onChange={e => setCodeInput(e.target.value.toUpperCase())}
+                    placeholder="MCD-PRO-XXXXX"
+                    className="flex-1 font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-2.5 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors placeholder:text-gray-400 uppercase tracking-wider"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyCode}
+                    disabled={!codeInput.trim()}
+                    className="font-sans text-sm font-medium bg-navy text-white px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
+                  >
+                    Apply
+                  </button>
+                </div>
+              )}
+              {codeError && <p className="font-sans text-xs text-red mt-2">{codeError}</p>}
+            </div>
+
             <button
               type="submit"
               disabled={loading}
               className="font-sans text-base font-medium bg-teal text-white py-4 rounded-lg hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "Processing…" : `Pay ${plan.price}`}
+              {loading ? "Processing…" : `Pay ${fmt(totalCents)}`}
             </button>
 
             <p className="font-sans text-xs text-gray-500 text-center">
@@ -112,15 +174,21 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
 
             <div className="flex justify-between items-baseline mb-2">
               <span className="font-sans text-sm text-gray-500">Subtotal</span>
-              <span className="font-sans text-navy">{plan.price}</span>
+              <span className="font-sans text-navy">{fmt(subtotalCents)}</span>
             </div>
+            {appliedDiscount && (
+              <div className="flex justify-between items-baseline mb-2">
+                <span className="font-sans text-sm text-teal">Discount ({appliedDiscount.code})</span>
+                <span className="font-sans text-teal">− {fmt(discountCents)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-baseline mb-4 pb-4 border-b border-gray-200">
               <span className="font-sans text-sm text-gray-500">Tax</span>
               <span className="font-sans text-gray-500">Calculated at next step</span>
             </div>
             <div className="flex justify-between items-baseline mb-1">
               <span className="font-serif text-navy text-lg">Total</span>
-              <span className="font-serif text-navy text-2xl">{plan.price}</span>
+              <span className="font-serif text-navy text-2xl">{fmt(totalCents)}</span>
             </div>
             <div className="font-sans text-xs text-gray-500 text-right">{plan.cadence}</div>
           </div>
