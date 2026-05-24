@@ -779,7 +779,7 @@ export default function DemystifierPage() {
   if (purchased) {
     return (
       <>
-        <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} body{background:${C.offWhite};} @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
+        <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;} body{background:${C.offWhite};} @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
         <DemystifierApp />
       </>
     );
@@ -787,7 +787,7 @@ export default function DemystifierPage() {
 
   return (
     <>
-      <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} html{scroll-behavior:smooth;} body{background:${C.offWhite};} @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;} html{scroll-behavior:smooth;} body{background:${C.offWhite};} @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}} @keyframes spin{to{transform:rotate(360deg)}}`}</style>
       
       <PrePurchasePage onPurchase={() => setShowPayment(true)} />
 

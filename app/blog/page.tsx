@@ -61,7 +61,7 @@ export default function BlogIndex(){
 
   return(
     <>
-      <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;} body{background:${C.offWhite};} input::placeholder{color:${C.gray300};}`}</style>
+      <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;} body{background:${C.offWhite};} input::placeholder{color:${C.gray300};}`}</style>
 
       {/* Header */}
       <section style={{background:`linear-gradient(160deg,${C.navyDark},${C.navy})`,padding:"100px 32px 72px",position:"relative",overflow:"hidden"}}>

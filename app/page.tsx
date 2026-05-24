@@ -703,18 +703,10 @@ function EmailPopup() {
 export default function App() {
   return (
     <>
-      <style>{`
-        ${fonts}
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        html { scroll-behavior: smooth; }
-        body { background: #F7F9FC; }
-        @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
-        @keyframes slideUp { from { opacity:0; transform:translateY(28px) } to { opacity:1; transform:translateY(0) } }
-        @keyframes popIn  { from { opacity:0; transform:scale(0.92) } to { opacity:1; transform:scale(1) } }
-        @media (max-width: 768px) {
-          .nav-links { display: none !important; }
-        }
-      `}</style>
+      {/* Page-local styles. Global resets (box-sizing, body bg, keyframes,
+          font import) all live in app/globals.css — do NOT duplicate them
+          here, especially anything with `* { margin: 0 }` which breaks
+          Tailwind's `mx-auto` utility. */}
       <Hero />
       <HowItWorks />
       <ProductSection

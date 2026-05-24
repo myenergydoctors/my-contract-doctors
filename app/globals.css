@@ -30,11 +30,13 @@
   --font-sans:  'DM Sans', sans-serif;
 }
 
-/* Base styles */
+/* Base styles
+   NOTE: Do NOT add `margin: 0` to the universal selector — it overrides
+   Tailwind's `mx-auto` utility (margin-inline: auto) and breaks all centered
+   containers site-wide. Tailwind v4's preflight already handles default
+   margins on headings, paragraphs, body, lists, etc. */
 *, *::before, *::after {
   box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 html {

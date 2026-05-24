@@ -604,7 +604,7 @@ export default function InvoicePage() {
     <>
       <style>{`
         ${FONTS}
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        *,*::before,*::after{box-sizing:border-box;}
         body{background:${C.offWhite};}
         @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(61,128,200,0.35)}50%{box-shadow:0 0 0 18px rgba(61,128,200,0)}}
         @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}

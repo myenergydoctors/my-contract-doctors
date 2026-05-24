@@ -91,7 +91,7 @@ export default function BlogPostPage(){
 
   return(
     <>
-      <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}`}</style>
+      <style>{`${FONTS} *,*::before,*::after{box-sizing:border-box;}`}</style>
 
       {/* Article header */}
       <section style={{background:`linear-gradient(160deg,${C.navyDark},${C.navy})`,padding:"100px 32px 72px",position:"relative",overflow:"hidden"}}>

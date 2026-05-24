@@ -869,7 +869,7 @@ export default function AgreementPage(){
     <>
       <style>{`
         ${FONTS}
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+        *,*::before,*::after{box-sizing:border-box;}
         html{scroll-behavior:smooth;}
         body{background:${C.offWhite};}
         @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(61,128,200,0.35)}50%{box-shadow:0 0 0 18px rgba(61,128,200,0)}}
