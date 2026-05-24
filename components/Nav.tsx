@@ -28,7 +28,7 @@ export default function Nav() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-[100] px-5 md:px-12 border-b border-white/10 transition-all duration-300"
+      className="fixed top-0 left-0 right-0 z-[100] px-6 md:px-12 border-b border-white/10 transition-all duration-300"
       style={{
         background: scrolled ? "rgba(12,45,84,0.97)" : "#0C2D54",
         backdropFilter: scrolled ? "blur(12px)" : "none",

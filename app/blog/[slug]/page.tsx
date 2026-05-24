@@ -115,7 +115,7 @@ export default function BlogPostPage(){
       </section>
 
       {/* Body + sidebar */}
-      <section className="px-5 md:px-8 py-14 md:py-20 grid grid-cols-1 lg:[grid-template-columns:1fr_320px] gap-12 lg:gap-16 items-start" style={{maxWidth:1100,margin:"0 auto"}}>
+      <section className="px-6 md:px-8 py-14 md:py-20 grid grid-cols-1 lg:[grid-template-columns:1fr_320px] gap-12 lg:gap-16 items-start" style={{maxWidth:1100,margin:"0 auto"}}>
 
         {/* Article body */}
         <article>

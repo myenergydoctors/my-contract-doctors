@@ -99,7 +99,7 @@ function Hero() {
         pointerEvents: "none",
       }} />
 
-      <div className="px-5 md:px-8 pt-28 md:pt-[120px] pb-16 md:pb-20" style={{ maxWidth: 1180, margin: "0 auto", width: "100%", position: "relative", zIndex: 2 }}>
+      <div className="px-6 md:px-8 pt-28 md:pt-[120px] pb-16 md:pb-20" style={{ maxWidth: 1180, margin: "0 auto", width: "100%", position: "relative", zIndex: 2 }}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
 
           {/* Left: copy */}
@@ -274,7 +274,7 @@ function HowItWorks() {
   ];
 
   return (
-    <section className="px-5 md:px-8 py-16 md:py-24" style={{ background: COLORS.offWhite }}>
+    <section className="px-6 md:px-8 py-20 md:py-28" style={{ background: COLORS.offWhite }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <FadeUp>
           <div style={{ textAlign: "center", marginBottom: 64 }}>
@@ -292,10 +292,14 @@ function HowItWorks() {
           </div>
         </FadeUp>
 
-        <div ref={ref} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div
+          ref={ref}
+          className="flex md:grid md:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-6 md:mx-0 px-6 md:px-0 pb-4 md:pb-0 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {steps.map(({ num, title, body, color }, i) => (
-            <div key={num} style={{
-              background: COLORS.white, borderRadius: 16, padding: 36,
+            <div key={num} className="min-w-[82%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 md:flex-shrink snap-center" style={{
+              background: COLORS.white, borderRadius: 16, padding: 32,
               border: `1px solid ${COLORS.gray300}`,
               opacity: inView ? 1 : 0,
               transform: inView ? "translateY(0)" : "translateY(32px)",
@@ -336,7 +340,7 @@ function HowItWorks() {
 function ProductSection({ eyebrow, headline, subhead, body, cta, ctaHref, accent, reverse, badge, children }) {
   const [ref, inView] = useInView();
   return (
-    <section className="px-5 md:px-8 py-16 md:py-24" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.gray100}` }}>
+    <section className="px-6 md:px-8 py-20 md:py-28" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.gray100}` }}>
       <div style={{ maxWidth: 1180, margin: "0 auto" }}>
         <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center" style={{ direction: reverse ? "rtl" : "ltr" }}>
           <div style={{ direction: "ltr" }}>
@@ -559,7 +563,7 @@ function AgreementCard() {
 function CTABand() {
   const [ref, inView] = useInView();
   return (
-    <section className="px-5 md:px-8 py-16 md:py-24 relative overflow-hidden" style={{
+    <section className="px-6 md:px-8 py-20 md:py-28 relative overflow-hidden" style={{
       background: `linear-gradient(135deg, ${COLORS.navy} 0%, #153D6B 100%)`,
     }}>
       <div style={{

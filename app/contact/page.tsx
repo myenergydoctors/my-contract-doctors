@@ -54,7 +54,7 @@ export default function ContactPage() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-navy-dark to-navy px-5 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
+      <section className="bg-gradient-to-br from-navy-dark to-navy px-6 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
         <div className="max-w-2xl mx-auto text-center relative z-10">
           <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">Get in touch</span>
@@ -67,7 +67,7 @@ export default function ContactPage() {
       </section>
 
       {/* Main */}
-      <section className="px-5 md:px-8 py-14 md:py-20 bg-off-white">
+      <section className="px-6 md:px-8 py-14 md:py-20 bg-off-white">
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
 
           {/* Form */}
