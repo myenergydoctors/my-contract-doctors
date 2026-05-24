@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { mockUser } from "@/lib/mock-data";
+import { isSignedIn, signOut } from "@/lib/demo-auth";
 
 const nav = [
   { label: "Overview",   href: "/dashboard",            icon: "▦" },
@@ -16,8 +17,34 @@ const nav = [
 
 export default function PortalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // Demo auth gate. Replace with real Supabase session check in Phase 2.
+  useEffect(() => {
+    if (!isSignedIn()) {
+      router.replace("/sign-in");
+    } else {
+      setAuthChecked(true);
+    }
+  }, [router]);
+
+  const handleSignOut = (e: React.MouseEvent) => {
+    e.preventDefault();
+    signOut();
+    router.push("/sign-in");
+  };
+
+  // Don't flash dashboard content while we're checking
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-off-white">
+        <div className="font-sans text-sm text-gray-500">Loading…</div>
+      </div>
+    );
+  }
 
   const currentPage = nav.find(n => n.href === pathname) || nav.find(n => n.href !== "/dashboard" && pathname?.startsWith(n.href)) || nav[0];
 
@@ -90,13 +117,19 @@ export default function PortalShell({ children }: { children: React.ReactNode })
                     <Link href="/dashboard/settings" className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline" onClick={() => setUserMenuOpen(false)}>Account settings</Link>
                     <Link href="/dashboard/billing"  className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline" onClick={() => setUserMenuOpen(false)}>Billing</Link>
                     <Link href="/"                   className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline border-t border-gray-100" onClick={() => setUserMenuOpen(false)}>Back to site</Link>
-                    <Link href="/sign-in"            className="block px-4 py-2.5 font-sans text-sm text-red hover:bg-off-white no-underline border-t border-gray-100" onClick={() => setUserMenuOpen(false)}>Sign out</Link>
+                    <a href="/sign-in" onClick={handleSignOut} className="block px-4 py-2.5 font-sans text-sm text-red hover:bg-off-white no-underline border-t border-gray-100 cursor-pointer">Sign out</a>
                   </div>
                 </>
               )}
             </div>
           </div>
         </header>
+
+        {/* Demo notice — remove once real Supabase auth + DB are wired */}
+        <div className="bg-amber/10 border-b border-amber/30 px-5 md:px-8 py-2 flex items-center gap-2 text-xs">
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-amber text-white px-2 py-0.5 rounded">Preview</span>
+          <span className="font-sans text-amber-700">Sample data shown. Real account uploads and analyses are coming.</span>
+        </div>
 
         {/* Page content */}
         <main className="flex-1 px-5 md:px-8 py-6 md:py-10">
