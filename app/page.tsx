@@ -294,12 +294,12 @@ function HowItWorks() {
 
         <div
           ref={ref}
-          className="flex md:grid md:grid-cols-3 gap-5 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory -mx-6 md:mx-0 px-6 md:px-0 pb-4 md:pb-0 [&::-webkit-scrollbar]:hidden"
+          className="flex md:grid md:grid-cols-3 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory pb-4 md:pb-0 [&::-webkit-scrollbar]:hidden scroll-pl-0"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {steps.map(({ num, title, body, color }, i) => (
-            <div key={num} className="min-w-[82%] sm:min-w-[60%] md:min-w-0 flex-shrink-0 md:flex-shrink snap-center" style={{
-              background: COLORS.white, borderRadius: 16, padding: 32,
+            <div key={num} className="w-[88%] sm:w-[60%] md:w-auto flex-shrink-0 md:flex-shrink snap-start" style={{
+              background: COLORS.white, borderRadius: 16, padding: 24,
               border: `1px solid ${COLORS.gray300}`,
               opacity: inView ? 1 : 0,
               transform: inView ? "translateY(0)" : "translateY(32px)",

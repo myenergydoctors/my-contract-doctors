@@ -120,9 +120,18 @@ export default function ModulesPage() {
               <h3 className="font-serif text-navy text-lg leading-tight mb-2">{m.name}</h3>
               <p className="font-sans font-light text-gray-500 text-sm leading-relaxed mb-5 flex-1">{m.description}</p>
               {m.status === "active" && (
-                <Link href="/dashboard" className="font-sans text-sm font-medium bg-navy text-white px-4 py-2.5 rounded-lg no-underline text-center hover:opacity-90 transition-opacity">
-                  Open module
-                </Link>
+                <div className="flex flex-col gap-2">
+                  <Link href="/dashboard/invoices" className="font-sans text-sm font-medium bg-navy text-white px-4 py-2.5 rounded-lg no-underline text-center hover:opacity-90 transition-opacity">
+                    Open module
+                  </Link>
+                  <div className="flex gap-3 justify-center text-xs">
+                    <Link href="/invoice" className="font-sans text-blue hover:text-navy no-underline">+ Invoice</Link>
+                    <span className="text-gray-300">·</span>
+                    <Link href="/agreement" className="font-sans text-blue hover:text-navy no-underline">+ Agreement</Link>
+                    <span className="text-gray-300">·</span>
+                    <Link href="/demystifier" className="font-sans text-blue hover:text-navy no-underline">Learn</Link>
+                  </div>
+                </div>
               )}
               {m.status === "available" && m.url && (
                 <a href={m.url} target="_blank" rel="noopener noreferrer" className="font-sans text-sm font-medium bg-teal text-white px-4 py-2.5 rounded-lg no-underline text-center hover:opacity-90 transition-opacity">
@@ -130,9 +139,9 @@ export default function ModulesPage() {
                 </a>
               )}
               {m.status === "coming-soon" && (
-                <button className="font-sans text-sm font-medium bg-off-white border border-gray-200 text-gray-500 px-4 py-2.5 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                <Link href="/contact" className="font-sans text-sm font-medium bg-off-white border border-gray-200 text-gray-500 px-4 py-2.5 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors text-center no-underline">
                   Notify me when ready
-                </button>
+                </Link>
               )}
             </div>
           </div>

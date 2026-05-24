@@ -133,17 +133,31 @@ export default function DashboardHome() {
 
           {/* Quick actions */}
           <section className="bg-gradient-to-br from-navy to-navy-dark rounded-2xl p-6 text-white">
-            <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue-light mb-3">Next step</div>
-            <h3 className="font-serif text-xl mb-2 leading-tight">Upload your latest invoice</h3>
+            <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue-light mb-3">Quick actions</div>
+            <h3 className="font-serif text-xl mb-2 leading-tight">Take the next step</h3>
             <p className="font-sans font-light text-white/65 text-sm leading-relaxed mb-4">
-              We'll compare it line-by-line against your last analysis and flag any new overcharges.
+              Upload a new invoice, analyze your contract, or dig into how it all works.
             </p>
-            <Link
-              href="/invoice"
-              className="inline-block font-sans text-sm font-medium bg-teal text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity"
-            >
-              Upload invoice →
-            </Link>
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/invoice"
+                className="block font-sans text-sm font-medium bg-teal text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity text-center"
+              >
+                Upload invoice →
+              </Link>
+              <Link
+                href="/agreement"
+                className="block font-sans text-sm font-medium bg-white/10 border border-white/20 text-white px-5 py-2.5 rounded-lg no-underline hover:bg-white/20 transition-colors text-center"
+              >
+                Analyze an agreement →
+              </Link>
+              <Link
+                href="/demystifier"
+                className="block font-sans text-sm text-blue-light hover:text-white no-underline text-center pt-1"
+              >
+                Explore the Demystifier →
+              </Link>
+            </div>
           </section>
         </div>
       </div>
