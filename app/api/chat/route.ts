@@ -31,6 +31,22 @@ const SYSTEM = `You are the AI sales assistant for My Contract Doctors, a SaaS p
 
 When you recommend a specific product, include the matching token in your message. The user-facing client renders a buy/try button when it sees the token. Use one token per response — don't recommend multiple products at once.
 
+# Quick-reply choice buttons
+
+When you ask the user a question that has 2–5 clear options, include the literal token [CHOICES: option 1 | option 2 | option 3] at the END of your message. The client renders these as clickable buttons.
+
+Rules:
+- Use this whenever you'd otherwise be asking a multiple-choice question. It's much faster for users than typing.
+- Phrase each option as the user would say it — first person, brief (under 12 words each).
+- Do NOT use pipe characters (|) inside option text — they're the delimiter.
+- 2 to 5 options max.
+- Don't use it for open-ended questions ("What's your business name?", "How many locations do you have?") — only when there are discrete choices.
+- Put the [CHOICES:...] token at the very end of your message, on its own line.
+
+Example response:
+"Got it. Are you closer to signing a new contract, or trying to fix an existing one?
+[CHOICES: Brand new contract I haven't signed | Existing contract that's been running | Somewhere in between]"
+
 # One-time discount offer
 
 You can offer a 10% discount on Pro annual ($313.20 instead of $348/year) — but only when:
@@ -111,15 +127,28 @@ export async function POST(req: NextRequest) {
 
     const offerDiscount = /\[OFFER_PRO_ANNUAL_DISCOUNT\]/i.test(text);
 
+    // Parse quick-reply choices: [CHOICES: a | b | c]
+    let choices: string[] = [];
+    const choiceMatch = text.match(/\[CHOICES:\s*([^\]]+)\]/i);
+    if (choiceMatch) {
+      choices = choiceMatch[1]
+        .split("|")
+        .map(s => s.trim())
+        .filter(s => s.length > 0 && s.length <= 120) // sanity bounds
+        .slice(0, 5);
+    }
+
     // Strip tokens from the user-facing text
     const cleaned = text
       .replace(/\[RECOMMEND:(invoice|pro|agreement|demystifier)\]/gi, "")
       .replace(/\[OFFER_PRO_ANNUAL_DISCOUNT\]/gi, "")
+      .replace(/\[CHOICES:[^\]]+\]/gi, "")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
 
     return NextResponse.json({
       message: cleaned,
+      choices: choices.length > 0 ? choices : undefined,
       action: recommend
         ? { type: "recommend_product", productId: recommend }
         : offerDiscount

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { generateProAnnualDiscount } from "@/lib/discount-codes";
 
 type Action = { type: "recommend_product"; productId: string } | { type: "offer_pro_annual_discount" };
-type Message = { role: "user" | "assistant"; content: string; action?: Action | null; claimedCode?: string };
+type Message = { role: "user" | "assistant"; content: string; action?: Action | null; claimedCode?: string; choices?: string[]; choicesAnswered?: boolean };
 
 const productMeta: Record<string, { name: string; price: string; href: string; cta: string }> = {
   invoice:     { name: "The Invoice",   price: "Free to start",   href: "/invoice",                 cta: "Try free →" },
@@ -22,7 +22,13 @@ export default function ChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: "assistant",
-      content: "Hi! I'm the My Contract Doctors assistant. I can help you figure out which of our products fits, or answer questions about contracts and pricing. What's bringing you here today?",
+      content: "Hi! I'm the My Contract Doctors assistant. What's your main concern right now?",
+      choices: [
+        "Suspicious about my current invoices — check for overcharges",
+        "Looking at a new contract — help me understand what I'm signing",
+        "Want to learn how these contracts work before negotiating",
+        "Something else",
+      ],
     },
   ]);
   const [input, setInput] = useState("");
@@ -40,10 +46,11 @@ export default function ChatWidget() {
   // Hide on portal/auth/checkout pages — placed AFTER all hooks per rules of hooks
   if (HIDE_ON_PREFIXES.some(p => pathname?.startsWith(p))) return null;
 
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
-    const next: Message[] = [...messages, { role: "user", content: text }];
+  const sendText = async (text: string, history?: Message[]) => {
+    const trimmed = text.trim();
+    if (!trimmed || loading) return;
+    const base = history ?? messages;
+    const next: Message[] = [...base, { role: "user", content: trimmed }];
     setMessages(next);
     setInput("");
     setLoading(true);
@@ -59,7 +66,12 @@ export default function ChatWidget() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Chat error");
-      const assistantMsg: Message = { role: "assistant", content: data.message || "(no response)", action: data.action || null };
+      const assistantMsg: Message = {
+        role: "assistant",
+        content: data.message || "(no response)",
+        action: data.action || null,
+        choices: Array.isArray(data.choices) && data.choices.length > 0 ? data.choices : undefined,
+      };
       if (data.action?.type === "offer_pro_annual_discount") setDiscountOffered(true);
       setMessages(m => [...m, assistantMsg]);
     } catch (err: any) {
@@ -67,6 +79,15 @@ export default function ChatWidget() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const send = () => sendText(input);
+
+  const pickChoice = (msgIndex: number, choice: string) => {
+    // Mark the prior assistant message's choices as answered so they collapse
+    const updated = messages.map((m, i) => i === msgIndex ? { ...m, choicesAnswered: true } : m);
+    setMessages(updated);
+    sendText(choice, updated);
   };
 
   const claimDiscount = (msgIndex: number) => {
@@ -119,6 +140,8 @@ export default function ChatWidget() {
                 key={i}
                 msg={m}
                 onClaim={() => claimDiscount(i)}
+                onPickChoice={(c) => pickChoice(i, c)}
+                disabled={loading}
               />
             ))}
             {loading && (
@@ -179,7 +202,7 @@ export default function ChatWidget() {
   );
 }
 
-function MessageBubble({ msg, onClaim }: { msg: Message; onClaim: () => void }) {
+function MessageBubble({ msg, onClaim, onPickChoice, disabled }: { msg: Message; onClaim: () => void; onPickChoice: (choice: string) => void; disabled: boolean }) {
   const isUser = msg.role === "user";
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
@@ -187,6 +210,22 @@ function MessageBubble({ msg, onClaim }: { msg: Message; onClaim: () => void }) 
         <div className={`px-4 py-3 rounded-2xl font-sans text-sm leading-relaxed whitespace-pre-wrap ${isUser ? "bg-navy text-white rounded-br-md" : "bg-white border border-gray-200 text-navy rounded-bl-md"}`}>
           {msg.content}
         </div>
+
+        {/* Quick-reply choice buttons */}
+        {msg.choices && msg.choices.length > 0 && !msg.choicesAnswered && (
+          <div className="flex flex-col gap-1.5 w-full">
+            {msg.choices.map((c, idx) => (
+              <button
+                key={idx}
+                onClick={() => onPickChoice(c)}
+                disabled={disabled}
+                className="text-left font-sans text-sm text-blue bg-white border border-blue/30 hover:bg-blue-pale/40 hover:border-blue rounded-xl px-4 py-2.5 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed leading-snug"
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Product recommendation card */}
         {msg.action?.type === "recommend_product" && productMeta[msg.action.productId] && (
