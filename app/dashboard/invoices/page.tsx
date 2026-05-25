@@ -1,9 +1,16 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { mockInvoices } from "@/lib/mock-data";
+import { getDemoMode } from "@/lib/demo-mode";
+import EmptyState from "@/components/portal/EmptyState";
 
 export default function InvoicesListPage() {
-  const totalSavings = mockInvoices.reduce((s, i) => s + i.potentialAnnualSavings, 0);
-  const totalFlagged = mockInvoices.reduce((s, i) => s + i.flaggedItemCount, 0);
+  const [empty, setEmpty] = useState(false);
+  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
+  const invoices = empty ? [] : mockInvoices;
+  const totalSavings = invoices.reduce((s, i) => s + i.potentialAnnualSavings, 0);
+  const totalFlagged = invoices.reduce((s, i) => s + i.flaggedItemCount, 0);
 
   return (
     <div className="max-w-6xl">
@@ -27,10 +34,19 @@ export default function InvoicesListPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
         <SummaryCell label="Total identified savings" value={`$${totalSavings.toLocaleString()}/yr`} accent="teal" />
         <SummaryCell label="Flagged line items" value={totalFlagged.toString()} accent="red" />
-        <SummaryCell label="Invoices analyzed" value={mockInvoices.length.toString()} accent="blue" />
+        <SummaryCell label="Invoices analyzed" value={invoices.length.toString()} accent="blue" />
       </div>
 
-      {/* List */}
+      {invoices.length === 0 ? (
+        <EmptyState
+          illustration="upload"
+          eyebrow="No invoices yet"
+          title="Your first analysis is one upload away."
+          body="Drop in a PDF, JPG, or take a phone photo of a paper invoice. We'll line-item it against industry benchmarks and surface anything flagged within 60 seconds."
+          primaryCta={{ label: "Upload an invoice →", href: "/invoice" }}
+          secondaryCta={{ label: "How it works", href: "/demystifier" }}
+        />
+      ) : (
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
         <div className="hidden md:grid grid-cols-[1.4fr_1fr_1fr_1fr_auto] gap-6 px-6 py-3 border-b border-gray-200 bg-off-white font-sans text-[11px] font-semibold uppercase tracking-wider text-gray-500">
           <div>Invoice</div>
@@ -39,7 +55,7 @@ export default function InvoicesListPage() {
           <div className="text-right">Potential savings</div>
           <div />
         </div>
-        {mockInvoices.map(inv => (
+        {invoices.map(inv => (
           <Link
             key={inv.id}
             href={`/dashboard/invoices/${inv.id}`}
@@ -72,6 +88,7 @@ export default function InvoicesListPage() {
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }

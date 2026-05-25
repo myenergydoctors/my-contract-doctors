@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/Logo";
 
 const links = [
   { label: "Demystifier",   href: "/demystifier" },
@@ -42,13 +43,7 @@ export default function Nav() {
       <div className="max-w-[1180px] mx-auto h-[68px] flex items-center justify-between">
 
         {/* Logo */}
-        <Link href="/" className="no-underline flex flex-col leading-none" onClick={() => setOpen(false)}>
-          <span className="font-sans text-[9px] font-semibold tracking-[0.22em] uppercase text-blue-light">My</span>
-          <div className="flex items-baseline">
-            <span className="font-serif text-[20px] md:text-[22px] text-white">Contract&nbsp;</span>
-            <span className="font-serif italic text-[20px] md:text-[22px] text-blue-light">Doctors</span>
-          </div>
-        </Link>
+        <Logo href="/" variant="dark-bg" size="md" onClick={() => setOpen(false)} />
 
         {/* Desktop links */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">

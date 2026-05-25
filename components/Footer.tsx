@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import Logo from "@/components/Logo";
 
 const columns = [
   {
@@ -53,15 +54,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr_1fr_1fr_1fr] gap-10 lg:gap-8 mb-10 lg:mb-12">
 
           {/* Brand */}
-          <div className="text-center lg:text-left">
+          <div className="flex flex-col items-center lg:items-start">
             <div className="mb-3.5">
-              <span className="block font-sans text-[9px] font-semibold tracking-[0.22em] uppercase text-blue-light">My</span>
-              <div>
-                <span className="font-serif text-[20px] text-white">Contract </span>
-                <span className="font-serif italic text-[20px] text-blue-light">Doctors</span>
-              </div>
+              <Logo href="/" variant="dark-bg" size="md" />
             </div>
-            <p className="font-sans font-light text-[13px] leading-[1.7] text-white/45 max-w-[260px] mx-auto lg:mx-0">
+            <p className="font-sans font-light text-[13px] leading-[1.7] text-white/45 max-w-[260px] text-center lg:text-left">
               We're on your side, not the vendor's. Helping businesses demystify their uniform and linen agreements since 2026.
             </p>
           </div>

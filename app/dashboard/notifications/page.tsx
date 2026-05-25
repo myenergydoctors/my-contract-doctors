@@ -1,4 +1,8 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getDemoMode } from "@/lib/demo-mode";
+import EmptyState from "@/components/portal/EmptyState";
 
 type Notification = {
   id: string;
@@ -77,7 +81,10 @@ const typeMeta = {
 } as const;
 
 export default function NotificationsPage() {
-  const unreadCount = notifications.filter(n => n.unread).length;
+  const [empty, setEmpty] = useState(false);
+  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
+  const list = empty ? [] : notifications;
+  const unreadCount = list.filter(n => n.unread).length;
 
   return (
     <div className="max-w-4xl">
@@ -110,8 +117,17 @@ export default function NotificationsPage() {
       </div>
 
       {/* List */}
+      {list.length === 0 ? (
+        <EmptyState
+          illustration="bell"
+          eyebrow="Quiet for now"
+          title="No notifications yet."
+          body="Once you upload your first invoice or contract, we'll start showing renewal alerts, analysis updates, and vendor responses here."
+          primaryCta={{ label: "Upload an invoice →", href: "/invoice" }}
+        />
+      ) : (
       <div className="flex flex-col gap-3">
-        {notifications.map(n => {
+        {list.map(n => {
           const meta = typeMeta[n.type];
           return (
             <div key={n.id} className={`bg-white border rounded-2xl p-5 md:p-6 ${n.unread ? "border-blue/30 shadow-sm" : "border-gray-200"}`}>
@@ -140,11 +156,13 @@ export default function NotificationsPage() {
           );
         })}
       </div>
+      )}
 
-      {/* Empty state placeholder for design */}
-      <div className="text-center mt-10">
-        <p className="font-sans text-sm text-gray-500">You're all caught up.</p>
-      </div>
+      {list.length > 0 && (
+        <div className="text-center mt-10">
+          <p className="font-sans text-sm text-gray-500">You're all caught up.</p>
+        </div>
+      )}
     </div>
   );
 }

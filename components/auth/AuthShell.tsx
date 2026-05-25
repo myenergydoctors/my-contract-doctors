@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "@/components/Logo";
 
 export default function AuthShell({ children, eyebrow, title, subtitle }: { children: React.ReactNode; eyebrow: string; title: React.ReactNode; subtitle?: string }) {
   return (
@@ -6,13 +7,7 @@ export default function AuthShell({ children, eyebrow, title, subtitle }: { chil
 
       {/* Brand side */}
       <aside className="hidden lg:flex flex-col justify-between bg-gradient-to-br from-navy-dark to-navy text-white p-12 w-[44%]">
-        <Link href="/" className="no-underline flex flex-col leading-none">
-          <span className="font-sans text-[10px] font-semibold tracking-[0.22em] uppercase text-blue-light">My</span>
-          <div className="flex items-baseline">
-            <span className="font-serif text-[24px] text-white">Contract&nbsp;</span>
-            <span className="font-serif italic text-[24px] text-blue-light">Doctors</span>
-          </div>
-        </Link>
+        <Logo href="/" variant="dark-bg" size="lg" />
 
         <div className="max-w-md">
           <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-teal mb-3">Our promise</div>
@@ -31,13 +26,9 @@ export default function AuthShell({ children, eyebrow, title, subtitle }: { chil
       <main className="flex-1 flex flex-col px-6 md:px-12 py-8 lg:py-12">
 
         {/* Mobile brand */}
-        <Link href="/" className="lg:hidden no-underline flex flex-col leading-none mb-12">
-          <span className="font-sans text-[9px] font-semibold tracking-[0.22em] uppercase text-blue-light">My</span>
-          <div className="flex items-baseline">
-            <span className="font-serif text-[20px] text-navy">Contract&nbsp;</span>
-            <span className="font-serif italic text-[20px] text-blue">Doctors</span>
-          </div>
-        </Link>
+        <div className="lg:hidden mb-12">
+          <Logo href="/" variant="light-bg" size="md" />
+        </div>
 
         <div className="flex-1 flex items-center justify-center">
           <div className="w-full max-w-md">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { setDemoSession } from "@/lib/demo-auth";
+import Logo from "@/components/Logo";
 
 const vendors = ["Cintas", "UniFirst", "ALSCO", "ImageFirst", "Aramark", "G&K Services", "Other / I'm not sure"];
 
@@ -29,13 +30,7 @@ export default function OnboardingPage() {
       {/* Top bar */}
       <header className="px-6 md:px-8 py-5 border-b border-gray-200 bg-white">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="no-underline flex flex-col leading-none">
-            <span className="font-sans text-[9px] font-semibold tracking-[0.22em] uppercase text-blue">My</span>
-            <div className="flex items-baseline">
-              <span className="font-serif text-[20px] text-navy">Contract&nbsp;</span>
-              <span className="font-serif italic text-[20px] text-blue">Doctors</span>
-            </div>
-          </Link>
+          <Logo href="/" variant="light-bg" size="md" />
           <div className="font-sans text-xs text-gray-500">
             Step <span className="font-medium text-navy">{step}</span> of {totalSteps}
           </div>

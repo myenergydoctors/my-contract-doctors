@@ -1,7 +1,15 @@
+"use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { mockAgreements } from "@/lib/mock-data";
+import { getDemoMode } from "@/lib/demo-mode";
+import EmptyState from "@/components/portal/EmptyState";
 
 export default function AgreementsListPage() {
+  const [empty, setEmpty] = useState(false);
+  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
+  const agreements = empty ? [] : mockAgreements;
+
   return (
     <div className="max-w-6xl">
 
@@ -20,9 +28,20 @@ export default function AgreementsListPage() {
         </Link>
       </div>
 
-      {/* Agreements */}
+      {agreements.length === 0 ? (
+        <EmptyState
+          illustration="contract"
+          eyebrow="No agreements yet"
+          title="Get a full breakdown of your contract."
+          body="Upload your uniform or linen service agreement and we'll score it, flag every clause worth negotiating, and draft the emails you can send to fix them."
+          primaryCta={{ label: "Analyze an agreement →", href: "/agreement" }}
+          secondaryCta={{ label: "See a sample first", href: "/demystifier" }}
+        />
+      ) : (
+
+      /* Agreements */
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {mockAgreements.map(agr => (
+        {agreements.map(agr => (
           <Link
             key={agr.id}
             href={`/dashboard/agreements/${agr.id}`}
@@ -68,6 +87,7 @@ export default function AgreementsListPage() {
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }

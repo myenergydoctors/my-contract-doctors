@@ -4,6 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { mockUser } from "@/lib/mock-data";
 import { isSignedIn, signOut } from "@/lib/demo-auth";
+import { getDemoMode, setDemoMode, type DemoMode } from "@/lib/demo-mode";
+import Logo from "@/components/Logo";
 
 const nav = [
   { label: "Overview",      href: "/dashboard",               icon: "▦" },
@@ -22,6 +24,19 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [mode, setMode] = useState<DemoMode>("populated");
+
+  useEffect(() => {
+    setMode(getDemoMode());
+  }, []);
+
+  const flipMode = () => {
+    const next: DemoMode = mode === "populated" ? "empty" : "populated";
+    setDemoMode(next);
+    setMode(next);
+    // Force a reload so all server-rendered children re-render with the new mode
+    router.refresh();
+  };
 
   // Demo auth gate. Replace with real Supabase session check in Phase 2.
   useEffect(() => {
@@ -127,9 +142,21 @@ export default function PortalShell({ children }: { children: React.ReactNode })
         </header>
 
         {/* Demo notice — remove once real Supabase auth + DB are wired */}
-        <div className="bg-amber/10 border-b border-amber/30 px-5 md:px-8 py-2 flex items-center gap-2 text-xs">
-          <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-amber text-white px-2 py-0.5 rounded">Preview</span>
-          <span className="font-sans text-amber-700">Sample data shown. Real account uploads and analyses are coming.</span>
+        <div className="bg-amber/10 border-b border-amber/30 px-5 md:px-8 py-2 flex items-center justify-between gap-3 text-xs flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-amber text-white px-2 py-0.5 rounded">Preview</span>
+            <span className="font-sans text-amber-700 truncate">
+              {mode === "populated"
+                ? "Sample data shown. Real account uploads and analyses are coming."
+                : "Empty state — this is what a brand new account looks like."}
+            </span>
+          </div>
+          <button
+            onClick={flipMode}
+            className="font-sans text-[11px] font-semibold text-amber-700 hover:text-navy underline-offset-2 hover:underline bg-transparent border-none cursor-pointer whitespace-nowrap"
+          >
+            View as {mode === "populated" ? "new user →" : "existing user →"}
+          </button>
         </div>
 
         {/* Page content */}
@@ -146,13 +173,7 @@ function SidebarContent({ pathname, closeMobile }: { pathname: string | null; cl
     <>
       {/* Brand */}
       <div className="px-6 h-16 flex items-center border-b border-white/5">
-        <Link href="/dashboard" onClick={closeMobile} className="no-underline flex flex-col leading-none">
-          <span className="font-sans text-[9px] font-semibold tracking-[0.22em] uppercase text-blue-light">My</span>
-          <div className="flex items-baseline">
-            <span className="font-serif text-[18px] text-white">Contract&nbsp;</span>
-            <span className="font-serif italic text-[18px] text-blue-light">Doctors</span>
-          </div>
-        </Link>
+        <Logo href="/dashboard" variant="dark-bg" size="sm" onClick={closeMobile} />
       </div>
 
       {/* Nav */}
