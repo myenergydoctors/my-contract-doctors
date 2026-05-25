@@ -1,5 +1,7 @@
+"use client";
 import Link from "next/link";
 import { mockUser } from "@/lib/mock-data";
+import { useEffectivePlan } from "@/lib/use-effective-plan";
 
 const plans = [
   {
@@ -46,6 +48,9 @@ const plans = [
 ];
 
 export default function BillingPage() {
+  const effectivePlan = useEffectivePlan();
+  const isFree = effectivePlan === "free";
+
   return (
     <div className="max-w-6xl">
 
@@ -54,16 +59,31 @@ export default function BillingPage() {
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
             <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue-light mb-2">Current plan</div>
-            <div className="font-serif text-3xl md:text-4xl capitalize mb-1">{mockUser.plan}</div>
-            <div className="font-sans font-light text-white/65 text-sm">Member since {new Date(mockUser.joinedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}</div>
+            <div className="font-serif text-3xl md:text-4xl capitalize mb-1">{effectivePlan}</div>
+            <div className="font-sans font-light text-white/65 text-sm">
+              {isFree
+                ? "You're on the free plan. Upgrade any time to unlock the full platform."
+                : `Member since ${new Date(mockUser.joinedAt).toLocaleDateString("en-US", { month: "long", year: "numeric" })}`}
+            </div>
           </div>
           <div className="flex gap-3">
-            <button className="font-sans text-sm font-medium bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
-              View invoices
-            </button>
-            <button className="font-sans text-sm font-medium bg-red text-white px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer">
-              Cancel plan
-            </button>
+            {isFree ? (
+              <Link
+                href="/checkout/pro"
+                className="font-sans text-sm font-medium bg-teal text-white px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity no-underline"
+              >
+                Upgrade to Pro →
+              </Link>
+            ) : (
+              <>
+                <button className="font-sans text-sm font-medium bg-white/10 border border-white/20 text-white px-4 py-2.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer">
+                  View invoices
+                </button>
+                <button className="font-sans text-sm font-medium bg-red text-white px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer">
+                  Cancel plan
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -81,7 +101,7 @@ export default function BillingPage() {
                 Recommended
               </div>
             )}
-            {mockUser.plan === plan.id && (
+            {effectivePlan === plan.id && (
               <div className="absolute top-4 right-4 bg-blue-pale text-blue font-sans text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded">
                 Current
               </div>
@@ -101,7 +121,7 @@ export default function BillingPage() {
                 </li>
               ))}
             </ul>
-            {mockUser.plan === plan.id ? (
+            {effectivePlan === plan.id ? (
               <button
                 disabled
                 className="font-sans text-sm font-medium px-5 py-3 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"

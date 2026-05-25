@@ -1,8 +1,11 @@
+"use client";
 import Link from "next/link";
-import { mockInsights, mockUser } from "@/lib/mock-data";
+import { mockInsights } from "@/lib/mock-data";
+import { useEffectivePlan } from "@/lib/use-effective-plan";
 
 export default function InsightsPage() {
-  const locked = mockUser.plan !== "pro";
+  const plan = useEffectivePlan();
+  const locked = plan !== "pro";
 
   return (
     <div className="max-w-6xl">

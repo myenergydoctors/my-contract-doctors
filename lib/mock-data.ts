@@ -137,6 +137,74 @@ export const mockAgreements: AgreementAnalysis[] = [
   },
 ];
 
+export type MockNotification = {
+  id: string;
+  type: "renewal" | "analysis" | "savings" | "system" | "insight";
+  title: string;
+  body: string;
+  timestamp: string;
+  unread?: boolean;
+  href?: string;
+  actionLabel?: string;
+};
+
+export const mockNotifications: MockNotification[] = [
+  {
+    id: "n_001",
+    type: "renewal",
+    title: "ImageFirst contract auto-renews in 87 days",
+    body: "Your service agreement with Berstein-Magoon-Gay LLC enters its auto-renewal window on August 19. To avoid another 36-month commitment, written notice must be delivered before May 21.",
+    timestamp: "2 hours ago",
+    unread: true,
+    href: "/dashboard/agreements/agr_imagefirst_2024",
+    actionLabel: "Review agreement",
+  },
+  {
+    id: "n_002",
+    type: "analysis",
+    title: "Your April invoice analysis is ready",
+    body: "We found 5 flagged items totaling $4,920 in potential annual savings — the floor mat overcharge is back in this invoice too.",
+    timestamp: "Yesterday",
+    unread: true,
+    href: "/dashboard/invoices/inv_2026_04",
+    actionLabel: "Open analysis",
+  },
+  {
+    id: "n_003",
+    type: "insight",
+    title: "New Industry Insights report — ImageFirst benchmarks updated",
+    body: "We've analyzed 47 new ImageFirst contracts this quarter. The average overpayment vs market is now 35% (up from 33% last quarter).",
+    timestamp: "3 days ago",
+    href: "/dashboard/insights",
+    actionLabel: "View insights",
+  },
+  {
+    id: "n_004",
+    type: "savings",
+    title: "Vendor accepted your dispute — $1,068 credited",
+    body: "ImageFirst credited the disputed 'facility services' charge on your March invoice. The credit will appear on your next bill.",
+    timestamp: "5 days ago",
+    href: "/dashboard/invoices/inv_2026_03",
+    actionLabel: "See invoice",
+  },
+  {
+    id: "n_005",
+    type: "system",
+    title: "Quarterly contract review scheduled",
+    body: "We'll re-audit your active contracts on May 31 and flag anything new. You don't need to do anything — we'll email when the review is complete.",
+    timestamp: "1 week ago",
+  },
+  {
+    id: "n_006",
+    type: "renewal",
+    title: "Pro plan renewed",
+    body: "Your Pro subscription renewed for $29.00 on April 14. Receipt sent to your email.",
+    timestamp: "2 weeks ago",
+    href: "/dashboard/billing",
+    actionLabel: "View receipt",
+  },
+];
+
 // Industry insights — aggregate data across the user base.
 // Mocked. Real version queries the analyses table across all orgs.
 export const mockInsights = {
