@@ -33,9 +33,12 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const flipMode = () => {
     const next: DemoMode = mode === "populated" ? "empty" : "populated";
     setDemoMode(next);
-    setMode(next);
-    // Force a reload so all server-rendered children re-render with the new mode
-    router.refresh();
+    // router.refresh() only re-renders server components, not client ones.
+    // The portal pages are client components reading the mode on mount via
+    // useEffect — a full reload re-mounts them so they pick up the new value.
+    if (typeof window !== "undefined") {
+      window.location.reload();
+    }
   };
 
   // Demo auth gate. Replace with real Supabase session check in Phase 2.
