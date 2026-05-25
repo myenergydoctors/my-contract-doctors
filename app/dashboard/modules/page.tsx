@@ -1,4 +1,8 @@
+"use client";
 import Link from "next/link";
+import { useState } from "react";
+import { useEffectivePlan } from "@/lib/use-effective-plan";
+import PaywallModal from "@/components/portal/PaywallModal";
 
 type Module = {
   id: string;
@@ -97,6 +101,16 @@ const modules: Module[] = [
 ];
 
 export default function ModulesPage() {
+  const plan = useEffectivePlan();
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  const handleAddAgreement = (e: React.MouseEvent) => {
+    if (plan !== "pro") {
+      e.preventDefault();
+      setShowPaywall(true);
+    }
+  };
+
   return (
     <div className="max-w-6xl">
 
@@ -127,7 +141,7 @@ export default function ModulesPage() {
                   <div className="flex gap-3 justify-center text-xs">
                     <Link href="/invoice" className="font-sans text-blue hover:text-navy no-underline">+ Invoice</Link>
                     <span className="text-gray-300">·</span>
-                    <Link href="/agreement" className="font-sans text-blue hover:text-navy no-underline">+ Agreement</Link>
+                    <Link href="/agreement" onClick={handleAddAgreement} className="font-sans text-blue hover:text-navy no-underline">+ Agreement</Link>
                     <span className="text-gray-300">·</span>
                     <Link href="/demystifier" className="font-sans text-blue hover:text-navy no-underline">Learn</Link>
                   </div>
@@ -147,6 +161,12 @@ export default function ModulesPage() {
           </div>
         ))}
       </div>
+
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+        reason={{ type: "agreement", currentPlan: plan }}
+      />
     </div>
   );
 }

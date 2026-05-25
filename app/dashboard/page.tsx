@@ -1,12 +1,22 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { mockUser } from "@/lib/mock-data";
 import { useEffectiveData } from "@/lib/use-effective-plan";
 import EmptyState from "@/components/portal/EmptyState";
+import PaywallModal from "@/components/portal/PaywallModal";
 
 export default function DashboardHome() {
   const { mode, plan, invoices, agreements } = useEffectiveData();
   const empty = mode === "new";
+  const [showAgreementPaywall, setShowAgreementPaywall] = useState(false);
+
+  const handleAnalyzeAgreement = (e: React.MouseEvent) => {
+    if (plan !== "pro") {
+      e.preventDefault();
+      setShowAgreementPaywall(true);
+    }
+  };
 
   const totalSavingsIdentified =
     invoices.reduce((sum, i) => sum + i.potentialAnnualSavings, 0) +
@@ -196,6 +206,7 @@ export default function DashboardHome() {
               </Link>
               <Link
                 href="/agreement"
+                onClick={handleAnalyzeAgreement}
                 className="block font-sans text-sm font-medium bg-white/10 border border-white/20 text-white px-5 py-2.5 rounded-lg no-underline hover:bg-white/20 transition-colors text-center"
               >
                 Analyze an agreement →
@@ -210,6 +221,12 @@ export default function DashboardHome() {
           </section>
         </div>
       </div>
+
+      <PaywallModal
+        open={showAgreementPaywall}
+        onClose={() => setShowAgreementPaywall(false)}
+        reason={{ type: "agreement", currentPlan: plan }}
+      />
     </div>
   );
 }
