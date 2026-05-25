@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { mockUser, mockNotifications } from "@/lib/mock-data";
 import { isSignedIn, signOut } from "@/lib/demo-auth";
-import { getDemoMode, setDemoMode, type DemoMode } from "@/lib/demo-mode";
+import { getDemoMode, setDemoMode, planForMode, demoModes, type DemoMode } from "@/lib/demo-mode";
 import Logo from "@/components/Logo";
 
 type NavItem = { label: string; href: string; icon: string; badge?: string; badgeKind?: "count" | "pro" };
@@ -37,28 +37,30 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
-  const [mode, setMode] = useState<DemoMode>("populated");
+  const [mode, setMode] = useState<DemoMode>("pro");
 
   useEffect(() => {
     setMode(getDemoMode());
   }, []);
 
-  // Derived: empty mode collapses to free plan and no notifications
-  const isEmpty = mode === "empty";
-  const effectivePlan = isEmpty ? "free" : mockUser.plan;
-  const unreadCount = isEmpty ? 0 : mockNotifications.filter(n => n.unread).length;
-  const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
-
-  const flipMode = () => {
-    const next: DemoMode = mode === "populated" ? "empty" : "populated";
+  const switchMode = (next: DemoMode) => {
+    if (next === mode) return;
     setDemoMode(next);
-    // router.refresh() only re-renders server components, not client ones.
-    // The portal pages are client components reading the mode on mount via
-    // useEffect — a full reload re-mounts them so they pick up the new value.
     if (typeof window !== "undefined") {
       window.location.reload();
     }
   };
+
+  const effectivePlan = planForMode(mode);
+  // Notification visibility mirrors useEffectiveData logic in lib/use-effective-plan
+  const visibleNotifications = (() => {
+    if (mode === "new") return [];
+    if (mode === "free") return mockNotifications.filter(n => n.type === "analysis" || n.type === "system").slice(0, 2);
+    if (mode === "agreement") return mockNotifications.filter(n => n.type !== "insight").slice(0, 4);
+    return mockNotifications;
+  })();
+  const unreadCount = visibleNotifications.filter(n => n.unread).length;
+  const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
 
   // Demo auth gate. Replace with real Supabase session check in Phase 2.
   useEffect(() => {
@@ -166,19 +168,25 @@ export default function PortalShell({ children }: { children: React.ReactNode })
         {/* Demo notice — remove once real Supabase auth + DB are wired */}
         <div className="bg-amber/10 border-b border-amber/30 px-5 md:px-8 py-2 flex items-center justify-between gap-3 text-xs flex-wrap">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-amber text-white px-2 py-0.5 rounded">Preview</span>
-            <span className="font-sans text-amber-700 truncate">
-              {mode === "populated"
-                ? "Sample data shown. Real account uploads and analyses are coming."
-                : "Empty state — this is what a brand new account looks like."}
-            </span>
+            <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-amber text-white px-2 py-0.5 rounded flex-shrink-0">Preview</span>
+            <span className="font-sans text-amber-700 truncate hidden sm:inline">View as:</span>
           </div>
-          <button
-            onClick={flipMode}
-            className="font-sans text-[11px] font-semibold text-amber-700 hover:text-navy underline-offset-2 hover:underline bg-transparent border-none cursor-pointer whitespace-nowrap"
-          >
-            View as {mode === "populated" ? "new user →" : "existing user →"}
-          </button>
+          <div className="flex gap-1 overflow-x-auto [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
+            {demoModes.map(m => (
+              <button
+                key={m.id}
+                onClick={() => switchMode(m.id)}
+                title={m.description}
+                className={`font-sans text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap transition-colors cursor-pointer ${
+                  mode === m.id
+                    ? "bg-amber text-white"
+                    : "bg-white border border-amber/30 text-amber-700 hover:bg-amber/20"
+                }`}
+              >
+                {m.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Page content */}

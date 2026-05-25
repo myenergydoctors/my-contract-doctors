@@ -1,8 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { getDemoMode } from "@/lib/demo-mode";
-import { mockNotifications } from "@/lib/mock-data";
+import { useEffectiveData } from "@/lib/use-effective-plan";
 import EmptyState from "@/components/portal/EmptyState";
 
 const typeMeta = {
@@ -14,9 +12,7 @@ const typeMeta = {
 } as const;
 
 export default function NotificationsPage() {
-  const [empty, setEmpty] = useState(false);
-  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
-  const list = empty ? [] : mockNotifications;
+  const { notifications: list } = useEffectiveData();
   const unreadCount = list.filter(n => n.unread).length;
 
   return (

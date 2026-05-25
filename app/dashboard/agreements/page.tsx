@@ -1,14 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { mockAgreements } from "@/lib/mock-data";
-import { getDemoMode } from "@/lib/demo-mode";
+import { useEffectiveData } from "@/lib/use-effective-plan";
 import EmptyState from "@/components/portal/EmptyState";
 
 export default function AgreementsListPage() {
-  const [empty, setEmpty] = useState(false);
-  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
-  const agreements = empty ? [] : mockAgreements;
+  const { plan, agreements } = useEffectiveData();
 
   return (
     <div className="max-w-6xl">

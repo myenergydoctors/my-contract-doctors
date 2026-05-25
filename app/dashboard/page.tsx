@@ -1,16 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { mockUser, mockInvoices, mockAgreements } from "@/lib/mock-data";
-import { getDemoMode } from "@/lib/demo-mode";
+import { mockUser } from "@/lib/mock-data";
+import { useEffectiveData } from "@/lib/use-effective-plan";
 import EmptyState from "@/components/portal/EmptyState";
 
 export default function DashboardHome() {
-  const [empty, setEmpty] = useState(false);
-  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
-
-  const invoices = empty ? [] : mockInvoices;
-  const agreements = empty ? [] : mockAgreements;
+  const { mode, plan, invoices, agreements } = useEffectiveData();
+  const empty = mode === "new";
 
   const totalSavingsIdentified =
     invoices.reduce((sum, i) => sum + i.potentialAnnualSavings, 0) +
@@ -24,14 +20,37 @@ export default function DashboardHome() {
 
       {/* Welcome */}
       <div className="mb-8">
-        <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-teal mb-2">Welcome back</div>
+        <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-teal mb-2">
+          {empty ? "Welcome aboard" : "Welcome back"}
+        </div>
         <h2 className="font-serif text-navy text-3xl md:text-[34px] leading-tight mb-2">
-          Good to see you, {mockUser.name.split(" ")[0]}.
+          {empty ? `Hi ${mockUser.name.split(" ")[0]}, let's get started.` : `Good to see you, ${mockUser.name.split(" ")[0]}.`}
         </h2>
         <p className="font-sans font-light text-gray-500 leading-relaxed">
-          Here's what's been happening with your contracts and invoices at <span className="text-navy font-medium">{mockUser.businessName}</span>.
+          {empty
+            ? <>Upload your first invoice and we'll show you exactly where {mockUser.businessName} is overpaying.</>
+            : <>Here's what's been happening with your contracts and invoices at <span className="text-navy font-medium">{mockUser.businessName}</span>.</>}
         </p>
       </div>
+
+      {/* Plan upgrade banner — shows for non-pro plans with some data */}
+      {plan !== "pro" && !empty && (
+        <div className="bg-gradient-to-br from-teal to-blue text-white rounded-2xl p-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="font-sans text-[10px] font-semibold uppercase tracking-wider text-white/80 mb-1">
+              {plan === "free" ? "You're on the free plan" : "Agreement plan only"}
+            </div>
+            <div className="font-serif text-lg leading-tight">
+              {plan === "free"
+                ? "Unlock the full report — and every invoice going forward."
+                : "Get Pro for unlimited contracts, invoices, and Industry Insights."}
+            </div>
+          </div>
+          <Link href="/checkout/pro" className="font-sans text-sm font-medium bg-white text-navy px-5 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity whitespace-nowrap">
+            Upgrade to Pro →
+          </Link>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">

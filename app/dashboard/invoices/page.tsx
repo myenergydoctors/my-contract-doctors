@@ -1,14 +1,12 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { mockInvoices } from "@/lib/mock-data";
-import { getDemoMode } from "@/lib/demo-mode";
+import { useEffectiveData } from "@/lib/use-effective-plan";
 import EmptyState from "@/components/portal/EmptyState";
 
 export default function InvoicesListPage() {
-  const [empty, setEmpty] = useState(false);
-  useEffect(() => setEmpty(getDemoMode() === "empty"), []);
-  const invoices = empty ? [] : mockInvoices;
+  const { plan, invoices } = useEffectiveData();
+  // Free / Agreement users see "1 free flagged item" only — show full $ on Pro
+  const lockSavings = plan !== "pro";
   const totalSavings = invoices.reduce((s, i) => s + i.potentialAnnualSavings, 0);
   const totalFlagged = invoices.reduce((s, i) => s + i.flaggedItemCount, 0);
 
@@ -32,10 +30,23 @@ export default function InvoicesListPage() {
 
       {/* Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <SummaryCell label="Total identified savings" value={`$${totalSavings.toLocaleString()}/yr`} accent="teal" />
-        <SummaryCell label="Flagged line items" value={totalFlagged.toString()} accent="red" />
+        <SummaryCell label="Total identified savings" value={lockSavings && invoices.length > 0 ? "Locked" : `$${totalSavings.toLocaleString()}/yr`} accent="teal" />
+        <SummaryCell label="Flagged line items" value={lockSavings && invoices.length > 0 ? `1 of ${totalFlagged}` : totalFlagged.toString()} accent="red" />
         <SummaryCell label="Invoices analyzed" value={invoices.length.toString()} accent="blue" />
       </div>
+
+      {/* Upgrade nudge for free/agreement users with invoices */}
+      {lockSavings && invoices.length > 0 && (
+        <div className="bg-gradient-to-br from-teal/10 to-blue/10 border border-teal/20 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="font-sans text-sm text-navy font-medium leading-snug">You can see 1 free recommendation per invoice.</div>
+            <div className="font-sans text-xs text-gray-500 mt-1 leading-relaxed">Upgrade to Pro to unlock every flagged item, view annual savings, and get auto-renewal alerts.</div>
+          </div>
+          <Link href="/checkout/pro" className="font-sans text-sm font-medium bg-teal text-white px-4 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity whitespace-nowrap">
+            Upgrade →
+          </Link>
+        </div>
+      )}
 
       {invoices.length === 0 ? (
         <EmptyState
