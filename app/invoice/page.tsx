@@ -454,6 +454,9 @@ function StepScanning({ contact, file, onDone }) {
             setErrorState({
               kind: "extraction_failed",
               message: data?.message || data?.error || "Something went wrong analyzing this file.",
+              code: data?.code,
+              details: data?.details,
+              hint: data?.hint,
             });
             return;
           }
@@ -535,9 +538,18 @@ function StepScanning({ contact, file, onDone }) {
         </div>
         <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:C.navy,marginBottom:10,lineHeight:1.2}}>We couldn't read this file.</h2>
         <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,marginBottom:6,lineHeight:1.65}}>
-          {errorState.kind === "upload_failed" ? "The file couldn't be uploaded." : "The AI couldn't extract line items from this file. Try a clearer photo or a different invoice."}
+          {errorState.kind === "upload_failed" ? "The file couldn't be uploaded." : "Something went wrong analyzing this file."}
         </p>
-        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginBottom:24,fontStyle:"italic"}}>{errorState.message}</p>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginBottom:8,fontStyle:"italic"}}>{errorState.message}</p>
+        {(errorState.code || errorState.hint || errorState.details) && (
+          <pre style={{fontFamily:"monospace",fontSize:11,color:C.gray500,marginBottom:24,background:C.gray100,padding:"10px 14px",borderRadius:6,textAlign:"left",whiteSpace:"pre-wrap",wordBreak:"break-word"}}>
+            {[
+              errorState.code   ? `code: ${errorState.code}`     : null,
+              errorState.hint   ? `hint: ${errorState.hint}`     : null,
+              errorState.details? `details: ${errorState.details}` : null,
+            ].filter(Boolean).join("\n")}
+          </pre>
+        )}
         <a href="/invoice" style={{display:"inline-block",background:C.navy,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"12px 28px",borderRadius:9,textDecoration:"none"}}>
           Try again
         </a>

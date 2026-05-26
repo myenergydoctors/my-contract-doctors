@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { listProductsServer } from "@/lib/db/products";
 import { listVendorsServer } from "@/lib/db/vendors";
 
@@ -81,10 +80,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden: path does not match user." }, { status: 403 });
   }
 
-  const admin = createAdminClient();
+  // Use the user-session client throughout. RLS policies on these tables
+  // allow users to insert/select/update rows where user_id = auth.uid(),
+  // and storage policies allow users to read files in their own folder.
+  // No need to bypass RLS via service_role for normal user-scoped work.
 
   // 4) Create the invoice row + extraction job first so we have IDs to attach progress to
-  const { data: invoiceRow, error: invErr } = await admin
+  const { data: invoiceRow, error: invErr } = await supabase
     .from("invoice_analyses")
     .insert({
       user_id: user.id,
@@ -95,11 +97,17 @@ export async function POST(req: NextRequest) {
     .single();
   if (invErr || !invoiceRow) {
     console.error("Failed to create invoice row:", invErr);
-    return NextResponse.json({ error: "Failed to create analysis record." }, { status: 500 });
+    return NextResponse.json({
+      error: "create_analysis_failed",
+      message: `Could not create analysis record: ${invErr?.message || "unknown error"}`,
+      code: invErr?.code,
+      details: invErr?.details,
+      hint: invErr?.hint,
+    }, { status: 500 });
   }
   const invoiceId: string = invoiceRow.id;
 
-  const { data: jobRow } = await admin
+  const { data: jobRow, error: jobErr } = await supabase
     .from("invoice_extraction_jobs")
     .insert({
       invoice_id: invoiceId,
@@ -111,11 +119,14 @@ export async function POST(req: NextRequest) {
     })
     .select("id")
     .single();
+  if (jobErr) {
+    console.error("Failed to create extraction job:", jobErr);
+  }
   const jobId: string | undefined = jobRow?.id;
 
   try {
     // 5) Download the file from storage
-    const { data: fileBlob, error: dlErr } = await admin.storage.from(bucket).download(body.storage_path);
+    const { data: fileBlob, error: dlErr } = await supabase.storage.from(bucket).download(body.storage_path);
     if (dlErr || !fileBlob) {
       throw new Error(`Could not download file: ${dlErr?.message || "unknown error"}`);
     }
@@ -261,7 +272,7 @@ Return strict JSON only.`;
 
     // 8a) Classification gate — if the document isn't an invoice, abort cleanly
     if (parsed.document_type && parsed.document_type !== "invoice") {
-      await admin
+      await supabase
         .from("invoice_analyses")
         .update({
           status: "failed",
@@ -270,7 +281,7 @@ Return strict JSON only.`;
         })
         .eq("id", invoiceId);
       if (jobId) {
-        await admin
+        await supabase
           .from("invoice_extraction_jobs")
           .update({
             status: "failed",
@@ -300,7 +311,7 @@ Return strict JSON only.`;
 
     // 10) Update the invoice row with summary data
     const flaggedCount = (parsed.line_items || []).filter(li => li.flagged).length;
-    await admin
+    await supabase
       .from("invoice_analyses")
       .update({
         status: "completed",
@@ -338,13 +349,13 @@ Return strict JSON only.`;
       estimated_savings_cents: li.estimated_savings_cents ?? null,
     }));
     if (lineRows.length > 0) {
-      const { error: liErr } = await admin.from("invoice_line_items").insert(lineRows);
+      const { error: liErr } = await supabase.from("invoice_line_items").insert(lineRows);
       if (liErr) console.error("Failed to insert line items:", liErr);
     }
 
     // 12) Complete the job
     if (jobId) {
-      await admin
+      await supabase
         .from("invoice_extraction_jobs")
         .update({
           status: "completed",
@@ -368,12 +379,12 @@ Return strict JSON only.`;
   } catch (err: any) {
     console.error("Extraction failed:", err);
     // Mark invoice + job as failed
-    await admin
+    await supabase
       .from("invoice_analyses")
       .update({ status: "failed", top_finding: `Extraction failed: ${err?.message || String(err)}` })
       .eq("id", invoiceId);
     if (jobId) {
-      await admin
+      await supabase
         .from("invoice_extraction_jobs")
         .update({
           status: "failed",
