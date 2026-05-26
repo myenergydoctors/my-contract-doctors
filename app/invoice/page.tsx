@@ -303,9 +303,30 @@ function StepUpload({ onNext }) {
 }
 
 // ── STEP 1 — Contact ─────────────────────
+const CONTACT_STORAGE_KEY = "mcd_invoice_contact_v1";
+
 function StepContact({ onNext, onBack }) {
+  // Hydrate from localStorage so re-uploads don't lose what the user typed.
   const [form, setForm] = useState({name:"",email:"",phone:"",business:"",vendor:"",frequency:""});
-  const set = k => e => setForm(f=>({...f,[k]:e.target.value}));
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(CONTACT_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setForm(f => ({ ...f, ...parsed }));
+      }
+    } catch {}
+  }, []);
+
+  const set = k => e => {
+    const v = e.target.value;
+    setForm(f => {
+      const next = {...f, [k]: v};
+      try { localStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(next)); } catch {}
+      return next;
+    });
+  };
   const valid = form.name.trim()&&form.email.trim()&&form.business.trim();
   const iSt = {width:"100%",padding:"12px 14px",borderRadius:8,border:`1.5px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.navy,background:C.white,outline:"none",transition:"border-color 0.2s"};
   const lSt = {fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:C.gray700,marginBottom:6,display:"block"};

@@ -49,6 +49,27 @@ export async function getInvoice(id: string): Promise<InvoiceForUI | null> {
     .select("*")
     .eq("id", id)
     .single();
-  if (error || !data) return null;
+  if (error) {
+    console.error("getInvoice error:", error.code, error.message, error.hint, error.details);
+    return null;
+  }
+  if (!data) return null;
   return toUI(data as InvoiceAnalysisRow);
+}
+
+// Variant that also returns the raw row + extraction status, for the
+// detail page to surface failed/processing states.
+export async function getInvoiceWithStatus(id: string): Promise<{ invoice: InvoiceForUI | null; rawStatus: string | null; topFinding: string | null; error: string | null }> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("invoice_analyses")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (error) {
+    return { invoice: null, rawStatus: null, topFinding: null, error: `${error.code || ""} ${error.message}` };
+  }
+  if (!data) return { invoice: null, rawStatus: null, topFinding: null, error: "not_found" };
+  const row = data as InvoiceAnalysisRow;
+  return { invoice: toUI(row), rawStatus: row.status, topFinding: row.top_finding, error: null };
 }

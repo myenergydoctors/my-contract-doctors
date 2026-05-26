@@ -1,25 +1,37 @@
 "use client";
 import Link from "next/link";
 import { use, useEffect, useState } from "react";
-import { getInvoice, type InvoiceForUI } from "@/lib/db/invoices";
+import { getInvoiceWithStatus, type InvoiceForUI } from "@/lib/db/invoices";
 import { listLineItemsForInvoice, type LineItemForUI } from "@/lib/db/line-items";
 
 const BENCHMARK_MIN_SAMPLE = 5; // need at least this many other customers in the same state before showing a benchmark
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const [invoice, setInvoice] = useState<InvoiceForUI | null | "not-found">(null);
+  const [invoice, setInvoice] = useState<InvoiceForUI | null>(null);
+  const [rawStatus, setRawStatus] = useState<string | null>(null);
+  const [topFinding, setTopFinding] = useState<string | null>(null);
+  const [queryError, setQueryError] = useState<string | null>(null);
   const [lineItems, setLineItems] = useState<LineItemForUI[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [inv, items] = await Promise.all([getInvoice(id), listLineItemsForInvoice(id)]);
-      if (cancelled) return;
-      setInvoice(inv ?? "not-found");
-      setLineItems(items);
-      setLoading(false);
+      try {
+        const [res, items] = await Promise.all([getInvoiceWithStatus(id), listLineItemsForInvoice(id)]);
+        if (cancelled) return;
+        setInvoice(res.invoice);
+        setRawStatus(res.rawStatus);
+        setTopFinding(res.topFinding);
+        setQueryError(res.error);
+        setLineItems(items);
+      } catch (e: any) {
+        if (cancelled) return;
+        setQueryError(e?.message || String(e));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     })();
     return () => { cancelled = true; };
   }, [id]);
@@ -31,14 +43,53 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       </div>
     );
   }
-  if (invoice === "not-found" || !invoice) {
+
+  // Failed extraction — show the underlying reason rather than "not found"
+  if (rawStatus === "failed") {
     return (
-      <div className="max-w-3xl py-12 text-center">
-        <h2 className="font-serif text-navy text-2xl mb-3">Invoice not found.</h2>
-        <p className="font-sans text-gray-500 mb-6">It may have been deleted, or the link is wrong.</p>
-        <Link href="/dashboard/invoices" className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90">
+      <div className="max-w-2xl py-12">
+        <Link href="/dashboard/invoices" className="inline-flex items-center font-sans text-sm text-blue hover:text-navy no-underline mb-4">
           ← Back to invoices
         </Link>
+        <div className="bg-white border-2 border-red/30 rounded-2xl p-8">
+          <div className="w-12 h-12 rounded-xl bg-red-light flex items-center justify-center mb-4 text-2xl">⚠</div>
+          <h2 className="font-serif text-navy text-2xl mb-3">Analysis didn't complete.</h2>
+          <p className="font-sans text-gray-700 leading-relaxed mb-5">
+            {topFinding || "Something went wrong while reading this file. Try uploading again, or use a clearer photo."}
+          </p>
+          <Link href="/invoice" className="inline-block font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90">
+            Try another upload →
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!invoice) {
+    return (
+      <div className="max-w-2xl py-12 text-center">
+        <h2 className="font-serif text-navy text-2xl mb-3">Invoice not found.</h2>
+        <p className="font-sans text-gray-500 mb-3">It may have been deleted, the link is wrong, or you don't have permission to view it.</p>
+        {queryError && (
+          <pre className="font-mono text-xs text-gray-400 bg-gray-100 inline-block px-3 py-2 rounded mb-6 max-w-full overflow-x-auto">{queryError}</pre>
+        )}
+        <div>
+          <Link href="/dashboard/invoices" className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90">
+            ← Back to invoices
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Processing — still working on it
+  if (rawStatus === "processing") {
+    return (
+      <div className="max-w-2xl py-12 text-center">
+        <div className="w-16 h-16 rounded-full bg-blue-pale text-blue flex items-center justify-center mx-auto mb-5 text-2xl animate-pulse">⟳</div>
+        <h2 className="font-serif text-navy text-2xl mb-3">Still analyzing…</h2>
+        <p className="font-sans text-gray-500 mb-6">Refresh in a moment to see the result.</p>
+        <Link href="/dashboard/invoices" className="font-sans text-sm text-blue hover:text-navy no-underline">← Back to invoices</Link>
       </div>
     );
   }
