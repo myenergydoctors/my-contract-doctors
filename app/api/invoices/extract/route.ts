@@ -41,6 +41,8 @@ type AILineItem = {
 };
 
 type AIResponse = {
+  document_type: "invoice" | "agreement" | "statement" | "purchase-order" | "receipt" | "other";
+  document_type_reason?: string;
   vendor_name?: string;
   vendor_slug?: string;
   invoice_number?: string;
@@ -48,7 +50,7 @@ type AIResponse = {
   service_state?: string;
   service_zip?: string;
   monthly_total_cents?: number;
-  line_items: AILineItem[];
+  line_items?: AILineItem[];
   top_finding?: string;
   potential_annual_savings_cents?: number;
 };
@@ -132,9 +134,25 @@ export async function POST(req: NextRequest) {
       .map(v => `  ${v.slug}: ${v.name}${v.aliases.length ? ` [also: ${v.aliases.join(", ")}]` : ""}`)
       .join("\n");
 
-    const systemPrompt = `You are an analyst extracting structured data from a uniform / linen / facility service invoice for My Contract Doctors.
+    const systemPrompt = `You are an analyst at My Contract Doctors. The user uploaded a document and we need to determine what it is and extract structured data if it's an INVOICE.
 
-Your job is to:
+STEP 1: Classify the document first.
+- "invoice" — a periodic bill from a service vendor with line items, quantities, prices, and a total amount due. Typically labeled "Invoice" with a number, billing period, line items.
+- "agreement" — a contract or service agreement. Has clauses, terms, signatures. NOT what we want here (the user should upload to the /agreement flow instead).
+- "statement" — a summary of charges over a period, not a bill itself
+- "purchase-order" — order placed with a vendor, not a bill from them
+- "receipt" — proof of single payment
+- "other" — anything else (random photo, illegible, not service-related, etc.)
+
+If document_type is NOT "invoice", STOP. Return just:
+{
+  "document_type": "agreement" (or whatever it is),
+  "document_type_reason": "1 sentence explaining what you saw"
+}
+
+STEP 2 (only if it IS an invoice): Extract structured data.
+
+Your job:
 1. Identify the vendor and map it to one of our vendor slugs (use 'other' only if truly unrecognized)
 2. Extract every line item and map each to one of our product slugs
 3. Flag items that are above-market or worth knowing about
@@ -157,8 +175,9 @@ CRITICAL TONE RULES:
 - Use phrases like "above industry average", "worth reviewing", "negotiation opportunity"
 - Suggested actions describe what the CLIENT can do, not what the vendor did wrong
 
-Return JSON matching this exact schema (omit fields you can't determine):
+Return JSON matching this exact schema (omit fields you can't determine, BUT always include document_type):
 {
+  "document_type": "invoice",
   "vendor_name": "string",
   "vendor_slug": "best matching slug or 'other'",
   "invoice_number": "string",
@@ -240,6 +259,40 @@ Return strict JSON only.`;
       throw new Error(`Could not parse AI response as JSON. Raw text: ${cleaned.slice(0, 500)}`);
     }
 
+    // 8a) Classification gate — if the document isn't an invoice, abort cleanly
+    if (parsed.document_type && parsed.document_type !== "invoice") {
+      await admin
+        .from("invoice_analyses")
+        .update({
+          status: "failed",
+          top_finding: `Detected as ${parsed.document_type} — not an invoice.`,
+          raw_analysis: parsed as unknown as object,
+        })
+        .eq("id", invoiceId);
+      if (jobId) {
+        await admin
+          .from("invoice_extraction_jobs")
+          .update({
+            status: "failed",
+            completed_at: new Date().toISOString(),
+            error_message: `wrong_document_type: ${parsed.document_type}`,
+            raw_ai_response: parsed as unknown as object,
+            ai_tokens_input: inputTokens,
+            ai_tokens_output: outputTokens,
+            ai_cost_cents: costCents,
+          })
+          .eq("id", jobId);
+      }
+      return NextResponse.json({
+        error: "wrong_document_type",
+        detected_type: parsed.document_type,
+        reason: parsed.document_type_reason || null,
+        // The user can re-upload to the right flow without re-uploading the file:
+        storage_path: body.storage_path,
+        bucket,
+      }, { status: 422 });
+    }
+
     // 9) Map slugs to UUIDs
     const productBySlug = new Map(products.map(p => [p.slug, p.id]));
     const vendorBySlug = new Map(vendors.map(v => [v.slug, v.id]));
@@ -317,7 +370,7 @@ Return strict JSON only.`;
     // Mark invoice + job as failed
     await admin
       .from("invoice_analyses")
-      .update({ status: "failed" })
+      .update({ status: "failed", top_finding: `Extraction failed: ${err?.message || String(err)}` })
       .eq("id", invoiceId);
     if (jobId) {
       await admin
@@ -329,7 +382,7 @@ Return strict JSON only.`;
         })
         .eq("id", jobId);
     }
-    return NextResponse.json({ error: err?.message || "Extraction failed" }, { status: 500 });
+    return NextResponse.json({ error: "extraction_failed", message: err?.message || "Extraction failed" }, { status: 500 });
   }
 }
 

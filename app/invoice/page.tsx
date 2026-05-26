@@ -345,7 +345,7 @@ function StepScanning({ contact, file, onDone }) {
   const router = useRouter();
   const [phase, setPhase]       = useState(0);
   const [progress, setProgress] = useState(0);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [errorState, setErrorState] = useState/* :null | { kind:string; ... } */(null);
 
   // All mutable state lives in refs to avoid stale closures entirely
   const started  = useRef(false);
@@ -421,7 +421,10 @@ function StepScanning({ contact, file, onDone }) {
           const { error: upErr } = await supabase.storage
             .from("invoices")
             .upload(path, file, { contentType: file.type, upsert: false });
-          if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+          if (upErr) {
+            setErrorState({ kind: "upload_failed", message: upErr.message });
+            return;
+          }
 
           // 2) Call extraction API
           const res = await fetch("/api/invoices/extract", {
@@ -436,7 +439,24 @@ function StepScanning({ contact, file, onDone }) {
             }),
           });
           const data = await res.json();
-          if (!res.ok) throw new Error(data?.error || "Extraction failed");
+
+          // 2a) Wrong document type — show specialized error UI
+          if (res.status === 422 && data?.error === "wrong_document_type") {
+            setErrorState({
+              kind: "wrong_document_type",
+              detected: data.detected_type,
+              reason: data.reason,
+            });
+            return;
+          }
+
+          if (!res.ok) {
+            setErrorState({
+              kind: "extraction_failed",
+              message: data?.message || data?.error || "Something went wrong analyzing this file.",
+            });
+            return;
+          }
 
           // 3) Bypass the mock results screen entirely — go straight to the
           // real dashboard detail page with the new analysis
@@ -455,12 +475,11 @@ function StepScanning({ contact, file, onDone }) {
           }),
         });
         resultR.current = await res.json();
+        finish.current();
       } catch (err: any) {
         console.error(err);
-        setErrorMsg(err?.message || "Something went wrong.");
-        resultR.current = MOCK;
+        setErrorState({ kind: "extraction_failed", message: err?.message || "Something went wrong." });
       }
-      finish.current();
     };
 
     runExtraction();
@@ -471,6 +490,60 @@ function StepScanning({ contact, file, onDone }) {
       clearInterval(finishT.current);
     };
   }, []); // eslint-disable-line
+
+  // ── Error states ──────────────────────
+  if (errorState?.kind === "wrong_document_type") {
+    const labelMap = {
+      agreement: "service contract or agreement",
+      statement: "statement (not a per-period invoice)",
+      "purchase-order": "purchase order",
+      receipt: "receipt",
+      other: "different kind of document",
+    };
+    const detected = labelMap[errorState.detected] || "different kind of document";
+    return (
+      <div style={{maxWidth:560,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
+        <div style={{width:80,height:80,borderRadius:20,background:"#FEF3C7",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px"}}>
+          <span style={{fontSize:38}}>📋</span>
+        </div>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.navy,marginBottom:10,lineHeight:1.2}}>This looks like a {detected}.</h2>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,marginBottom:8,lineHeight:1.65}}>The invoice analyzer is built for periodic bills with line items and totals. The file you uploaded looks like something different.</p>
+        {errorState.reason && (
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,marginBottom:24,fontStyle:"italic"}}>
+            What we saw: {errorState.reason}
+          </p>
+        )}
+        {errorState.detected === "agreement" && (
+          <a href="/agreement" style={{display:"inline-block",background:C.teal,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"12px 28px",borderRadius:9,textDecoration:"none",marginBottom:14}}>
+            Analyze as a contract instead →
+          </a>
+        )}
+        <div style={{marginTop:8}}>
+          <a href="/invoice" style={{display:"inline-block",background:C.white,color:C.navy,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,padding:"10px 22px",borderRadius:9,textDecoration:"none"}}>
+            Upload a different file
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorState?.kind === "upload_failed" || errorState?.kind === "extraction_failed") {
+    return (
+      <div style={{maxWidth:520,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
+        <div style={{width:80,height:80,borderRadius:20,background:"#FEE2E2",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px"}}>
+          <span style={{fontSize:38}}>⚠</span>
+        </div>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:C.navy,marginBottom:10,lineHeight:1.2}}>We couldn't read this file.</h2>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,marginBottom:6,lineHeight:1.65}}>
+          {errorState.kind === "upload_failed" ? "The file couldn't be uploaded." : "The AI couldn't extract line items from this file. Try a clearer photo or a different invoice."}
+        </p>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginBottom:24,fontStyle:"italic"}}>{errorState.message}</p>
+        <a href="/invoice" style={{display:"inline-block",background:C.navy,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"12px 28px",borderRadius:9,textDecoration:"none"}}>
+          Try again
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div style={{maxWidth:500,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
