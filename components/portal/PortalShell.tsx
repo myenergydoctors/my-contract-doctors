@@ -3,8 +3,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { mockUser, mockNotifications } from "@/lib/mock-data";
-import { isSignedIn, signOut } from "@/lib/demo-auth";
 import { getDemoMode, setDemoMode, planForMode, demoModes, type DemoMode } from "@/lib/demo-mode";
+import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/Logo";
 
 type NavItem = { label: string; href: string; icon: string; badge?: string; badgeKind?: "count" | "pro" };
@@ -38,10 +38,33 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [mode, setMode] = useState<DemoMode>("pro");
+  const [realUser, setRealUser] = useState<{ email: string | null; firstName: string; lastName: string; business: string; initials: string } | null>(null);
+
+  const supabase = createClient();
 
   useEffect(() => {
     setMode(getDemoMode());
   }, []);
+
+  useEffect(() => {
+    // Load real Supabase user metadata if signed in
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        const meta = user.user_metadata || {};
+        const first = (meta.first_name || "").trim();
+        const last = (meta.last_name || "").trim();
+        const business = (meta.business_name || "").trim();
+        const initials = ((first[0] || "") + (last[0] || "")).toUpperCase() || (user.email?.[0]?.toUpperCase() ?? "?");
+        setRealUser({
+          email: user.email ?? null,
+          firstName: first || user.email?.split("@")[0] || "there",
+          lastName: last,
+          business: business || "Your business",
+          initials: initials || "?",
+        });
+      }
+    });
+  }, [supabase]);
 
   const switchMode = (next: DemoMode) => {
     if (next === mode) return;
@@ -62,19 +85,17 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const unreadCount = visibleNotifications.filter(n => n.unread).length;
   const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
 
-  // Demo auth gate. Replace with real Supabase session check in Phase 2.
+  // Middleware already gates /dashboard/* via Supabase session — if we got
+  // rendered, the user is signed in. Skip the localStorage check entirely.
   useEffect(() => {
-    if (!isSignedIn()) {
-      router.replace("/sign-in");
-    } else {
-      setAuthChecked(true);
-    }
-  }, [router]);
+    setAuthChecked(true);
+  }, []);
 
-  const handleSignOut = (e: React.MouseEvent) => {
+  const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
-    signOut();
+    await supabase.auth.signOut();
     router.push("/sign-in");
+    router.refresh();
   };
 
   // Don't flash dashboard content while we're checking
@@ -139,11 +160,13 @@ export default function PortalShell({ children }: { children: React.ReactNode })
                 className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-blue-pale text-blue font-sans text-sm font-semibold flex items-center justify-center">
-                  {mockUser.avatarInitials}
+                  {realUser?.initials || mockUser.avatarInitials}
                 </div>
                 <div className="hidden md:block text-left">
-                  <div className="font-sans text-sm font-medium text-navy leading-tight">{mockUser.name}</div>
-                  <div className="font-sans text-xs text-gray-500 leading-tight">{mockUser.businessName}</div>
+                  <div className="font-sans text-sm font-medium text-navy leading-tight">
+                    {realUser ? `${realUser.firstName} ${realUser.lastName}`.trim() : mockUser.name}
+                  </div>
+                  <div className="font-sans text-xs text-gray-500 leading-tight">{realUser?.business || mockUser.businessName}</div>
                 </div>
               </button>
               {userMenuOpen && (
@@ -151,8 +174,10 @@ export default function PortalShell({ children }: { children: React.ReactNode })
                   <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <div className="font-sans text-sm font-medium text-navy">{mockUser.name}</div>
-                      <div className="font-sans text-xs text-gray-500 truncate">{mockUser.email}</div>
+                      <div className="font-sans text-sm font-medium text-navy">
+                        {realUser ? `${realUser.firstName} ${realUser.lastName}`.trim() : mockUser.name}
+                      </div>
+                      <div className="font-sans text-xs text-gray-500 truncate">{realUser?.email || mockUser.email}</div>
                     </div>
                     <Link href="/dashboard/settings" className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline" onClick={() => setUserMenuOpen(false)}>Account settings</Link>
                     <Link href="/dashboard/billing"  className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline" onClick={() => setUserMenuOpen(false)}>Billing</Link>

@@ -2,7 +2,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { setDemoSession } from "@/lib/demo-auth";
+// setDemoSession used to fake a sign-in via localStorage. Now that real
+// Supabase auth gates /dashboard, onboarding only renders for users who
+// are already signed in (or who navigate here from /sign-up after email
+// confirmation), so no fake session is needed.
 import Logo from "@/components/Logo";
 
 const vendors = ["Cintas", "UniFirst", "ALSCO", "ImageFirst", "Aramark", "G&K Services", "Other / I'm not sure"];
@@ -21,7 +24,6 @@ export default function OnboardingPage() {
   const next = () => setStep(s => Math.min(totalSteps, s + 1));
   const back = () => setStep(s => Math.max(1, s - 1));
   const finish = () => {
-    setDemoSession();
     router.push("/dashboard");
   };
 

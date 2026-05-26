@@ -3,13 +3,19 @@ import Link from "next/link";
 import { useState } from "react";
 import { mockUser } from "@/lib/mock-data";
 import { useEffectiveData } from "@/lib/use-effective-plan";
+import { useRealUser } from "@/lib/use-real-user";
 import EmptyState from "@/components/portal/EmptyState";
 import PaywallModal from "@/components/portal/PaywallModal";
 
 export default function DashboardHome() {
   const { mode, plan, invoices, agreements } = useEffectiveData();
+  const realUser = useRealUser();
   const empty = mode === "new";
   const [showAgreementPaywall, setShowAgreementPaywall] = useState(false);
+
+  // Prefer real user metadata when available; fall back to mock for preview
+  const firstName = realUser?.firstName || mockUser.name.split(" ")[0];
+  const businessName = realUser?.business || mockUser.businessName;
 
   const handleAnalyzeAgreement = (e: React.MouseEvent) => {
     if (plan !== "pro") {
@@ -34,12 +40,12 @@ export default function DashboardHome() {
           {empty ? "Welcome aboard" : "Welcome back"}
         </div>
         <h2 className="font-serif text-navy text-3xl md:text-[34px] leading-tight mb-2">
-          {empty ? `Hi ${mockUser.name.split(" ")[0]}, let's get started.` : `Good to see you, ${mockUser.name.split(" ")[0]}.`}
+          {empty ? `Hi ${firstName}, let's get started.` : `Good to see you, ${firstName}.`}
         </h2>
         <p className="font-sans font-light text-gray-500 leading-relaxed">
           {empty
-            ? <>Upload your first invoice and we'll show you exactly where {mockUser.businessName} is overpaying.</>
-            : <>Here's what's been happening with your contracts and invoices at <span className="text-navy font-medium">{mockUser.businessName}</span>.</>}
+            ? <>Upload your first invoice and we'll show you where there's room to renegotiate at {businessName}.</>
+            : <>Here's what's been happening with your contracts and invoices at <span className="text-navy font-medium">{businessName}</span>.</>}
         </p>
       </div>
 
