@@ -3,6 +3,7 @@ import Link from "next/link";
 import { use, useEffect, useState } from "react";
 import { getInvoiceWithStatus, type InvoiceForUI } from "@/lib/db/invoices";
 import { listLineItemsForInvoice, type LineItemForUI } from "@/lib/db/line-items";
+import ExtractionInspector from "./ExtractionInspector";
 
 const BENCHMARK_MIN_SAMPLE = 5; // need at least this many other customers in the same state before showing a benchmark
 
