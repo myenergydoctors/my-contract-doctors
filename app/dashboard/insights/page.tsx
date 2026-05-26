@@ -47,9 +47,9 @@ export default function InsightsPage() {
 
         {/* Vendor comparison */}
         <section className="bg-white border border-gray-200 rounded-2xl p-6 mb-6">
-          <h3 className="font-serif text-navy text-xl mb-1">Vendor overcharge benchmarks</h3>
+          <h3 className="font-serif text-navy text-xl mb-1">Vendor pricing benchmarks</h3>
           <p className="font-sans font-light text-gray-500 text-sm leading-relaxed mb-5">
-            Average percentage above market rate by vendor, across all customer analyses.
+            Average savings we've identified by vendor across all customer analyses — useful for understanding where the negotiation room typically is.
           </p>
           <div className="flex flex-col gap-3">
             {mockInsights.topVendors.map(v => (
@@ -73,9 +73,9 @@ export default function InsightsPage() {
 
         {/* Common clauses */}
         <section className="bg-white border border-gray-200 rounded-2xl p-6">
-          <h3 className="font-serif text-navy text-xl mb-1">Most common predatory clauses</h3>
+          <h3 className="font-serif text-navy text-xl mb-1">Most common high-impact clauses</h3>
           <p className="font-sans font-light text-gray-500 text-sm leading-relaxed mb-5">
-            How often each problematic clause shows up in standard uniform/linen service agreements.
+            The clauses that show up most often in standard uniform and linen service agreements — and that are most worth knowing about before you sign or renew.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {mockInsights.mostCommonClauses.map(c => (

@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import FaqSchema from "@/components/seo/FaqSchema";
 
 type Article = { id: string; q: string; a: string };
 type Category = { id: string; title: string; description: string; icon: string; articles: Article[] };
@@ -13,7 +14,7 @@ const categories: Category[] = [
     icon: "▦",
     articles: [
       { id: "first-upload", q: "How do I upload my first invoice?", a: "Head to the Invoice page or click 'Upload invoice' from your dashboard. You can drag-and-drop a PDF or image, or use the QR code option to photograph a paper invoice from your phone. Most uploads finish processing within 60 seconds." },
-      { id: "what-we-find", q: "What kinds of overcharges do you find?", a: "We catch above-cap escalators, unauthorized surcharges (fuel, environmental, energy), minimum billing applied incorrectly, vendor-priced replacement charges, missing volume tiers, and contract violations like exclusivity issues. Every flagged item comes with the exact contract clause and recommended next step." },
+      { id: "what-we-find", q: "What kinds of savings opportunities do you find?", a: "We surface above-cap escalators, surcharges that may not be in the contract, minimum billing applied during low-usage periods, replacement charges worth capping, missed volume tiers, and structural issues like broad exclusivity clauses. Every flagged item comes with the exact contract language and a recommended next step." },
       { id: "free-vs-pro", q: "What's the difference between the Free and Pro plans?", a: "Free gets you one recommendation per invoice — useful to see what we'd find. Pro unlocks every flagged item, contract analyses, the Industry Insights dashboard, auto-renewal alerts, and quarterly automatic reviews. See /pricing for the full comparison." },
     ],
   },
@@ -64,18 +65,19 @@ const categories: Category[] = [
   {
     id: "vendors-disputes",
     title: "Vendor disputes",
-    description: "What to expect when you push back on overcharges.",
+    description: "What to expect when you raise an issue with your vendor.",
     icon: "◬",
     articles: [
       { id: "retaliation", q: "Will the vendor retaliate if we dispute?", a: "In our experience, no. Vendors take written disputes seriously because the alternative is losing the account. We've never seen a dispute lead to service changes or quality issues." },
       { id: "dispute-outcome", q: "How long does a typical dispute take?", a: "Most vendors respond within 2–4 weeks. Credits typically appear on the next billing cycle. Larger disputes (>$5K) can take longer and may go to the vendor's regional or national account manager." },
-      { id: "negotiation-leverage", q: "What's our leverage in a negotiation?", a: "More than you think. Most contracts have annual renewal options buried in the auto-renewal clause, and most vendors are violating their own contracts in ways that give you leverage. We surface both for you." },
+      { id: "negotiation-leverage", q: "What's our leverage in a negotiation?", a: "More than you think. Most contracts have annual renewal options buried in the auto-renewal clause, and most invoices have at least one line item that doesn't precisely match the original agreement — which gives you real leverage. We surface both for you." },
     ],
   },
 ];
 
 export default function HelpPage() {
   const [query, setQuery] = useState("");
+  const allFaqs = categories.flatMap(c => c.articles.map(a => ({ q: a.q, a: a.a })));
   const filtered = query.trim()
     ? categories.map(c => ({
         ...c,
@@ -85,6 +87,7 @@ export default function HelpPage() {
 
   return (
     <>
+      <FaqSchema items={allFaqs} />
       {/* Hero */}
       <section className="bg-gradient-to-br from-navy-dark to-navy px-6 md:px-8 pt-28 md:pt-36 pb-12 md:pb-16 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />

@@ -1,6 +1,12 @@
 import Link from "next/link";
+import FaqSchema from "@/components/seo/FaqSchema";
+import ProductSchema from "@/components/seo/ProductSchema";
+import PlansGrid from "./PlansGrid";
 
-export const metadata = { title: "Pricing | My Contract Doctors" };
+export const metadata = {
+  title: "Pricing",
+  description: "Free to start. $29/month Pro plan for unlimited contract and invoice analyses. $49 one-time for a single Agreement audit. Cancel anytime.",
+};
 
 const plans = [
   {
@@ -89,6 +95,19 @@ const faqs = [
 export default function PricingPage() {
   return (
     <>
+      <FaqSchema items={faqs} />
+      <ProductSchema
+        name="Pro plan — My Contract Doctors"
+        description="Unlimited uniform and linen contract and invoice analyses, plus Industry Insights and auto-renewal alerts."
+        price={29}
+        url="/pricing"
+      />
+      <ProductSchema
+        name="Agreement analysis — My Contract Doctors"
+        description="Full personalized analysis of one specific uniform or linen service agreement, including clause-by-clause breakdown and negotiation emails."
+        price={49}
+        url="/pricing"
+      />
       {/* Hero */}
       <section className="bg-gradient-to-br from-navy-dark to-navy px-6 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
@@ -106,50 +125,14 @@ export default function PricingPage() {
 
       {/* Plans */}
       <section className="px-6 md:px-8 py-16 md:py-24 bg-off-white">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-5">
-          {plans.map(plan => (
-            <div
-              key={plan.id}
-              className={`relative rounded-2xl p-6 md:p-8 flex flex-col bg-white ${plan.highlighted ? "border-2 border-teal shadow-xl md:scale-105" : "border border-gray-200"}`}
-            >
-              {plan.highlighted && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal text-white font-sans text-[10px] font-semibold uppercase tracking-wider px-3 py-1 rounded-full">
-                  Most popular
-                </div>
-              )}
-
-              <h3 className="font-serif text-navy text-2xl mb-1">{plan.name}</h3>
-              <div className="mb-3">
-                <span className="font-serif text-navy text-4xl">{plan.price}</span>
-                <span className="font-sans font-light text-gray-500 text-sm ml-2">{plan.cadence}</span>
-              </div>
-              <p className="font-sans font-light text-gray-500 text-sm leading-relaxed mb-6">{plan.description}</p>
-
-              <ul className="flex flex-col gap-2.5 mb-6 flex-1">
-                {plan.features.map(f => (
-                  <li key={f} className="flex gap-2 items-start font-sans text-sm text-navy">
-                    <span className={`text-base leading-tight flex-shrink-0 ${plan.highlighted ? "text-teal" : "text-blue"}`}>✓</span>
-                    <span>{f}</span>
-                  </li>
-                ))}
-                {plan.missing.map(f => (
-                  <li key={f} className="flex gap-2 items-start font-sans text-sm text-gray-400">
-                    <span className="text-base leading-tight flex-shrink-0">—</span>
-                    <span className="line-through">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                href={plan.ctaHref}
-                className={`font-sans text-sm font-medium px-5 py-3 rounded-lg no-underline text-center transition-opacity hover:opacity-90 ${
-                  plan.highlighted ? "bg-teal text-white" : "bg-navy text-white"
-                }`}
-              >
-                {plan.cta}
-              </Link>
-            </div>
-          ))}
+        <div className="max-w-6xl mx-auto">
+          <PlansGrid
+            free={plans[0]}
+            agreement={plans[1]}
+            proPlanBase={plans[2]}
+            proMonthly={{ price: "$29", cadence: "per month", ctaHref: "/checkout/pro" }}
+            proAnnual={{ price: "$313.20", cadence: "billed yearly", effectiveMonthly: "$26.10", savings: "Save $34.80 vs paying monthly", ctaHref: "/checkout/pro-annual" }}
+          />
         </div>
       </section>
 

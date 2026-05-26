@@ -29,15 +29,15 @@ export default function FreeGuidePage() {
           <div>
             <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">Free guide · No card required</span>
             <h1 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(30px,4.5vw,46px)" }}>
-              7 clauses that are costing you <em className="italic text-blue-light">thousands</em> right now.
+              7 clauses worth understanding <em className="italic text-blue-light">before you sign.</em>
             </h1>
             <p className="font-sans font-light text-white/70 leading-relaxed text-base mb-6">
-              A field-tested PDF guide for small business owners. We break down the seven most common predatory clauses in uniform and linen service agreements — with the exact language to look for and how to negotiate each one out.
+              A field-tested PDF guide for small business owners. We break down the seven most common high-impact clauses in uniform and linen service agreements — with the exact language to look for and how to negotiate each one.
             </p>
             <ul className="flex flex-col gap-2.5 mb-2">
               {[
                 "How to spot auto-renewal traps before you sign",
-                "The pricing escalator trick costing you 4–6% a year",
+                "The pricing escalator that quietly adds 4–6% a year",
                 "Why 'minimum weekly billing' should be your top negotiation target",
                 "The vendor-priced 'replacement cost' game (and how to cap it)",
                 "Sample dispute letter language you can use today",
@@ -136,7 +136,7 @@ export default function FreeGuidePage() {
             <h2 className="font-serif text-navy leading-tight" style={{ fontSize: "clamp(26px,3.5vw,38px)" }}>One example from the guide</h2>
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-6 md:p-8">
-            <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-red mb-3">Clause #3 — Minimum Weekly Billing</div>
+            <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Clause #3 — Minimum Weekly Billing</div>
             <p className="font-sans text-navy text-base leading-relaxed mb-4 font-light italic border-l-2 border-l-gray-300 pl-4">
               "Customer agrees to maintain a minimum weekly service charge of $X, regardless of actual quantity of items rented or services rendered."
             </p>

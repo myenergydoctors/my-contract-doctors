@@ -13,10 +13,10 @@ export default function IndustriesPage() {
         <div className="max-w-3xl mx-auto text-center relative z-10">
           <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">Industries</span>
           <h1 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(32px,4.5vw,52px)" }}>
-            Built for the industries <em className="italic text-blue-light">getting squeezed hardest.</em>
+            Built for the industries with the <em className="italic text-blue-light">biggest negotiation opportunities.</em>
           </h1>
           <p className="font-sans font-light text-white/70 leading-relaxed text-base md:text-lg">
-            Different industries get hit by different parts of the same predatory contracts. Pick yours to see what we typically find.
+            Different industries see different clauses in the same service contracts. Pick yours to see what we typically help with.
           </p>
         </div>
       </section>

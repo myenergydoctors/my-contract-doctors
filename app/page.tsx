@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import CustomerLogosBar from "@/components/marketing/CustomerLogosBar";
 
 const COLORS = {
   navy: "#0C2D54",
@@ -131,7 +132,7 @@ function Hero() {
               lineHeight: 1.75, color: "rgba(255,255,255,0.7)", marginBottom: 40,
               maxWidth: 480, animation: "slideUp 0.7s ease 0.2s both",
             }}>
-              Most businesses sign their uniform and linen agreements and never look at them again — quietly overpaying year after year. Upload your invoice or contract and we'll show you exactly where the money is going.
+              Most businesses sign their uniform and linen agreements and never look at them again — and paying more than they need to year after year. Upload your invoice or contract and we'll show you exactly where the money is going, and where there's room to renegotiate.
             </p>
 
             <div style={{
@@ -262,7 +263,7 @@ function HowItWorks() {
     {
       num: "02",
       title: "Our AI scans and analyzes",
-      body: "We extract every line item, compare rates against our database, and identify exactly where you're being overcharged.",
+      body: "We extract every line item, compare rates against our database, and surface exactly where you're paying above market — and where there's room to negotiate.",
       color: COLORS.teal,
     },
     {
@@ -581,8 +582,8 @@ function CTABand() {
           fontFamily: "'DM Serif Display', serif", fontSize: "clamp(28px, 4vw, 44px)",
           color: "#fff", lineHeight: 1.15, marginBottom: 18,
         }}>
-          Ready to see what your vendor<br />
-          <em style={{ fontStyle: "italic", color: COLORS.blueLight }}>doesn't want you to know?</em>
+          Ready to know exactly<br />
+          <em style={{ fontStyle: "italic", color: COLORS.blueLight }}>what you're paying for?</em>
         </h2>
         <p style={{
           fontFamily: "'DM Sans', sans-serif", fontSize: 16, fontWeight: 300,
@@ -708,12 +709,13 @@ export default function App() {
           here, especially anything with `* { margin: 0 }` which breaks
           Tailwind's `mx-auto` utility. */}
       <Hero />
+      <CustomerLogosBar />
       <HowItWorks />
       <ProductSection
         eyebrow="The Invoice"
         headline="Upload your invoice. Get instant savings."
         subhead="One free recommendation, immediately."
-        body="Snap a photo or upload your latest Cintas, UniFirst, or ALSCO invoice. Our AI reads every line item, calculates your annual spend, and surfaces exactly where you're being overcharged — starting with one free recommendation the moment you upload."
+        body="Snap a photo or upload your latest uniform service invoice. Our AI reads every line item, calculates your annual spend, and surfaces where rates are above the market average — starting with one free recommendation the moment you upload."
         cta="Upload My Invoice — Free"
         accent={COLORS.teal}
         badge="Free to start"

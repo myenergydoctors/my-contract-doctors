@@ -13,7 +13,7 @@ export default function AuthShell({ children, eyebrow, title, subtitle }: { chil
           <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-teal mb-3">Our promise</div>
           <h2 className="font-serif text-4xl leading-tight mb-5">We're on your side. <em className="italic text-blue-light">Not the vendor's.</em></h2>
           <p className="font-sans font-light text-white/70 leading-relaxed">
-            Every uniform and linen agreement we've ever reviewed had at least one clause built to drain the customer. We help businesses spot them and push back — with data.
+            Every uniform and linen agreement we've reviewed has had at least one clause worth a second look. We help businesses understand what they're signing, get the best price, and renegotiate when it makes sense.
           </p>
         </div>
 

@@ -15,7 +15,7 @@ export default function AboutPage() {
             <em className="italic text-blue-light">Not the vendor's.</em>
           </h1>
           <p className="font-sans font-light text-white/70 leading-relaxed text-base md:text-lg">
-            Every uniform and linen agreement we've reviewed had at least one clause designed to drain the customer. We're the team putting those numbers back where they belong — in your pocket.
+            Recurring service agreements are long, complex, and rarely re-read. We're the team that does that reading for you — and shows you what's worth understanding, questioning, or renegotiating.
           </p>
         </div>
       </section>
@@ -38,7 +38,7 @@ export default function AboutPage() {
               That's billions of dollars a year that quietly leave small businesses without anyone ever questioning it.
             </p>
             <p className="font-serif text-navy text-lg leading-snug italic pt-2 border-l-2 border-blue pl-4">
-              We started My Contract Doctors because we believe every business owner deserves to understand what they're signing, what they're paying, and where they're being overcharged — without needing a law degree or a procurement team.
+              We started My Contract Doctors because we believe every business owner deserves to understand what they're signing, what they're paying, and where there's room to negotiate — without needing a law degree or a procurement team.
             </p>
           </div>
         </div>

@@ -808,7 +808,7 @@ function StepResults({result,contact}){
         <div>
           <Tag variant="teal">Next step — The Invoice</Tag>
           <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:C.navy,margin:"10px 0 8px"}}>Now see exactly what you're overpaying on every line item.</h3>
-          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.7,maxWidth:540}}>Upload your latest invoice and we'll identify specific products where you're being overcharged — starting with one free recommendation right now.</p>
+          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.7,maxWidth:540}}>Upload your latest invoice and we'll identify specific line items where rates are above market — starting with one free recommendation right now.</p>
         </div>
         <div style={{textAlign:"center",flexShrink:0}}>
           <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:C.teal,marginBottom:6}}>Free to start</div>
