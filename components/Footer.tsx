@@ -45,7 +45,7 @@ const columns = [
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname?.startsWith("/upload") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
 
   return (
     <footer className="px-6 md:px-8 pt-12 pb-7" style={{ background: "#081E38" }}>

@@ -18,7 +18,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
-  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
+  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname?.startsWith("/upload") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);

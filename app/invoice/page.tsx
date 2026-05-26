@@ -1,5 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
+import { SITE } from "@/lib/site";
 
 const C = {
   navy:      "#0C2D54", navyDark:  "#081E38", blue: "#3D80C8",
@@ -55,37 +57,16 @@ function Nav({ step }) {
   );
 }
 
-// ── QR code (pure SVG pattern) ───────────
+// ── QR code (real, scannable) ────────────
+// Encodes a URL pointing to the mobile upload page. Cross-device handoff
+// (phone uploads → desktop sees them) still requires a real backend
+// (Supabase Realtime, polling, or websocket); for now the desktop side
+// continues to poll localStorage and only sees same-browser uploads.
 function QRCode({ sessionId, size=160 }) {
-  // Static finder-pattern QR visual — in production replace with qrcode.js
-  const cell = size/21;
-  const pat = [
-    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,1,0,0,1,0,1,0,0,1,0,0,0,0,0,1],
-    [1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,0,1,1,0,0,0,1,0,1,1,1,0,1],
-    [1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1,1,1,0,1],
-    [1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
-    [0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0],
-    [1,0,1,1,0,1,1,1,0,1,1,0,1,1,1,0,1,1,0,1,0],
-    [0,1,0,0,1,0,0,0,1,0,0,1,0,0,0,1,0,0,1,0,1],
-    [1,1,1,0,1,1,1,1,0,1,0,0,1,1,0,1,1,0,1,1,0],
-    [0,0,1,0,0,1,0,0,1,0,1,0,0,1,1,0,0,1,0,0,1],
-    [1,0,0,1,1,0,1,0,0,1,0,1,0,0,0,1,0,0,1,0,1],
-    [0,0,0,0,0,0,0,0,1,1,0,0,1,0,1,0,1,0,0,1,0],
-    [1,1,1,1,1,1,1,0,0,0,1,1,0,1,0,1,0,0,1,0,1],
-    [1,0,0,0,0,0,1,0,1,0,0,1,1,0,1,1,0,1,0,1,0],
-    [1,0,1,1,1,0,1,0,0,1,0,0,0,1,0,0,1,0,1,0,1],
-    [1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0,1,0],
-    [1,0,1,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1],
-    [1,0,0,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1,0],
-    [1,1,1,1,1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,0,1],
-  ];
-  const rects = pat.flatMap((row,r)=>row.map((v,c)=>v?`<rect x="${c*cell}" y="${r*cell}" width="${cell-0.5}" height="${cell-0.5}" fill="${C.navy}" rx="0.4"/>`:"")).join("");
+  const url = `${SITE.url}/upload?session=${sessionId}`;
   return (
     <div style={{background:"#fff",padding:14,borderRadius:12,border:`2px solid ${C.bluePale}`,display:"inline-block",boxShadow:"0 4px 20px rgba(12,45,84,0.08)"}}>
-      <div dangerouslySetInnerHTML={{__html:`<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg"><rect width="${size}" height="${size}" fill="white"/>${rects}</svg>`}}/>
+      <QRCodeSVG value={url} size={size} fgColor={C.navy} bgColor="#FFFFFF" level="M" includeMargin={false} />
       <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:C.gray500,textAlign:"center",marginTop:8,letterSpacing:"0.1em"}}>SESSION · {sessionId}</div>
     </div>
   );
