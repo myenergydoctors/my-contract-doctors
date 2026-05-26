@@ -17,15 +17,18 @@ function calcCostCents(inputTokens: number, outputTokens: number): number {
 }
 
 type ExtractRequestBody = {
-  storage_path: string;        // e.g. "invoices/{user_id}/12345-invoice.pdf"
+  storage_path: string;        // e.g. "{user_id}/12345-invoice.pdf"
   bucket?: string;             // defaults to 'invoices'
-  business_hint?: string;      // user-supplied business name
-  vendor_hint?: string;        // user-supplied vendor (helps Claude lock in)
-  state_hint?: string;         // 2-letter US state if known
+  business_hint?: string;
+  vendor_hint?: string;
+  state_hint?: string;
 };
+
+type LineType = "charge" | "credit" | "past_balance" | "late_fee" | "discount" | "tax" | "other";
 
 type AILineItem = {
   raw_label: string;
+  line_type?: LineType;
   product_slug?: string;
   vendor_slug?: string;
   quantity?: number;
@@ -39,19 +42,34 @@ type AILineItem = {
   estimated_savings_cents?: number;
 };
 
-type AIResponse = {
-  document_type: "invoice" | "agreement" | "statement" | "purchase-order" | "receipt" | "other";
-  document_type_reason?: string;
+type AIInvoice = {
   vendor_name?: string;
   vendor_slug?: string;
   invoice_number?: string;
   invoice_date?: string;
+  period_start?: string;
+  period_end?: string;
   service_state?: string;
   service_zip?: string;
-  monthly_total_cents?: number;
   line_items?: AILineItem[];
+
+  // Totals as printed on the invoice
+  gross_charges_cents?: number;
+  credits_cents?: number;
+  past_balance_cents?: number;
+  late_fees_cents?: number;
+  taxes_cents?: number;
+  total_due_cents?: number;
+
   top_finding?: string;
   potential_annual_savings_cents?: number;
+};
+
+type AIResponse = {
+  document_type: "invoice" | "agreement" | "statement" | "purchase-order" | "receipt" | "other";
+  document_type_reason?: string;
+  invoice_count?: number;
+  invoices?: AIInvoice[];
 };
 
 export async function POST(req: NextRequest) {
@@ -60,7 +78,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Server is not configured for AI extraction." }, { status: 500 });
   }
 
-  // 1) Authenticate the request
+  // 1) Authenticate
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -74,18 +92,16 @@ export async function POST(req: NextRequest) {
   }
   const bucket = body.bucket || "invoices";
 
-  // 3) Security: the path must be inside the user's own folder
+  // 3) Security: path must be inside user's own folder
   const expectedPrefix = `${user.id}/`;
   if (!body.storage_path.startsWith(expectedPrefix)) {
     return NextResponse.json({ error: "Forbidden: path does not match user." }, { status: 403 });
   }
 
-  // Use the user-session client throughout. RLS policies on these tables
-  // allow users to insert/select/update rows where user_id = auth.uid(),
-  // and storage policies allow users to read files in their own folder.
-  // No need to bypass RLS via service_role for normal user-scoped work.
-
-  // 4) Create the invoice row + extraction job first so we have IDs to attach progress to
+  // 4) Create the FIRST invoice row + extraction job up front so we have IDs to
+  //    attach progress to. If the PDF turns out to contain multiple invoices,
+  //    we'll insert additional sibling rows AFTER the AI returns and link them
+  //    by parent_upload_id = this first row's id.
   const { data: invoiceRow, error: invErr } = await supabase
     .from("invoice_analyses")
     .insert({
@@ -105,12 +121,12 @@ export async function POST(req: NextRequest) {
       hint: invErr?.hint,
     }, { status: 500 });
   }
-  const invoiceId: string = invoiceRow.id;
+  const primaryInvoiceId: string = invoiceRow.id;
 
   const { data: jobRow, error: jobErr } = await supabase
     .from("invoice_extraction_jobs")
     .insert({
-      invoice_id: invoiceId,
+      invoice_id: primaryInvoiceId,
       user_id: user.id,
       status: "processing",
       attempts: 1,
@@ -119,13 +135,11 @@ export async function POST(req: NextRequest) {
     })
     .select("id")
     .single();
-  if (jobErr) {
-    console.error("Failed to create extraction job:", jobErr);
-  }
+  if (jobErr) console.error("Failed to create extraction job:", jobErr);
   const jobId: string | undefined = jobRow?.id;
 
   try {
-    // 5) Download the file from storage
+    // 5) Download the file
     const { data: fileBlob, error: dlErr } = await supabase.storage.from(bucket).download(body.storage_path);
     if (dlErr || !fileBlob) {
       throw new Error(`Could not download file: ${dlErr?.message || "unknown error"}`);
@@ -145,78 +159,138 @@ export async function POST(req: NextRequest) {
       .map(v => `  ${v.slug}: ${v.name}${v.aliases.length ? ` [also: ${v.aliases.join(", ")}]` : ""}`)
       .join("\n");
 
-    const systemPrompt = `You are an analyst at My Contract Doctors. The user uploaded a document and we need to determine what it is and extract structured data if it's an INVOICE.
+    const systemPrompt = `You are an analyst at My Contract Doctors. The user uploaded a document and we need to classify it and extract structured data if it's one or more INVOICES.
 
-STEP 1: Classify the document first.
-- "invoice" — a periodic bill from a service vendor with line items, quantities, prices, and a total amount due. Typically labeled "Invoice" with a number, billing period, line items.
-- "agreement" — a contract or service agreement. Has clauses, terms, signatures. NOT what we want here (the user should upload to the /agreement flow instead).
-- "statement" — a summary of charges over a period, not a bill itself
-- "purchase-order" — order placed with a vendor, not a bill from them
+==========================
+STEP 1 — Classify the document
+==========================
+- "invoice" — periodic bill(s) from a service vendor with line items, quantities, prices, and total due
+- "agreement" — a service contract / signed agreement (NOT what we want here)
+- "statement" — summary of charges, not a bill itself
+- "purchase-order" — order placed with a vendor
 - "receipt" — proof of single payment
-- "other" — anything else (random photo, illegible, not service-related, etc.)
+- "other" — anything else (random photo, illegible, not service-related)
 
-If document_type is NOT "invoice", STOP. Return just:
-{
-  "document_type": "agreement" (or whatever it is),
-  "document_type_reason": "1 sentence explaining what you saw"
-}
+If document_type is NOT "invoice", STOP and return only:
+{ "document_type": "<type>", "document_type_reason": "1 sentence" }
 
-STEP 2 (only if it IS an invoice): Extract structured data.
+==========================
+STEP 2 — Detect multi-invoice files
+==========================
+A single PDF often contains MULTIPLE invoices stitched together (multi-stop / multi-location billing).
+Look for distinct invoice numbers, multiple "Invoice Date" headers, multiple "Total Due" footers,
+or repeated "Invoice #/Customer #" blocks. Each separate invoice number = a separate invoice row.
 
-Your job:
-1. Identify the vendor and map it to one of our vendor slugs (use 'other' only if truly unrecognized)
-2. Extract every line item and map each to one of our product slugs
-3. Flag items that are above-market or worth knowing about
-4. Return STRICT JSON only — no commentary, no markdown fences
+Return them all in an "invoices" array, one entry per distinct invoice. invoice_count = invoices.length.
 
+==========================
+STEP 3 — For EACH invoice, classify every line
+==========================
+Every line item MUST have a "line_type":
+- "charge" — current-period billable item (rentals, deliveries, services performed this period)
+- "credit" — refunds, returned-merchandise credits, billing adjustments REDUCING the amount due
+            (record the absolute value; the line_type signals it reduces the total)
+- "past_balance" — prior-period balance carried forward (e.g. "Previous Balance", "Amount From Last Invoice")
+- "late_fee" — finance charges, late fees, NSF fees
+- "discount" — negotiated reductions
+- "tax" — sales tax / state tax
+- "other" — anything not fitting above (do not flag these)
+
+CRITICAL — only "charge" lines should be mapped to a product_slug.
+For credit / past_balance / late_fee / tax / discount, set product_slug to null.
+
+==========================
+STEP 4 — Filter junk lines
+==========================
+DO NOT create line items for:
+- Employee / driver names ("ROBERT", "TYLER", "JOSE") that appear as a header above what they delivered
+- Page headers / footers / "Page X of Y"
+- Stop numbers, route numbers, customer IDs by themselves
+- Subtotal / total / "Balance Due" rows (those go into the totals fields, not line_items)
+
+==========================
+STEP 5 — Reconcile totals
+==========================
+For each invoice extract the bottom-of-invoice totals AS PRINTED:
+- gross_charges_cents — sum of current-period charges only
+- credits_cents — sum of credit/refund lines (positive number, represents amount reducing total)
+- past_balance_cents — carryover from prior invoice (positive number if owed, can be 0)
+- late_fees_cents — finance/late charges
+- taxes_cents — sales tax
+- total_due_cents — what the invoice says is owed at the bottom
+
+Math check the system will do: gross - credits + past_balance + late_fees + taxes ≈ total_due.
+If invoice doesn't break these out, do your best — only total_due is required.
+
+==========================
+STEP 6 — Vendor + product mapping
+==========================
 Available vendor slugs:
 ${vendorList}
 
 Available product slugs:
 ${productList}
 
-Flagging severity guide (consultative, never accusatory):
-- "high": Item priced clearly above market, surcharges added that aren't standard, or fees with no apparent contractual basis
-- "medium": Pricing escalators that compound annually without a cap, minimum billing applied during low-usage periods
-- "low": Standard rate but worth understanding before renewal
+==========================
+STEP 7 — Flagging (consultative tone)
+==========================
+- "high": item priced clearly above market, surcharges not standard, fees with no apparent basis
+- "medium": pricing escalators that compound without a cap, minimum billing during low usage
+- "low": standard rate but worth understanding before renewal
 
 CRITICAL TONE RULES:
-- Frame everything consultatively — we help clients understand pricing and negotiate
-- NEVER accuse the vendor of overcharging, scamming, or wrongdoing
+- Frame everything consultatively — we help clients understand and negotiate
+- NEVER accuse vendors of overcharging, scamming, or wrongdoing
 - Use phrases like "above industry average", "worth reviewing", "negotiation opportunity"
 - Suggested actions describe what the CLIENT can do, not what the vendor did wrong
+- Only flag "charge" line_type items (credits/past_balance/taxes are facts, not opportunities)
 
-Return JSON matching this exact schema (omit fields you can't determine, BUT always include document_type):
+==========================
+Return STRICT JSON only — no commentary, no markdown fences
+==========================
 {
   "document_type": "invoice",
-  "vendor_name": "string",
-  "vendor_slug": "best matching slug or 'other'",
-  "invoice_number": "string",
-  "invoice_date": "YYYY-MM-DD",
-  "service_state": "2-letter US state code (e.g. VT)",
-  "service_zip": "string",
-  "monthly_total_cents": integer,
-  "line_items": [
+  "invoice_count": <integer>,
+  "invoices": [
     {
-      "raw_label": "verbatim text from invoice",
-      "product_slug": "best matching slug",
-      "vendor_slug": "same as top-level vendor_slug usually",
-      "quantity": number,
-      "unit_price_cents": integer,
-      "billing_frequency": "weekly|bi-weekly|monthly|quarterly|annual|per-event|one-time",
-      "annual_cost_cents": integer,
-      "flagged": true | false,
-      "flag_reason": "1 sentence, consultative",
-      "flag_severity": "high|medium|low",
-      "suggested_action": "1 sentence — what the client can do",
-      "estimated_savings_cents": integer
+      "vendor_name": "string",
+      "vendor_slug": "best matching slug or 'other'",
+      "invoice_number": "string",
+      "invoice_date": "YYYY-MM-DD",
+      "period_start": "YYYY-MM-DD",
+      "period_end": "YYYY-MM-DD",
+      "service_state": "2-letter US state code",
+      "service_zip": "string",
+      "line_items": [
+        {
+          "raw_label": "verbatim text",
+          "line_type": "charge|credit|past_balance|late_fee|discount|tax|other",
+          "product_slug": "<slug or null for non-charge lines>",
+          "vendor_slug": "same as top usually",
+          "quantity": <number>,
+          "unit_price_cents": <integer>,
+          "billing_frequency": "weekly|bi-weekly|monthly|quarterly|annual|per-event|one-time",
+          "annual_cost_cents": <integer>,
+          "flagged": <bool, only true for "charge" lines>,
+          "flag_reason": "1 sentence, consultative",
+          "flag_severity": "high|medium|low",
+          "suggested_action": "1 sentence — what the client can do",
+          "estimated_savings_cents": <integer>
+        }
+      ],
+      "gross_charges_cents": <integer>,
+      "credits_cents": <integer, positive>,
+      "past_balance_cents": <integer>,
+      "late_fees_cents": <integer>,
+      "taxes_cents": <integer>,
+      "total_due_cents": <integer>,
+      "top_finding": "1-2 sentences, consultative",
+      "potential_annual_savings_cents": <integer>
     }
-  ],
-  "top_finding": "1-2 sentences summarizing the biggest opportunity, consultative tone",
-  "potential_annual_savings_cents": integer
+  ]
 }`;
 
-    const userPrompt = `Extract the invoice below.
+    const userPrompt = `Extract the document below. Remember to detect multi-invoice files and classify every line by line_type.
 
 Business hint: ${body.business_hint || "(not provided)"}
 Vendor hint: ${body.vendor_hint || "(not provided)"}
@@ -238,7 +312,7 @@ Return strict JSON only.`;
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 4096,
+        max_tokens: 8192, // bumped from 4096 — multi-invoice files need more headroom
         system: systemPrompt,
         messages: [{
           role: "user",
@@ -261,16 +335,16 @@ Return strict JSON only.`;
     const outputTokens = usage.output_tokens || 0;
     const costCents = calcCostCents(inputTokens, outputTokens);
 
-    // 8) Parse the JSON (strip any accidental code fences)
+    // 8) Parse JSON
     const cleaned = text.replace(/^```json\s*/i, "").replace(/```\s*$/i, "").trim();
     let parsed: AIResponse;
     try {
       parsed = JSON.parse(cleaned);
-    } catch (e) {
+    } catch {
       throw new Error(`Could not parse AI response as JSON. Raw text: ${cleaned.slice(0, 500)}`);
     }
 
-    // 8a) Classification gate — if the document isn't an invoice, abort cleanly
+    // 8a) Classification gate — abort cleanly if not an invoice
     if (parsed.document_type && parsed.document_type !== "invoice") {
       await supabase
         .from("invoice_analyses")
@@ -279,7 +353,7 @@ Return strict JSON only.`;
           top_finding: `Detected as ${parsed.document_type} — not an invoice.`,
           raw_analysis: parsed as unknown as object,
         })
-        .eq("id", invoiceId);
+        .eq("id", primaryInvoiceId);
       if (jobId) {
         await supabase
           .from("invoice_extraction_jobs")
@@ -298,62 +372,138 @@ Return strict JSON only.`;
         error: "wrong_document_type",
         detected_type: parsed.document_type,
         reason: parsed.document_type_reason || null,
-        // The user can re-upload to the right flow without re-uploading the file:
         storage_path: body.storage_path,
         bucket,
       }, { status: 422 });
     }
 
-    // 9) Map slugs to UUIDs
+    // 9) Normalize invoices array. Tolerate older single-invoice shape just in case.
+    const invoices: AIInvoice[] = parsed.invoices && parsed.invoices.length > 0
+      ? parsed.invoices
+      : [parsed as unknown as AIInvoice];
+
     const productBySlug = new Map(products.map(p => [p.slug, p.id]));
     const vendorBySlug = new Map(vendors.map(v => [v.slug, v.id]));
-    const vendorIdTop = parsed.vendor_slug ? vendorBySlug.get(parsed.vendor_slug) : undefined;
 
-    // 10) Update the invoice row with summary data
-    const flaggedCount = (parsed.line_items || []).filter(li => li.flagged).length;
-    await supabase
-      .from("invoice_analyses")
-      .update({
+    // 10) For each invoice, upsert one invoice_analyses row.
+    //     Row 0 = the row we created above (primaryInvoiceId).
+    //     Rows 1..N create additional sibling rows.
+    //     parent_upload_id is shared across all siblings (= primaryInvoiceId).
+    const siblingCount = invoices.length;
+    const invoiceIds: string[] = [];
+
+    for (let idx = 0; idx < invoices.length; idx++) {
+      const inv = invoices[idx];
+      const vendorIdTop = inv.vendor_slug ? vendorBySlug.get(inv.vendor_slug) ?? null : null;
+
+      // Compute reconciliation math
+      const gross = inv.gross_charges_cents ?? null;
+      const credits = inv.credits_cents ?? 0;
+      const pastBal = inv.past_balance_cents ?? 0;
+      const lateFees = inv.late_fees_cents ?? 0;
+      const taxes = inv.taxes_cents ?? 0;
+      const totalDue = inv.total_due_cents ?? null;
+
+      let extractedCheck: number | null = null;
+      let reconciled = false;
+      if (gross != null) {
+        extractedCheck = gross - credits + pastBal + lateFees + taxes;
+        if (totalDue != null) {
+          reconciled = Math.abs(extractedCheck - totalDue) <= 100; // within $1.00 tolerance
+        }
+      }
+
+      const flaggedCount = (inv.line_items || []).filter(li => li.flagged && (li.line_type ?? "charge") === "charge").length;
+
+      const updatePayload = {
         status: "completed",
-        vendor: parsed.vendor_name ?? null,
-        vendor_id: vendorIdTop ?? null,
-        invoice_number: parsed.invoice_number ?? null,
-        invoice_date: parsed.invoice_date ?? null,
-        state: parsed.service_state ?? body.state_hint ?? null,
-        zip: parsed.service_zip ?? null,
-        total_spend_cents: parsed.monthly_total_cents ?? null,
-        potential_annual_savings_cents: parsed.potential_annual_savings_cents ?? null,
-        flagged_item_count: flaggedCount,
-        top_finding: parsed.top_finding ?? null,
-        raw_analysis: parsed as unknown as object,
-      })
-      .eq("id", invoiceId);
+        vendor: inv.vendor_name ?? null,
+        vendor_id: vendorIdTop,
+        invoice_number: inv.invoice_number ?? null,
+        invoice_date: inv.invoice_date ?? null,
+        period_start: inv.period_start ?? null,
+        period_end: inv.period_end ?? null,
+        state: inv.service_state ?? body.state_hint ?? null,
+        zip: inv.service_zip ?? null,
 
-    // 11) Insert line items in one batch
-    const lineRows = (parsed.line_items || []).map(li => ({
-      invoice_id: invoiceId,
-      user_id: user.id,
-      raw_label: li.raw_label || "(unknown)",
-      product_id: li.product_slug ? productBySlug.get(li.product_slug) ?? null : null,
-      vendor_id: li.vendor_slug ? vendorBySlug.get(li.vendor_slug) ?? vendorIdTop ?? null : vendorIdTop ?? null,
-      quantity: li.quantity ?? null,
-      unit_price_cents: li.unit_price_cents ?? null,
-      billing_frequency: li.billing_frequency ?? null,
-      annual_cost_cents: li.annual_cost_cents ?? null,
-      state: parsed.service_state ?? body.state_hint ?? null,
-      zip: parsed.service_zip ?? null,
-      flagged: !!li.flagged,
-      flag_reason: li.flag_reason ?? null,
-      flag_severity: li.flag_severity ?? null,
-      suggested_action: li.suggested_action ?? null,
-      estimated_savings_cents: li.estimated_savings_cents ?? null,
-    }));
-    if (lineRows.length > 0) {
-      const { error: liErr } = await supabase.from("invoice_line_items").insert(lineRows);
-      if (liErr) console.error("Failed to insert line items:", liErr);
+        // Totals breakdown
+        gross_charges_cents: gross,
+        credits_cents: credits,
+        past_balance_cents: pastBal,
+        late_fees_cents: lateFees,
+        taxes_cents: taxes,
+        total_due_cents: totalDue,
+        extracted_total_check_cents: extractedCheck,
+        totals_reconciled: reconciled,
+
+        // Legacy totals (kept in sync for current UI)
+        total_spend_cents: gross ?? totalDue ?? null,
+        potential_annual_savings_cents: inv.potential_annual_savings_cents ?? null,
+        flagged_item_count: flaggedCount,
+        top_finding: inv.top_finding ?? null,
+        raw_analysis: inv as unknown as object,
+
+        // Multi-invoice linkage
+        parent_upload_id: primaryInvoiceId,
+        sibling_count: siblingCount,
+        sibling_index: idx,
+      };
+
+      let thisInvoiceId: string;
+      if (idx === 0) {
+        thisInvoiceId = primaryInvoiceId;
+        await supabase.from("invoice_analyses").update(updatePayload).eq("id", thisInvoiceId);
+      } else {
+        const { data: newRow, error: newErr } = await supabase
+          .from("invoice_analyses")
+          .insert({
+            user_id: user.id,
+            file_path: `${bucket}/${body.storage_path}`,
+            ...updatePayload,
+          })
+          .select("id")
+          .single();
+        if (newErr || !newRow) {
+          console.error("Failed to insert sibling invoice row:", newErr);
+          continue;
+        }
+        thisInvoiceId = newRow.id;
+      }
+      invoiceIds.push(thisInvoiceId);
+
+      // Insert line items
+      const lineRows = (inv.line_items || []).map(li => {
+        const lt: LineType = (li.line_type as LineType) || "charge";
+        // Only "charge" lines get mapped to a product
+        const productId = lt === "charge" && li.product_slug ? productBySlug.get(li.product_slug) ?? null : null;
+        return {
+          invoice_id: thisInvoiceId,
+          user_id: user.id,
+          raw_label: li.raw_label || "(unknown)",
+          line_type: lt,
+          product_id: productId,
+          vendor_id: li.vendor_slug ? vendorBySlug.get(li.vendor_slug) ?? vendorIdTop : vendorIdTop,
+          quantity: li.quantity ?? null,
+          unit_price_cents: li.unit_price_cents ?? null,
+          billing_frequency: li.billing_frequency ?? null,
+          annual_cost_cents: li.annual_cost_cents ?? null,
+          state: inv.service_state ?? body.state_hint ?? null,
+          zip: inv.service_zip ?? null,
+          // Only "charge" lines can be flagged
+          flagged: lt === "charge" ? !!li.flagged : false,
+          flag_reason: lt === "charge" ? li.flag_reason ?? null : null,
+          flag_severity: lt === "charge" ? li.flag_severity ?? null : null,
+          suggested_action: lt === "charge" ? li.suggested_action ?? null : null,
+          estimated_savings_cents: lt === "charge" ? li.estimated_savings_cents ?? null : null,
+        };
+      });
+      if (lineRows.length > 0) {
+        const { error: liErr } = await supabase.from("invoice_line_items").insert(lineRows);
+        if (liErr) console.error(`Failed to insert line items for invoice ${thisInvoiceId}:`, liErr);
+      }
     }
 
-    // 12) Complete the job
+    // 11) Complete the job
     if (jobId) {
       await supabase
         .from("invoice_extraction_jobs")
@@ -370,19 +520,17 @@ Return strict JSON only.`;
 
     return NextResponse.json({
       ok: true,
-      invoice_id: invoiceId,
-      line_item_count: lineRows.length,
-      flagged_count: flaggedCount,
-      potential_annual_savings_cents: parsed.potential_annual_savings_cents ?? 0,
+      invoice_id: primaryInvoiceId,
+      invoice_ids: invoiceIds,
+      invoice_count: siblingCount,
       cost_cents: costCents,
     });
   } catch (err: any) {
     console.error("Extraction failed:", err);
-    // Mark invoice + job as failed
     await supabase
       .from("invoice_analyses")
       .update({ status: "failed", top_finding: `Extraction failed: ${err?.message || String(err)}` })
-      .eq("id", invoiceId);
+      .eq("id", primaryInvoiceId);
     if (jobId) {
       await supabase
         .from("invoice_extraction_jobs")

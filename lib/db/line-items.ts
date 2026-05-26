@@ -1,10 +1,13 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
 
+export type LineType = "charge" | "credit" | "past_balance" | "late_fee" | "discount" | "tax" | "other";
+
 // One row per line item, joined with product + vendor names for display.
 export type LineItemForUI = {
   id: string;
   rawLabel: string;
+  lineType: LineType;
   productSlug: string | null;
   productName: string | null;
   productCategory: string | null;
@@ -28,6 +31,7 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
     .select(`
       id,
       raw_label,
+      line_type,
       quantity,
       unit_price_cents,
       billing_frequency,
@@ -41,6 +45,7 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
       vendors ( slug, name )
     `)
     .eq("invoice_id", invoiceId)
+    .order("line_type", { ascending: true }) // group charges, credits, etc.
     .order("flagged", { ascending: false })
     .order("annual_cost_cents", { ascending: false, nullsFirst: false });
   if (error || !data) return [];
@@ -48,6 +53,7 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
   return (data as unknown as Array<{
     id: string;
     raw_label: string;
+    line_type: LineType | null;
     quantity: number | null;
     unit_price_cents: number | null;
     billing_frequency: string | null;
@@ -62,6 +68,7 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
   }>).map(row => ({
     id: row.id,
     rawLabel: row.raw_label,
+    lineType: (row.line_type ?? "charge") as LineType,
     productSlug: row.products?.slug ?? null,
     productName: row.products?.name ?? null,
     productCategory: row.products?.category ?? null,

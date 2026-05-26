@@ -77,6 +77,7 @@ export default function ExtractionInspector({ invoiceId, filePath, lineItems }: 
                       <thead>
                         <tr className="bg-navy text-white">
                           <th className="text-left px-3 py-2 font-sans font-semibold uppercase tracking-wider">Raw label</th>
+                          <th className="text-left px-3 py-2 font-sans font-semibold uppercase tracking-wider">Type</th>
                           <th className="text-left px-3 py-2 font-sans font-semibold uppercase tracking-wider">Mapped product</th>
                           <th className="text-left px-3 py-2 font-sans font-semibold uppercase tracking-wider">Vendor</th>
                           <th className="text-right px-3 py-2 font-sans font-semibold uppercase tracking-wider">Qty</th>
@@ -90,11 +91,16 @@ export default function ExtractionInspector({ invoiceId, filePath, lineItems }: 
                         {lineItems.map((li, i) => (
                           <tr key={li.id} className={`border-t border-gray-200 ${i % 2 === 0 ? "bg-white" : "bg-off-white"}`}>
                             <td className="px-3 py-2 font-sans text-navy">{li.rawLabel}</td>
+                            <td className="px-3 py-2 font-sans">
+                              <span className={`inline-block uppercase tracking-wider text-[10px] font-semibold px-2 py-0.5 rounded ${lineTypeColor(li.lineType)}`}>
+                                {li.lineType.replace("_", " ")}
+                              </span>
+                            </td>
                             <td className="px-3 py-2 font-sans text-navy">
                               {li.productName ? (
                                 <span title={li.productSlug || undefined}>{li.productName}</span>
                               ) : (
-                                <span className="text-gray-400 italic">unmapped</span>
+                                <span className="text-gray-400 italic">{li.lineType === "charge" ? "unmapped" : "—"}</span>
                               )}
                             </td>
                             <td className="px-3 py-2 font-sans text-gray-700">{li.vendorName || <span className="text-gray-400 italic">—</span>}</td>
@@ -161,6 +167,18 @@ function Stat({ label, value }: { label: string; value: string }) {
       <div className="font-mono text-sm text-navy">{value}</div>
     </div>
   );
+}
+
+function lineTypeColor(type: string): string {
+  switch (type) {
+    case "charge": return "bg-blue-pale text-blue";
+    case "credit": return "bg-teal-light text-teal";
+    case "past_balance": return "bg-amber/20 text-amber-700";
+    case "late_fee": return "bg-red-light text-red";
+    case "discount": return "bg-teal-light text-teal";
+    case "tax": return "bg-gray-200 text-gray-700";
+    default: return "bg-gray-100 text-gray-500";
+  }
 }
 
 function formatDuration(start: string | null, end: string | null): string {

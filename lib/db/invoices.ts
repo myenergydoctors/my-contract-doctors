@@ -9,6 +9,7 @@ export type InvoiceForUI = {
   uploadedAt: string;
   vendor: string;
   invoiceNumber: string;
+  invoiceDate: string | null;
   totalSpend: number;
   potentialAnnualSavings: number;
   flaggedItemCount: number;
@@ -16,7 +17,27 @@ export type InvoiceForUI = {
   topFinding: string;
   lineItems: unknown[];
   filePath: string | null;
+
+  // Phase 2C-1.5 — totals breakdown (all in dollars, not cents)
+  periodStart: string | null;
+  periodEnd: string | null;
+  grossCharges: number | null;
+  credits: number;
+  pastBalance: number;
+  lateFees: number;
+  taxes: number;
+  totalDue: number | null;
+  extractedTotalCheck: number | null;
+  totalsReconciled: boolean;
+
+  // Multi-invoice linkage
+  parentUploadId: string | null;
+  siblingCount: number;
+  siblingIndex: number;
 };
+
+const c = (n: number | null | undefined) => (n ?? 0) / 100;
+const cn = (n: number | null | undefined): number | null => (n == null ? null : n / 100);
 
 function toUI(row: InvoiceAnalysisRow): InvoiceForUI {
   return {
@@ -24,13 +45,29 @@ function toUI(row: InvoiceAnalysisRow): InvoiceForUI {
     uploadedAt: row.uploaded_at,
     vendor: row.vendor ?? "Unknown",
     invoiceNumber: row.invoice_number ?? "—",
-    totalSpend: (row.total_spend_cents ?? 0) / 100,
-    potentialAnnualSavings: (row.potential_annual_savings_cents ?? 0) / 100,
+    invoiceDate: row.invoice_date ?? null,
+    totalSpend: c(row.total_spend_cents),
+    potentialAnnualSavings: c(row.potential_annual_savings_cents),
     flaggedItemCount: row.flagged_item_count,
     status: row.status,
     topFinding: row.top_finding ?? "",
     lineItems: row.line_items ?? [],
     filePath: row.file_path,
+
+    periodStart: row.period_start ?? null,
+    periodEnd: row.period_end ?? null,
+    grossCharges: cn(row.gross_charges_cents),
+    credits: c(row.credits_cents),
+    pastBalance: c(row.past_balance_cents),
+    lateFees: c(row.late_fees_cents),
+    taxes: c(row.taxes_cents),
+    totalDue: cn(row.total_due_cents),
+    extractedTotalCheck: cn(row.extracted_total_check_cents),
+    totalsReconciled: !!row.totals_reconciled,
+
+    parentUploadId: row.parent_upload_id ?? null,
+    siblingCount: row.sibling_count ?? 1,
+    siblingIndex: row.sibling_index ?? 0,
   };
 }
 
@@ -57,6 +94,19 @@ export async function getInvoice(id: string): Promise<InvoiceForUI | null> {
   }
   if (!data) return null;
   return toUI(data as InvoiceAnalysisRow);
+}
+
+// Returns all invoices belonging to the same uploaded file (siblings),
+// ordered by sibling_index. Includes self.
+export async function listInvoiceSiblings(parentUploadId: string): Promise<InvoiceForUI[]> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("invoice_analyses")
+    .select("*")
+    .eq("parent_upload_id", parentUploadId)
+    .order("sibling_index", { ascending: true });
+  if (error || !data) return [];
+  return (data as InvoiceAnalysisRow[]).map(toUI);
 }
 
 // Variant that also returns the raw row + extraction status, for the
