@@ -1,7 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
 import { SITE } from "@/lib/site";
+import { createClient } from "@/lib/supabase/client";
 
 const C = {
   navy:      "#0C2D54", navyDark:  "#081E38", blue: "#3D80C8",
@@ -339,9 +341,11 @@ function StepContact({ onNext, onBack }) {
 }
 
 // ── STEP 2 — Scanning ────────────────────
-function StepScanning({ contact, onDone }) {
+function StepScanning({ contact, file, onDone }) {
+  const router = useRouter();
   const [phase, setPhase]       = useState(0);
   const [progress, setProgress] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
 
   // All mutable state lives in refs to avoid stale closures entirely
   const started  = useRef(false);
@@ -403,25 +407,63 @@ function StepScanning({ contact, onDone }) {
       setProgress(progR.current);
     }, 120);
 
-    // AI call
-const callAI = async () => {
-  try {
-    const res = await fetch("/api/analyze-invoice", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        business: contact?.business,
-        vendor: contact?.vendor,
-      }),
-    });
-    resultR.current = await res.json();
-  } catch {
-    resultR.current = MOCK;
-  }
-  finish.current();
-};
+    // Real upload + AI extraction flow
+    const runExtraction = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
 
-    callAI();
+        // If signed in AND we have a real File, do the real flow
+        if (user && file instanceof File) {
+          // 1) Upload to Supabase Storage at {user_id}/{timestamp}-{name}
+          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+          const path = `${user.id}/${Date.now()}-${safeName}`;
+          const { error: upErr } = await supabase.storage
+            .from("invoices")
+            .upload(path, file, { contentType: file.type, upsert: false });
+          if (upErr) throw new Error(`Upload failed: ${upErr.message}`);
+
+          // 2) Call extraction API
+          const res = await fetch("/api/invoices/extract", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              storage_path: path,
+              bucket: "invoices",
+              business_hint: contact?.business,
+              vendor_hint: contact?.vendor,
+              state_hint: contact?.state,
+            }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data?.error || "Extraction failed");
+
+          // 3) Bypass the mock results screen entirely — go straight to the
+          // real dashboard detail page with the new analysis
+          router.push(`/dashboard/invoices/${data.invoice_id}`);
+          return;
+        }
+
+        // Otherwise: fall back to the legacy mock-AI flow so the public
+        // /invoice page still demos something to unauthenticated visitors
+        const res = await fetch("/api/analyze-invoice", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            business: contact?.business,
+            vendor: contact?.vendor,
+          }),
+        });
+        resultR.current = await res.json();
+      } catch (err: any) {
+        console.error(err);
+        setErrorMsg(err?.message || "Something went wrong.");
+        resultR.current = MOCK;
+      }
+      finish.current();
+    };
+
+    runExtraction();
 
     return () => {
       clearInterval(phT.current);
@@ -595,7 +637,7 @@ export default function InvoicePage() {
       <Nav step={step}/>
       {step===0 && <StepUpload  onNext={f=>{setFile(f);setStep(1);}}/>}
       {step===1 && <StepContact onNext={c=>{setContact(c);setStep(2);}} onBack={()=>setStep(0)}/>}
-      {step===2 && <StepScanning contact={contact} onDone={r=>{setResult(r);setStep(3);}}/>}
+      {step===2 && <StepScanning contact={contact} file={file} onDone={r=>{setResult(r);setStep(3);}}/>}
       {step===3 && <StepResults result={result} contact={contact}/>}
     </>
   );

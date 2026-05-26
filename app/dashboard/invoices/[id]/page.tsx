@@ -1,14 +1,50 @@
+"use client";
 import Link from "next/link";
-import { mockInvoices } from "@/lib/mock-data";
-import { notFound } from "next/navigation";
+import { use, useEffect, useState } from "react";
+import { getInvoice, type InvoiceForUI } from "@/lib/db/invoices";
+import { listLineItemsForInvoice, type LineItemForUI } from "@/lib/db/line-items";
 
-export default async function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const invoice = mockInvoices.find(i => i.id === id);
-  if (!invoice) notFound();
+const BENCHMARK_MIN_SAMPLE = 5; // need at least this many other customers in the same state before showing a benchmark
 
-  const flagged = invoice.lineItems.filter(li => li.flagged);
-  const clean = invoice.lineItems.filter(li => !li.flagged);
+export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const [invoice, setInvoice] = useState<InvoiceForUI | null | "not-found">(null);
+  const [lineItems, setLineItems] = useState<LineItemForUI[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [inv, items] = await Promise.all([getInvoice(id), listLineItemsForInvoice(id)]);
+      if (cancelled) return;
+      setInvoice(inv ?? "not-found");
+      setLineItems(items);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl py-12 text-center">
+        <div className="font-sans text-sm text-gray-500">Loading analysis…</div>
+      </div>
+    );
+  }
+  if (invoice === "not-found" || !invoice) {
+    return (
+      <div className="max-w-3xl py-12 text-center">
+        <h2 className="font-serif text-navy text-2xl mb-3">Invoice not found.</h2>
+        <p className="font-sans text-gray-500 mb-6">It may have been deleted, or the link is wrong.</p>
+        <Link href="/dashboard/invoices" className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90">
+          ← Back to invoices
+        </Link>
+      </div>
+    );
+  }
+
+  const flagged = lineItems.filter(li => li.flagged);
+  const clean = lineItems.filter(li => !li.flagged);
 
   return (
     <div className="max-w-5xl">
@@ -25,7 +61,9 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
           <h2 className="font-serif text-navy text-2xl md:text-3xl leading-tight mb-1">
             Invoice from {new Date(invoice.uploadedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
           </h2>
-          <p className="font-sans font-light text-gray-500 text-sm leading-relaxed">{invoice.topFinding}</p>
+          {invoice.topFinding && (
+            <p className="font-sans font-light text-gray-500 text-sm leading-relaxed">{invoice.topFinding}</p>
+          )}
         </div>
         <div className="flex gap-3">
           <button className="font-sans text-sm font-medium bg-white border border-gray-300 text-navy px-4 py-2 rounded-lg hover:bg-off-white transition-colors cursor-pointer">
@@ -53,40 +91,25 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
+      {/* Benchmark availability notice — Phase 2C-2 will replace this with real data */}
+      <div className="bg-blue-pale/40 border border-blue/20 rounded-xl p-4 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div className="font-sans text-[10px] font-semibold uppercase tracking-wider text-blue mb-1">Pricing benchmarks</div>
+          <div className="font-sans text-sm text-navy">Coming soon — we'll show how each line item compares to other businesses in your state.</div>
+          <div className="font-sans text-xs text-gray-500 mt-1">Requires at least {BENCHMARK_MIN_SAMPLE} customers in your area before we publish averages.</div>
+        </div>
+        <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-white border border-blue/30 text-blue px-2.5 py-1 rounded-full whitespace-nowrap">In development</span>
+      </div>
+
       {/* Flagged items */}
       {flagged.length > 0 && (
         <section className="mb-8">
           <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-red mb-3">
-            Flagged items ({flagged.length})
+            Worth a look ({flagged.length})
           </div>
           <div className="flex flex-col gap-3">
-            {flagged.map((li, i) => (
-              <div key={i} className="bg-white border-l-4 border-l-red border border-gray-200 rounded-xl p-5">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
-                  <div>
-                    <div className="font-serif text-navy text-lg leading-tight">{li.item}</div>
-                    <div className="font-sans text-xs text-gray-500 mt-0.5">${li.monthlyCost.toLocaleString()}/mo</div>
-                  </div>
-                  {li.savings && (
-                    <div className="bg-teal-light border border-teal/30 rounded-lg px-3 py-1.5 self-start">
-                      <span className="font-sans text-[10px] uppercase tracking-wider text-teal">Save</span>
-                      <span className="font-serif text-teal ml-2 text-base">${li.savings.toLocaleString()}/yr</span>
-                    </div>
-                  )}
-                </div>
-                {li.issue && (
-                  <div className="mb-2">
-                    <span className="font-sans text-[10px] font-semibold uppercase tracking-wider text-gray-500">Issue:&nbsp;</span>
-                    <span className="font-sans text-sm text-navy">{li.issue}</span>
-                  </div>
-                )}
-                {li.suggestion && (
-                  <div className="bg-teal-light/60 border border-teal/20 rounded-lg p-3">
-                    <div className="font-sans text-[10px] font-semibold uppercase tracking-wider text-teal mb-1">Action</div>
-                    <div className="font-sans text-sm text-navy leading-relaxed">{li.suggestion}</div>
-                  </div>
-                )}
-              </div>
+            {flagged.map(li => (
+              <LineItemCard key={li.id} li={li} />
             ))}
           </div>
         </section>
@@ -99,15 +122,83 @@ export default async function InvoiceDetailPage({ params }: { params: Promise<{ 
             All other line items ({clean.length})
           </div>
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-            {clean.map((li, i) => (
-              <div key={i} className="flex justify-between items-center px-5 py-3 border-b last:border-b-0 border-gray-100">
-                <div className="font-sans text-sm text-navy">{li.item}</div>
-                <div className="font-sans text-sm text-gray-500">${li.monthlyCost.toLocaleString()}/mo</div>
+            {clean.map(li => (
+              <div key={li.id} className="flex justify-between items-center px-5 py-3 border-b last:border-b-0 border-gray-100">
+                <div className="font-sans text-sm text-navy">
+                  {li.productName || li.rawLabel}
+                  {li.quantity && li.quantity > 1 ? <span className="text-gray-500"> × {li.quantity}</span> : null}
+                </div>
+                <div className="font-sans text-sm text-gray-500">{formatMonthly(li)}</div>
               </div>
             ))}
           </div>
         </section>
       )}
+
+      {flagged.length === 0 && clean.length === 0 && (
+        <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+          <div className="font-sans text-sm text-gray-500">
+            We couldn't extract line items from this file. Try uploading a clearer image, or contact us if the issue persists.
+          </div>
+        </div>
+      )}
     </div>
   );
+}
+
+function LineItemCard({ li }: { li: LineItemForUI }) {
+  const sevColor = li.flagSeverity === "high" ? "border-l-red" : li.flagSeverity === "medium" ? "border-l-amber" : "border-l-blue";
+  return (
+    <div className={`bg-white border-l-4 ${sevColor} border border-gray-200 rounded-xl p-5`}>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-3">
+        <div>
+          <div className="font-serif text-navy text-lg leading-tight">{li.productName || li.rawLabel}</div>
+          <div className="font-sans text-xs text-gray-500 mt-0.5">
+            {formatMonthly(li)}
+            {li.productName && li.rawLabel !== li.productName ? ` · "${li.rawLabel}"` : null}
+          </div>
+        </div>
+        {li.estimatedSavingsCents != null && li.estimatedSavingsCents > 0 && (
+          <div className="bg-teal-light border border-teal/30 rounded-lg px-3 py-1.5 self-start">
+            <span className="font-sans text-[10px] uppercase tracking-wider text-teal">Save</span>
+            <span className="font-serif text-teal ml-2 text-base">${(li.estimatedSavingsCents / 100).toLocaleString()}/yr</span>
+          </div>
+        )}
+      </div>
+      {li.flagReason && (
+        <div className="mb-2">
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-wider text-gray-500">Observation:&nbsp;</span>
+          <span className="font-sans text-sm text-navy">{li.flagReason}</span>
+        </div>
+      )}
+      {li.suggestedAction && (
+        <div className="bg-teal-light/60 border border-teal/20 rounded-lg p-3">
+          <div className="font-sans text-[10px] font-semibold uppercase tracking-wider text-teal mb-1">Action</div>
+          <div className="font-sans text-sm text-navy leading-relaxed">{li.suggestedAction}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatMonthly(li: LineItemForUI): string {
+  if (li.annualCostCents != null && li.annualCostCents > 0) {
+    return `$${(li.annualCostCents / 12 / 100).toFixed(2)}/mo`;
+  }
+  if (li.unitPriceCents != null && li.billingFrequency) {
+    const monthly = monthlyFromUnit(li.unitPriceCents, li.quantity ?? 1, li.billingFrequency);
+    if (monthly != null) return `$${monthly.toFixed(2)}/mo`;
+  }
+  return "—";
+}
+
+function monthlyFromUnit(unitCents: number, qty: number, freq: string): number | null {
+  const total = (unitCents * qty) / 100;
+  if (freq === "weekly") return total * 52 / 12;
+  if (freq === "bi-weekly") return total * 26 / 12;
+  if (freq === "monthly") return total;
+  if (freq === "quarterly") return total / 3;
+  if (freq === "annual") return total / 12;
+  if (freq === "one-time" || freq === "per-event" || freq === "per-occurrence") return total;
+  return null;
 }
