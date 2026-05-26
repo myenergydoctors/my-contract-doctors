@@ -2,8 +2,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { mockUser, mockNotifications } from "@/lib/mock-data";
+import { mockUser } from "@/lib/mock-data";
 import { getDemoMode, setDemoMode, planForMode, demoModes, type DemoMode } from "@/lib/demo-mode";
+import { useEffectivePlan, useEffectiveData } from "@/lib/use-effective-plan";
 import { createClient } from "@/lib/supabase/client";
 import Logo from "@/components/Logo";
 
@@ -74,14 +75,10 @@ export default function PortalShell({ children }: { children: React.ReactNode })
     }
   };
 
-  const effectivePlan = planForMode(mode);
-  // Notification visibility mirrors useEffectiveData logic in lib/use-effective-plan
-  const visibleNotifications = (() => {
-    if (mode === "new") return [];
-    if (mode === "free") return mockNotifications.filter(n => n.type === "analysis" || n.type === "system").slice(0, 2);
-    if (mode === "agreement") return mockNotifications.filter(n => n.type !== "insight").slice(0, 4);
-    return mockNotifications;
-  })();
+  // Effective plan + notification count come from useEffectiveData so they
+  // match exactly what the dashboard pages see (real Supabase data in "live"
+  // mode, filtered mock data in preview modes).
+  const { plan: effectivePlan, notifications: visibleNotifications } = useEffectiveData();
   const unreadCount = visibleNotifications.filter(n => n.unread).length;
   const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
 

@@ -10,7 +10,9 @@ import PaywallModal from "@/components/portal/PaywallModal";
 export default function DashboardHome() {
   const { mode, plan, invoices, agreements } = useEffectiveData();
   const realUser = useRealUser();
-  const empty = mode === "new";
+  // "Empty" means either the partner explicitly previewed the new-user tier,
+  // OR the real signed-in user simply doesn't have any data yet.
+  const empty = mode === "new" || (mode === "live" && invoices.length === 0 && agreements.length === 0);
   const [showAgreementPaywall, setShowAgreementPaywall] = useState(false);
 
   // Prefer real user metadata when available; fall back to mock for preview
