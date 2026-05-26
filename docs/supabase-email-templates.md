@@ -375,20 +375,37 @@ All use the same shell — only the headline and body text differ. Pattern below
 
 **Subject:** `Your My Contract Doctors email was changed`
 
-Replace the headline/body in template #7 with:
-
 ```html
-<div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
-<h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">Your email address was just changed.</h1>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-  The email address on your My Contract Doctors account was updated. If you did this, no action needed.
-</p>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
-  If you <strong>didn't make this change</strong>, secure your account right away — your password may have been compromised.
-</p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#F7F9FC;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:40px 20px;"><tr><td align="center">
+    <table cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(12,45,84,0.08);">
+      <tr><td style="background:#0C2D54;padding:28px 36px;">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6AAEE0;margin-bottom:6px;">My</div>
+        <div style="font-size:22px;color:#ffffff;font-family:Georgia,serif;">Contract <span style="font-style:italic;color:#6AAEE0;">Doctors</span></div>
+      </td></tr>
+      <tr><td style="padding:36px 36px 28px;">
+        <div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
+        <h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">Your email address was just changed.</h1>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
+          The email address on your My Contract Doctors account was updated. If you did this, no action needed.
+        </p>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
+          If you <strong>didn't make this change</strong>, secure your account right away — your password may have been compromised.
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;"><tr><td style="background:#DC2626;border-radius:8px;">
+          <a href="https://mycontractdoctors.com/sign-in" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none;">Secure my account →</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:20px 36px;background:#081E38;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">© My Contract Doctors · We're on your side, not the vendor's.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>
 ```
-
-Keep the rest of the template (header, secure-account button, footer) identical.
 
 ---
 
@@ -396,17 +413,36 @@ Keep the rest of the template (header, secure-account button, footer) identical.
 
 **Subject:** `Your My Contract Doctors phone number was changed`
 
-Same shell as #7. Body:
-
 ```html
-<div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
-<h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">Your phone number was just changed.</h1>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-  The phone number on your account was updated. This is the number we'll use for SMS sign-in codes and security alerts going forward.
-</p>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
-  Didn't make this change? Secure your account immediately.
-</p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#F7F9FC;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:40px 20px;"><tr><td align="center">
+    <table cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(12,45,84,0.08);">
+      <tr><td style="background:#0C2D54;padding:28px 36px;">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6AAEE0;margin-bottom:6px;">My</div>
+        <div style="font-size:22px;color:#ffffff;font-family:Georgia,serif;">Contract <span style="font-style:italic;color:#6AAEE0;">Doctors</span></div>
+      </td></tr>
+      <tr><td style="padding:36px 36px 28px;">
+        <div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
+        <h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">Your phone number was just changed.</h1>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
+          The phone number on your account was updated. This is the number we'll use for SMS sign-in codes and security alerts going forward.
+        </p>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
+          Didn't make this change? Secure your account immediately.
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;"><tr><td style="background:#DC2626;border-radius:8px;">
+          <a href="https://mycontractdoctors.com/sign-in" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none;">Secure my account →</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:20px 36px;background:#081E38;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">© My Contract Doctors · We're on your side, not the vendor's.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>
 ```
 
 ---
@@ -415,20 +451,37 @@ Same shell as #7. Body:
 
 **Subject:** `A new sign-in method was added to your account`
 
-Same shell. Body:
-
 ```html
-<div style="display:inline-block;background:#E2EEFA;color:#3D80C8;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
-<h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">A new sign-in method was added.</h1>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-  Someone added a new way to sign in to your My Contract Doctors account. Going forward you can sign in using this new method in addition to your existing ones.
-</p>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
-  Didn't add this? Someone may have access to your account. Sign in and review your sign-in methods immediately.
-</p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#F7F9FC;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:40px 20px;"><tr><td align="center">
+    <table cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(12,45,84,0.08);">
+      <tr><td style="background:#0C2D54;padding:28px 36px;">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6AAEE0;margin-bottom:6px;">My</div>
+        <div style="font-size:22px;color:#ffffff;font-family:Georgia,serif;">Contract <span style="font-style:italic;color:#6AAEE0;">Doctors</span></div>
+      </td></tr>
+      <tr><td style="padding:36px 36px 28px;">
+        <div style="display:inline-block;background:#E2EEFA;color:#3D80C8;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
+        <h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">A new sign-in method was added.</h1>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
+          Someone added a new way to sign in to your My Contract Doctors account. Going forward you can sign in using this new method in addition to your existing ones.
+        </p>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
+          Didn't add this? Someone may have access to your account. Sign in and review your sign-in methods immediately.
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;"><tr><td style="background:#3D80C8;border-radius:8px;">
+          <a href="https://mycontractdoctors.com/sign-in" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none;">Review my account →</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:20px 36px;background:#081E38;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">© My Contract Doctors · We're on your side, not the vendor's.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>
 ```
-
-(Use the **blue/info** badge color for "linked" — it's an additive change, not destructive.)
 
 ---
 
@@ -436,17 +489,36 @@ Same shell. Body:
 
 **Subject:** `A sign-in method was removed from your account`
 
-Same shell, **red badge** (destructive). Body:
-
 ```html
-<div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
-<h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">A sign-in method was removed.</h1>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-  One of your sign-in methods was removed from your My Contract Doctors account. You'll no longer be able to use it to sign in.
-</p>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
-  Didn't remove this yourself? Sign in and check your remaining sign-in methods right away.
-</p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#F7F9FC;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:40px 20px;"><tr><td align="center">
+    <table cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(12,45,84,0.08);">
+      <tr><td style="background:#0C2D54;padding:28px 36px;">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6AAEE0;margin-bottom:6px;">My</div>
+        <div style="font-size:22px;color:#ffffff;font-family:Georgia,serif;">Contract <span style="font-style:italic;color:#6AAEE0;">Doctors</span></div>
+      </td></tr>
+      <tr><td style="padding:36px 36px 28px;">
+        <div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
+        <h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">A sign-in method was removed.</h1>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
+          One of your sign-in methods was removed from your My Contract Doctors account. You'll no longer be able to use it to sign in.
+        </p>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
+          Didn't remove this yourself? Sign in and check your remaining sign-in methods right away.
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;"><tr><td style="background:#DC2626;border-radius:8px;">
+          <a href="https://mycontractdoctors.com/sign-in" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none;">Secure my account →</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:20px 36px;background:#081E38;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">© My Contract Doctors · We're on your side, not the vendor's.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>
 ```
 
 ---
@@ -455,17 +527,36 @@ Same shell, **red badge** (destructive). Body:
 
 **Subject:** `Multi-factor authentication added to your account`
 
-Same shell, **teal/positive** badge (this is a good thing — strengthens security). Body:
-
 ```html
-<div style="display:inline-block;background:#D4F2EA;color:#0D6E52;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security update</div>
-<h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">Multi-factor authentication is on.</h1>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-  Nice — you just added a new MFA method to your account. From now on, you'll be prompted for a second factor when signing in. This makes your account significantly harder to break into.
-</p>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
-  Didn't do this? Sign in and review your MFA settings.
-</p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#F7F9FC;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:40px 20px;"><tr><td align="center">
+    <table cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(12,45,84,0.08);">
+      <tr><td style="background:#0C2D54;padding:28px 36px;">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6AAEE0;margin-bottom:6px;">My</div>
+        <div style="font-size:22px;color:#ffffff;font-family:Georgia,serif;">Contract <span style="font-style:italic;color:#6AAEE0;">Doctors</span></div>
+      </td></tr>
+      <tr><td style="padding:36px 36px 28px;">
+        <div style="display:inline-block;background:#D4F2EA;color:#0D6E52;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security update</div>
+        <h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">Multi-factor authentication is on.</h1>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
+          Nice — you just added a new MFA method to your account. From now on, you'll be prompted for a second factor when signing in. This makes your account significantly harder to break into.
+        </p>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
+          Didn't do this? Sign in and review your MFA settings.
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;"><tr><td style="background:#17A882;border-radius:8px;">
+          <a href="https://mycontractdoctors.com/dashboard/settings" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none;">View security settings →</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:20px 36px;background:#081E38;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">© My Contract Doctors · We're on your side, not the vendor's.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>
 ```
 
 ---
@@ -474,17 +565,36 @@ Same shell, **teal/positive** badge (this is a good thing — strengthens securi
 
 **Subject:** `Multi-factor authentication was removed`
 
-Same shell, **red badge** (security regression). Body:
-
 ```html
-<div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
-<h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">An MFA method was removed.</h1>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
-  A multi-factor authentication method was removed from your My Contract Doctors account. If this was your only MFA method, your account is now protected by password alone.
-</p>
-<p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
-  Didn't remove this? Sign in immediately and review your account — your password may be compromised.
-</p>
+<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background-color:#F7F9FC;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <table cellpadding="0" cellspacing="0" border="0" width="100%" style="padding:40px 20px;"><tr><td align="center">
+    <table cellpadding="0" cellspacing="0" border="0" width="560" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 24px rgba(12,45,84,0.08);">
+      <tr><td style="background:#0C2D54;padding:28px 36px;">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#6AAEE0;margin-bottom:6px;">My</div>
+        <div style="font-size:22px;color:#ffffff;font-family:Georgia,serif;">Contract <span style="font-style:italic;color:#6AAEE0;">Doctors</span></div>
+      </td></tr>
+      <tr><td style="padding:36px 36px 28px;">
+        <div style="display:inline-block;background:#FEE2E2;color:#DC2626;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:18px;">Security notice</div>
+        <h1 style="font-family:Georgia,serif;font-size:24px;color:#0C2D54;margin:0 0 14px;line-height:1.25;">An MFA method was removed.</h1>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 20px;">
+          A multi-factor authentication method was removed from your My Contract Doctors account. If this was your only MFA method, your account is now protected by password alone.
+        </p>
+        <p style="font-size:15px;color:#334155;line-height:1.7;margin:0 0 24px;">
+          Didn't remove this? Sign in immediately and review your account — your password may be compromised.
+        </p>
+        <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;"><tr><td style="background:#DC2626;border-radius:8px;">
+          <a href="https://mycontractdoctors.com/sign-in" style="display:inline-block;padding:14px 28px;font-size:15px;font-weight:500;color:#ffffff;text-decoration:none;">Secure my account →</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:20px 36px;background:#081E38;text-align:center;">
+        <div style="font-size:11px;color:rgba(255,255,255,0.3);">© My Contract Doctors · We're on your side, not the vendor's.</div>
+      </td></tr>
+    </table>
+  </td></tr></table>
+</body>
+</html>
 ```
 
 ---
