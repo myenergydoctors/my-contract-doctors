@@ -193,6 +193,12 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       )}
+
+      <ExtractionInspector
+        invoiceId={invoice.id}
+        filePath={filePath}
+        lineItems={lineItems}
+      />
     </div>
   );
 }

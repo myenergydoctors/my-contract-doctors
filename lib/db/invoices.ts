@@ -15,6 +15,7 @@ export type InvoiceForUI = {
   status: "processing" | "completed" | "failed";
   topFinding: string;
   lineItems: unknown[];
+  filePath: string | null;
 };
 
 function toUI(row: InvoiceAnalysisRow): InvoiceForUI {
@@ -29,6 +30,7 @@ function toUI(row: InvoiceAnalysisRow): InvoiceForUI {
     status: row.status,
     topFinding: row.top_finding ?? "",
     lineItems: row.line_items ?? [],
+    filePath: row.file_path,
   };
 }
 
