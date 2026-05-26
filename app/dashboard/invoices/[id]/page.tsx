@@ -13,6 +13,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const [rawStatus, setRawStatus] = useState<string | null>(null);
   const [topFinding, setTopFinding] = useState<string | null>(null);
   const [queryError, setQueryError] = useState<string | null>(null);
+  const [filePath, setFilePath] = useState<string | null>(null);
   const [lineItems, setLineItems] = useState<LineItemForUI[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +28,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
         setTopFinding(res.topFinding);
         setQueryError(res.error);
         setLineItems(items);
+        setFilePath(res.invoice?.filePath ?? null);
       } catch (e: any) {
         if (cancelled) return;
         setQueryError(e?.message || String(e));
