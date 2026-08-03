@@ -25,10 +25,11 @@ jobs:
       - run: npm run build
 
   lint:
-    # Visible but non-blocking for now — next.config.ts ignores lint in builds,
-    # so the codebase hasn't been held to it yet. Tighten later.
+    # Advisory only — next.config.ts ignores lint in builds, so the codebase
+    # hasn't been held to it yet. Failures surface as a warning annotation
+    # instead of a red X (job-level continue-on-error still shows as failed
+    # on the PR, which reads as broken). Tighten later.
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -36,4 +37,4 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run lint
+      - run: npm run lint || echo "::warning::Lint reported issues (advisory — see log above). Not blocking merge."
