@@ -81,5 +81,8 @@ create policy "Authenticated can read vendor products"
 
 
 -- ─── 4. Grants (auto-expose is off — see supabase-grants-2c.sql) ──
+-- service_role needs explicit grants too in this project: the extraction
+-- route and the catalog-mapping API write via the admin client.
 
 grant select on table public.vendor_products to authenticated;
+grant select, insert, update, delete on table public.vendor_products to service_role;
