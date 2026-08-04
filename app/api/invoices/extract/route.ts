@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { listProductsServer } from "@/lib/db/products";
 import { listVendorsServer } from "@/lib/db/vendors";
+import { listVendorProductsServer, normalizeItemCode, type VendorProduct } from "@/lib/db/vendor-products";
 
 // Allow up to 300s for the extraction (Vercel Pro). Claude calls on large
 // PDFs can take a while.
@@ -29,6 +31,7 @@ type LineType = "charge" | "credit" | "past_balance" | "late_fee" | "discount" |
 type AILineItem = {
   raw_label: string;
   line_type?: LineType;
+  vendor_item_code?: string;
   product_slug?: string;
   vendor_slug?: string;
   quantity?: number;
@@ -231,6 +234,12 @@ ${vendorList}
 Available product slugs:
 ${productList}
 
+ITEM CODES: Most vendors print their own item/product code on each line
+(e.g. Cintas item numbers — often a 4-8 digit number or alphanumeric code in
+an "Item", "Item #", "Product" or similar column). Capture it VERBATIM in
+"vendor_item_code" for every line that shows one; null if the line has none.
+Do NOT invent codes. This applies to ALL line_types, not just charges.
+
 ==========================
 STEP 7 — Flagging (consultative tone)
 ==========================
@@ -265,6 +274,7 @@ Return STRICT JSON only — no commentary, no markdown fences
         {
           "raw_label": "verbatim text",
           "line_type": "charge|credit|past_balance|late_fee|discount|tax|other",
+          "vendor_item_code": "<the vendor's item/product code as printed, or null>",
           "product_slug": "<slug or null for non-charge lines>",
           "vendor_slug": "same as top usually",
           "quantity": <number>,
@@ -385,6 +395,34 @@ Return strict JSON only.`;
     const productBySlug = new Map(products.map(p => [p.slug, p.id]));
     const vendorBySlug = new Map(vendors.map(v => [v.slug, v.id]));
 
+    // 9a) Load the vendor SKU catalog for every vendor in this upload.
+    //     Known code → product mappings are applied deterministically below,
+    //     overriding whatever the AI guessed; codes we've never seen get
+    //     inserted after the loop so the catalog grows with every upload.
+    const involvedVendorIds = new Set<string>();
+    for (const inv of invoices) {
+      const vTop = inv.vendor_slug ? vendorBySlug.get(inv.vendor_slug) : null;
+      if (vTop) involvedVendorIds.add(vTop);
+      for (const li of inv.line_items || []) {
+        const v = li.vendor_slug ? vendorBySlug.get(li.vendor_slug) : null;
+        if (v) involvedVendorIds.add(v);
+      }
+    }
+    const catalog = await listVendorProductsServer([...involvedVendorIds]);
+    const catalogByKey = new Map<string, VendorProduct>(
+      catalog.map(cp => [`${cp.vendor_id}:${cp.vendor_item_code}`, cp])
+    );
+    const catalogById = new Map<string, VendorProduct>(catalog.map(cp => [cp.id, cp]));
+    type NewCatalogRow = {
+      vendor_id: string;
+      vendor_item_code: string;
+      display_name: string | null;
+      product_id: string | null;
+      first_seen_invoice_id: string;
+    };
+    const newCatalogRows = new Map<string, NewCatalogRow>();
+    const seenCatalogCounts = new Map<string, number>(); // vendor_products.id → hits this upload
+
     // 10) For each invoice, upsert one invoice_analyses row.
     //     Row 0 = the row we created above (primaryInvoiceId).
     //     Rows 1..N create additional sibling rows.
@@ -474,15 +512,38 @@ Return strict JSON only.`;
       // Insert line items
       const lineRows = (inv.line_items || []).map(li => {
         const lt: LineType = (li.line_type as LineType) || "charge";
+        const lineVendorId = li.vendor_slug ? vendorBySlug.get(li.vendor_slug) ?? vendorIdTop : vendorIdTop;
         // Only "charge" lines get mapped to a product
-        const productId = lt === "charge" && li.product_slug ? productBySlug.get(li.product_slug) ?? null : null;
+        let productId = lt === "charge" && li.product_slug ? productBySlug.get(li.product_slug) ?? null : null;
+
+        // Vendor SKU catalog: known mapping wins over the AI's guess;
+        // unseen codes are queued for insertion into vendor_products.
+        const itemCode = li.vendor_item_code ? normalizeItemCode(li.vendor_item_code) : null;
+        if (itemCode && lineVendorId) {
+          const key = `${lineVendorId}:${itemCode}`;
+          const known = catalogByKey.get(key);
+          if (known) {
+            if (known.product_id && lt === "charge") productId = known.product_id;
+            seenCatalogCounts.set(known.id, (seenCatalogCounts.get(known.id) || 0) + 1);
+          } else if (!newCatalogRows.has(key)) {
+            newCatalogRows.set(key, {
+              vendor_id: lineVendorId,
+              vendor_item_code: itemCode,
+              display_name: li.raw_label || null,
+              product_id: lt === "charge" ? productId : null,
+              first_seen_invoice_id: thisInvoiceId,
+            });
+          }
+        }
+
         return {
           invoice_id: thisInvoiceId,
           user_id: user.id,
           raw_label: li.raw_label || "(unknown)",
           line_type: lt,
+          vendor_item_code: itemCode,
           product_id: productId,
-          vendor_id: li.vendor_slug ? vendorBySlug.get(li.vendor_slug) ?? vendorIdTop : vendorIdTop,
+          vendor_id: lineVendorId,
           quantity: li.quantity ?? null,
           unit_price_cents: li.unit_price_cents ?? null,
           billing_frequency: li.billing_frequency ?? null,
@@ -500,6 +561,37 @@ Return strict JSON only.`;
       if (lineRows.length > 0) {
         const { error: liErr } = await supabase.from("invoice_line_items").insert(lineRows);
         if (liErr) console.error(`Failed to insert line items for invoice ${thisInvoiceId}:`, liErr);
+      }
+    }
+
+    // 10a) Grow the vendor SKU catalog. Writes use the service_role client —
+    //      vendor_products is shared reference data, not user-owned, so regular
+    //      users have no write policy on it. Failures here must never fail the
+    //      extraction itself.
+    if (newCatalogRows.size > 0 || seenCatalogCounts.size > 0) {
+      try {
+        const admin = createAdminClient();
+        if (newCatalogRows.size > 0) {
+          const { error: vpErr } = await admin
+            .from("vendor_products")
+            .upsert(
+              [...newCatalogRows.values()].map(row => ({ ...row, mapping_source: "ai" })),
+              { onConflict: "vendor_id,vendor_item_code", ignoreDuplicates: true }
+            );
+          if (vpErr) console.error("Failed to insert new vendor_products:", vpErr);
+        }
+        for (const [vpId, hits] of seenCatalogCounts) {
+          const current = catalogById.get(vpId);
+          await admin
+            .from("vendor_products")
+            .update({
+              times_seen: (current?.times_seen ?? 0) + hits,
+              last_seen_at: new Date().toISOString(),
+            })
+            .eq("id", vpId);
+        }
+      } catch (catErr) {
+        console.error("Vendor catalog update failed (non-fatal):", catErr);
       }
     }
 
