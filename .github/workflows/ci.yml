@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values so `next build` can construct clients; real keys live in Vercel.
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-dummy-anon-key
+      SUPABASE_SERVICE_ROLE_KEY: ci-dummy-service-key
+      ANTHROPIC_API_KEY: ci-dummy
+      SENDGRID_API_KEY: ci-dummy
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+  lint:
+    # Advisory only — next.config.ts ignores lint in builds, so the codebase
+    # hasn't been held to it yet. Failures surface as a warning annotation
+    # instead of a red X (job-level continue-on-error still shows as failed
+    # on the PR, which reads as broken). Tighten later.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint || echo "::warning::Lint reported issues (advisory — see log above). Not blocking merge."
