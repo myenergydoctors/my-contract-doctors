@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { getDemoMode, planForMode, type DemoMode } from "./demo-mode";
-import { mockInvoices, mockAgreements, mockNotifications } from "./mock-data";
+import { mockInvoices, mockAgreements, mockNotifications, type InvoiceAnalysis, type AgreementAnalysis } from "./mock-data";
 import { listInvoices, type InvoiceForUI } from "./db/invoices";
 import { listAgreements, type AgreementForUI } from "./db/agreements";
 import { listNotifications, type NotificationForUI } from "./db/notifications";
@@ -40,8 +40,8 @@ export function useEffectivePlan(): "free" | "agreement" | "pro" {
 type EffectiveData = {
   mode: DemoMode;
   plan: "free" | "agreement" | "pro";
-  invoices: InvoiceForUI[] | typeof mockInvoices;
-  agreements: AgreementForUI[] | typeof mockAgreements;
+  invoices: (InvoiceForUI | InvoiceAnalysis)[];
+  agreements: (AgreementForUI | AgreementAnalysis)[];
   notifications: (NotificationForUI | typeof mockNotifications[0])[];
   loading: boolean;
 };

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 
 // System prompt — keep in sync with the products + pricing on the marketing
 // site. Tokens [RECOMMEND:id] and [OFFER_PRO_ANNUAL_DISCOUNT] are parsed by
@@ -78,6 +79,9 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export async function POST(req: NextRequest) {
   try {
+    const limit = await checkRateLimit(req, { namespace: "chat", maxRequests: 15, windowSeconds: 60 });
+    if (!limit.allowed) return rateLimitResponse(limit);
+
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return NextResponse.json({ error: "Chat is not configured (missing ANTHROPIC_API_KEY)." }, { status: 500 });
@@ -88,8 +92,17 @@ export async function POST(req: NextRequest) {
       discountAlreadyOffered?: boolean;
     };
 
-    if (!Array.isArray(messages) || messages.length === 0) {
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 20) {
       return NextResponse.json({ error: "messages array is required" }, { status: 400 });
+    }
+    if (messages.some(message =>
+      !message ||
+      (message.role !== "user" && message.role !== "assistant") ||
+      typeof message.content !== "string" ||
+      message.content.length < 1 ||
+      message.content.length > 2_000
+    )) {
+      return NextResponse.json({ error: "Invalid message history" }, { status: 400 });
     }
 
     // Append a small note if the discount has already been offered in this convo
@@ -115,7 +128,7 @@ export async function POST(req: NextRequest) {
     const data = await response.json();
     if (!response.ok) {
       console.error("Anthropic chat error:", data);
-      return NextResponse.json({ error: data?.error?.message || "Chat request failed" }, { status: 500 });
+      return NextResponse.json({ error: "Chat request failed" }, { status: 502 });
     }
 
     const text: string = data.content?.[0]?.text || "";
@@ -155,8 +168,8 @@ export async function POST(req: NextRequest) {
           ? { type: "offer_pro_annual_discount" }
           : null,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Chat route error:", error);
-    return NextResponse.json({ error: error?.message || "Chat error" }, { status: 500 });
+    return NextResponse.json({ error: "Chat error" }, { status: 500 });
   }
 }

@@ -12,6 +12,23 @@ export type ProfileRow = {
   plan: Plan;
   joined_at: string;
   updated_at: string;
+  is_admin: boolean;
+};
+
+export type DiscountCodeRow = {
+  id: string;
+  code: string;
+  plan: "pro" | "pro-annual" | "agreement" | "demystifier";
+  discount_pct: number;
+  max_uses: number | null;
+  times_redeemed: number;
+  active: boolean;
+  source: "manual" | "chat-assistant";
+  claimed_by_anon_id: string | null;
+  note: string | null;
+  created_by: string | null;
+  expires_at: string | null;
+  created_at: string;
 };
 
 export type InvoiceAnalysisRow = {

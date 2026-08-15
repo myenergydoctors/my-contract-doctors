@@ -24,7 +24,7 @@ const fonts = `
 `;
 
 function useInView(threshold = 0.15) {
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {
     const obs = new IntersectionObserver(
@@ -34,7 +34,7 @@ function useInView(threshold = 0.15) {
     if (ref.current) obs.observe(ref.current);
     return () => obs.disconnect();
   }, []);
-  return [ref, inView];
+  return [ref, inView] as const;
 }
 
 function FadeUp({ children, delay = 0, style = {} }) {
@@ -338,7 +338,7 @@ function HowItWorks() {
 }
 
 /* ── PRODUCT SECTIONS ── */
-function ProductSection({ eyebrow, headline, subhead, body, cta, ctaHref, accent, reverse, badge, children }) {
+function ProductSection({ eyebrow, headline, subhead, body, cta, ctaHref="#", accent, reverse=false, badge=null, children }) {
   const [ref, inView] = useInView();
   return (
     <section className="px-6 md:px-8 py-20 md:py-28" style={{ background: COLORS.white, borderTop: `1px solid ${COLORS.gray100}` }}>

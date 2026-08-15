@@ -6,6 +6,7 @@ import { mockUser } from "@/lib/mock-data";
 import { getDemoMode, setDemoMode, planForMode, demoModes, type DemoMode } from "@/lib/demo-mode";
 import { useEffectivePlan, useEffectiveData } from "@/lib/use-effective-plan";
 import { createClient } from "@/lib/supabase/client";
+import { getProfile } from "@/lib/db/profiles";
 import Logo from "@/components/Logo";
 
 type NavItem = { label: string; href: string; icon: string; badge?: string; badgeKind?: "count" | "pro" };
@@ -40,8 +41,13 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const [authChecked, setAuthChecked] = useState(false);
   const [mode, setMode] = useState<DemoMode>("pro");
   const [realUser, setRealUser] = useState<{ email: string | null; firstName: string; lastName: string; business: string; initials: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const supabase = createClient();
+
+  useEffect(() => {
+    getProfile().then(p => setIsAdmin(!!p?.is_admin));
+  }, []);
 
   useEffect(() => {
     setMode(getDemoMode());
@@ -81,6 +87,9 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const { plan: effectivePlan, notifications: visibleNotifications } = useEffectiveData();
   const unreadCount = visibleNotifications.filter(n => n.unread).length;
   const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
+  if (isAdmin) {
+    navItems.push({ label: "Discount codes", href: "/dashboard/admin/discount-codes", icon: "%" });
+  }
 
   // Middleware already gates /dashboard/* via Supabase session — if we got
   // rendered, the user is signed in. Skip the localStorage check entirely.

@@ -17,8 +17,7 @@ export default function Nav() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-
-  if (pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname?.startsWith("/upload") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email") return null;
+  const hidden = pathname?.startsWith("/dashboard") || pathname?.startsWith("/checkout") || pathname?.startsWith("/onboarding") || pathname?.startsWith("/upload") || pathname === "/sign-in" || pathname === "/sign-up" || pathname === "/check-email";
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
@@ -31,6 +30,8 @@ export default function Nav() {
     else document.body.style.overflow = "";
     return () => { document.body.style.overflow = ""; };
   }, [open]);
+
+  if (hidden) return null;
 
   return (
     <nav

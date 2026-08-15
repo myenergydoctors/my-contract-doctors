@@ -256,7 +256,7 @@ function RiskBadge({ risk }) {
   return <Tag variant={map[risk]}>{labels[risk]}</Tag>;
 }
 
-function Btn({ children, onClick, variant = "navy", full = false, size = "md", disabled = false }) {
+function Btn({ children, onClick = () => {}, variant = "navy", full = false, size = "md", disabled = false, style = {} }) {
   const sz = { lg: { padding: "15px 32px", fontSize: 16 }, md: { padding: "12px 24px", fontSize: 14 }, sm: { padding: "8px 14px", fontSize: 12 } }[size];
   const th = {
     navy:    { background: C.navy,    color: "#fff",    border: "none", boxShadow: "none" },
@@ -268,7 +268,7 @@ function Btn({ children, onClick, variant = "navy", full = false, size = "md", d
   }[variant];
   return (
     <button onClick={disabled ? undefined : onClick}
-      style={{ ...sz, ...th, fontFamily: "'DM Sans',sans-serif", fontWeight: 500, cursor: disabled ? "not-allowed" : "pointer", borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s", opacity: disabled ? 0.5 : 1, width: full ? "100%" : "auto" }}
+      style={{ ...sz, ...th, ...style, fontFamily: "'DM Sans',sans-serif", fontWeight: 500, cursor: disabled ? "not-allowed" : "pointer", borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, transition: "all 0.2s", opacity: disabled ? 0.5 : 1, width: full ? "100%" : "auto" }}
       onMouseEnter={e => { if (!disabled) e.currentTarget.style.opacity = "0.85"; }}
       onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
     >{children}</button>
@@ -678,7 +678,7 @@ function DemystifierApp() {
                   transition: "all 0.2s",
                   boxShadow: isActive ? `0 4px 16px rgba(61,128,200,0.15)` : "none",
                 }}>
-                <div style={{ display: "flex", align: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <div style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: isActive ? C.blue : C.gray500 }}>{clause.label}</div>
                   <RiskBadge risk={clause.risk} />
                 </div>

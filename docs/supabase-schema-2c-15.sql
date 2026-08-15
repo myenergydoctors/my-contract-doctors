@@ -104,7 +104,8 @@ create index if not exists idx_line_items_benchmark_charges
 -- Computed view that recalculates totals from line_items, so we can sanity-
 -- check vs the stored extracted_total_check_cents.
 
-create or replace view public.invoice_totals_check as
+create or replace view public.invoice_totals_check
+with (security_invoker = true) as
 select
   i.id as invoice_id,
   i.user_id,
@@ -115,6 +116,7 @@ select
   count(li.id) as line_item_count
 from public.invoice_analyses i
 left join public.invoice_line_items li on li.invoice_id = i.id
+where i.user_id = auth.uid()
 group by i.id, i.user_id, i.total_due_cents;
 
 comment on view public.invoice_totals_check is

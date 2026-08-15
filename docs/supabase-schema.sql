@@ -186,7 +186,15 @@ alter table public.subscriptions       enable row level security;
 drop policy if exists "Users can view own profile"   on public.profiles;
 drop policy if exists "Users can update own profile" on public.profiles;
 create policy "Users can view own profile"   on public.profiles for select using (auth.uid() = id);
-create policy "Users can update own profile" on public.profiles for update using (auth.uid() = id);
+create policy "Users can update own profile" on public.profiles for update
+  using (auth.uid() = id)
+  with check (auth.uid() = id);
+
+-- RLS controls which rows a user may update, not which columns. Keep billing
+-- and authorization fields server-managed by granting column-level UPDATE
+-- access only to the user-editable profile fields.
+revoke update on table public.profiles from authenticated;
+grant update (first_name, last_name, business_name, industry) on table public.profiles to authenticated;
 
 -- invoice_analyses
 drop policy if exists "Users can view own invoices"   on public.invoice_analyses;

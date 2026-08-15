@@ -5,6 +5,16 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
+  {
+    rules: {
+      // Marketing copy legitimately contains apostrophes and quotation marks.
+      "react/no-unescaped-entities": "off",
+      // Existing prototype-era components still need gradual type tightening.
+      "@typescript-eslint/no-explicit-any": "warn",
+      // Hydration from browser storage is intentional in the current UI.
+      "react-hooks/set-state-in-effect": "warn",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

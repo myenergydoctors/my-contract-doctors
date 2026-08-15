@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { generateProAnnualDiscount } from "@/lib/discount-codes";
+import { claimChatDiscount } from "@/lib/discount-codes";
 
 type Action = { type: "recommend_product"; productId: string } | { type: "offer_pro_annual_discount" };
 type Message = { role: "user" | "assistant"; content: string; action?: Action | null; claimedCode?: string; choices?: string[]; choicesAnswered?: boolean };
@@ -90,9 +90,13 @@ export default function ChatWidget() {
     sendText(choice, updated);
   };
 
-  const claimDiscount = (msgIndex: number) => {
-    const code = generateProAnnualDiscount();
-    setMessages(m => m.map((msg, i) => i === msgIndex ? { ...msg, claimedCode: code.code } : msg));
+  const claimDiscount = async (msgIndex: number) => {
+    try {
+      const claimed = await claimChatDiscount();
+      setMessages(m => m.map((msg, i) => i === msgIndex ? { ...msg, claimedCode: claimed.code } : msg));
+    } catch {
+      setError("Couldn't generate a discount code right now — try again in a moment.");
+    }
   };
 
   return (

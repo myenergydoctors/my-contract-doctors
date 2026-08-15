@@ -27,7 +27,7 @@ function RiskBadge({risk}){
 function Eyebrow({children,color=C.blue}){
   return <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.16em",textTransform:"uppercase",color,marginBottom:10}}>{children}</div>;
 }
-function Btn({children,onClick,variant="navy",full=false,size="md",disabled=false,style={}}){
+function Btn({children,onClick=()=>{},variant="navy",full=false,size="md",disabled=false,style={}}){
   const sz={lg:{padding:"15px 32px",fontSize:16},md:{padding:"12px 24px",fontSize:14},sm:{padding:"8px 14px",fontSize:12}}[size];
   const th={
     navy:{background:C.navy,color:"#fff",border:"none",boxShadow:"none"},
@@ -268,18 +268,18 @@ function StepUpload({onNext}){
   const [sessionId]=useState(mkId);
   const [mobileLinked,setLinked]=useState(false);
   const [showDemo,setShowDemo]=useState(false);
-  const inputRef=useRef();
-  const pollRef=useRef();
+  const inputRef=useRef<HTMLInputElement>(null);
+  const pollRef=useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(()=>{
     if(method!=="qr")return;
     pollRef.current=setInterval(()=>{
       try{
         const raw=localStorage.getItem(`mcd_agr_${sessionId}`);
-        if(raw){const d=JSON.parse(raw);if(d.done){clearInterval(pollRef.current);setLinked(true);setFile({name:d.fileName||"agreement-mobile.jpg",size:200000,type:"image/jpeg",mobile:true});}}
+        if(raw){const d=JSON.parse(raw);if(d.done){if(pollRef.current)clearInterval(pollRef.current);setLinked(true);setFile({name:d.fileName||"agreement-mobile.jpg",size:200000,type:"image/jpeg",mobile:true});}}
       }catch{}
     },700);
-    return()=>clearInterval(pollRef.current);
+    return()=>{if(pollRef.current)clearInterval(pollRef.current);};
   },[method,sessionId]);
 
   const handleFile=f=>{
@@ -308,14 +308,14 @@ function StepUpload({onNext}){
       {method==="desktop"&&(
         <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)}
           onDrop={e=>{e.preventDefault();setDragging(false);handleFile(e.dataTransfer.files[0]);}}
-          onClick={()=>!file&&inputRef.current.click()}
+          onClick={()=>!file&&inputRef.current?.click()}
           style={{border:`2px dashed ${dragging?C.teal:file?C.blue:C.gray300}`,borderRadius:18,padding:file?"32px":"52px 32px",textAlign:"center",background:dragging?C.tealLight:file?C.bluePale:C.offWhite,cursor:file?"default":"pointer",transition:"all 0.25s",marginBottom:20}}>
-          <input ref={inputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
+          <input ref={inputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={e=>handleFile(e.currentTarget.files?.[0])}/>
           {!file?<>
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{margin:"0 auto 14px",display:"block"}}><rect width="48" height="48" rx="12" fill={C.bluePale}/><path d="M14 32V28a2 2 0 012-2h16a2 2 0 012 2v4M24 18v12M24 18l-4 4M24 18l4 4" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:C.navy,marginBottom:8}}>Drop your agreement here</div>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,marginBottom:18}}>PDF or image (JPG, PNG) — signed or unsigned</div>
-            <Btn variant="outline" onClick={e=>{e.stopPropagation();inputRef.current.click();}}>Choose a file</Btn>
+            <Btn variant="outline" onClick={()=>inputRef.current?.click()}>Choose a file</Btn>
           </>:(
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
               {preview&&preview!=="pdf"?<img src={preview} alt="" style={{maxHeight:160,maxWidth:"100%",borderRadius:10,border:`1px solid ${C.gray200}`}}/>:<div style={{width:64,height:80,background:C.navy,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,color:C.blueLight}}>PDF</span></div>}
@@ -392,7 +392,7 @@ function MobileView({sessionId,label="agreement",storageKey,onUploaded}){
   const [preview,setPreview]=useState(null);
   const [busy,setBusy]=useState(false);
   const [sent,setSent]=useState(false);
-  const inputRef=useRef();
+  const inputRef=useRef<HTMLInputElement>(null);
   const key=storageKey||`mcd_agr_${sessionId}`;
 
   const pick=f=>{if(!f)return;setMFile(f);const r=new FileReader();r.onload=e=>setPreview(e.target.result);r.readAsDataURL(f);};
@@ -422,13 +422,13 @@ function MobileView({sessionId,label="agreement",storageKey,onUploaded}){
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:C.navy,margin:"10px 0 6px",lineHeight:1.2}}>Scan your {label}</div>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,lineHeight:1.6}}>Take a clear photo and send it to your desktop session.</div>
           </div>
-          <input ref={inputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>pick(e.target.files[0])}/>
+          <input ref={inputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>pick(e.currentTarget.files?.[0])}/>
           {!mFile?<>
-            <button onClick={()=>inputRef.current.click()} style={{width:"100%",padding:"14px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
+            <button onClick={()=>inputRef.current?.click()} style={{width:"100%",padding:"14px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" stroke="#fff" strokeWidth="2" fill="none"/><circle cx="12" cy="13" r="4" stroke="#fff" strokeWidth="2"/></svg>
               Open Camera
             </button>
-            <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*,application/pdf";i.onchange=e=>pick(e.target.files[0]);i.click();}} style={{width:"100%",padding:"11px",borderRadius:10,background:C.offWhite,color:C.gray700,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer"}}>Choose from Library</button>
+            <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*,application/pdf";i.onchange=e=>pick((e.currentTarget as HTMLInputElement).files?.[0]);i.click();}} style={{width:"100%",padding:"11px",borderRadius:10,background:C.offWhite,color:C.gray700,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer"}}>Choose from Library</button>
           </>:<>
             {preview&&<img src={preview} alt="" style={{width:"100%",borderRadius:8,marginBottom:10,maxHeight:150,objectFit:"cover",border:`1px solid ${C.gray200}`}}/>}
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,textAlign:"center",marginBottom:10}}>{mFile.name}</div>
