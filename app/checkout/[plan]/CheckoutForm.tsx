@@ -3,15 +3,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
-import { validateDiscount, redeemDiscount, type DiscountCode } from "@/lib/discount-codes";
+import { validateDiscount, redeemDiscount } from "@/lib/discount-codes";
 import Logo from "@/components/Logo";
 
 export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
   const [codeInput, setCodeInput] = useState("");
-  const [appliedDiscount, setAppliedDiscount] = useState<DiscountCode | null>(null);
+  const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountPct: number } | null>(null);
   const [codeError, setCodeError] = useState("");
+  const [checkingCode, setCheckingCode] = useState(false);
 
   const subtotalCents = plan.priceCents;
   const discountCents = appliedDiscount ? Math.round(subtotalCents * appliedDiscount.discountPct) : 0;
@@ -19,22 +21,32 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
 
   const fmt = (cents: number) => `$${(cents / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-  const applyCode = () => {
+  const applyCode = async () => {
     setCodeError("");
-    const result = validateDiscount(codeInput, plan.id);
-    if (!result.ok) {
+    setCheckingCode(true);
+    const result = await validateDiscount(codeInput, plan.id, email);
+    setCheckingCode(false);
+    if (result.ok === false) {
       setCodeError(result.reason);
       setAppliedDiscount(null);
       return;
     }
-    setAppliedDiscount(result.discount);
+    setAppliedDiscount({ code: result.code, discountPct: result.discountPct });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     // Mark the discount redeemed BEFORE redirecting so success page reflects it
-    if (appliedDiscount) redeemDiscount(appliedDiscount.code);
+    if (appliedDiscount) {
+      const redemption = await redeemDiscount(appliedDiscount.code, plan.id, email);
+      if (!redemption.ok) {
+        setLoading(false);
+        setCodeError(redemption.reason || "That code couldn't be redeemed.");
+        setAppliedDiscount(null);
+        return;
+      }
+    }
     // Simulate processing — replace with Stripe in Phase 2
     setTimeout(() => {
       router.push(`/checkout/success?plan=${plan.id}`);
@@ -70,7 +82,17 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
 
             {/* Email */}
-            <Field label="Email" placeholder="you@yourbusiness.com" type="email" required />
+            <div>
+              <label className="block font-sans text-xs font-semibold text-gray-700 mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@yourbusiness.com"
+                required
+                className="w-full font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-2.5 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors placeholder:text-gray-400"
+              />
+            </div>
 
             {/* Card info */}
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
@@ -127,10 +149,10 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
                   <button
                     type="button"
                     onClick={applyCode}
-                    disabled={!codeInput.trim()}
+                    disabled={!codeInput.trim() || checkingCode}
                     className="font-sans text-sm font-medium bg-navy text-white px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    Apply
+                    {checkingCode ? "Checking…" : "Apply"}
                   </button>
                 </div>
               )}

@@ -1,3 +1,5 @@
+import "server-only";
+
 import { createClient } from "@supabase/supabase-js";
 
 // Server-side admin client using the SERVICE_ROLE key. Bypasses RLS — use

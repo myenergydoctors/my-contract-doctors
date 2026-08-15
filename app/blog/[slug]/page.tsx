@@ -1,6 +1,7 @@
 "use client";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { posts } from "@/lib/posts";
 
 const C = {
@@ -74,16 +75,16 @@ export default function BlogPostPage(){
 
   // Dynamically load content
   const [content, setContent] = useState<any[]>([]);
-  useState(() => {
+  useEffect(() => {
     import(`@/lib/posts/${slug}`)
       .then(mod => setContent(mod.content))
       .catch(() => setContent([]));
-  });
+  }, [slug]);
 
   if(!post) return (
     <div style={{maxWidth:760,margin:"80px auto",padding:"80px 24px",textAlign:"center"}}>
       <div style={{fontFamily:"'DM Serif Display',serif",fontSize:32,color:C.navy,marginBottom:16}}>Post not found</div>
-      <a href="/blog" style={{color:C.blue}}>← Back to blog</a>
+      <Link href="/blog" style={{color:C.blue}}>← Back to blog</Link>
     </div>
   );
 
@@ -98,7 +99,7 @@ export default function BlogPostPage(){
         <div style={{position:"absolute",inset:0,opacity:0.04,backgroundImage:`linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)`,backgroundSize:"48px 48px"}}/>
         <div style={{maxWidth:760,margin:"0 auto",position:"relative",zIndex:2}}>
           <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:20}}>
-            <a href="/blog" style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.5)",textDecoration:"none"}}>Blog</a>
+            <Link href="/blog" style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.5)",textDecoration:"none"}}>Blog</Link>
             <span style={{color:"rgba(255,255,255,0.3)"}}>›</span>
             <CategoryTag category={post.category} color={post.categoryColor}/>
           </div>

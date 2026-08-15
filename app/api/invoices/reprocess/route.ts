@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { SITE } from "@/lib/site";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 
 // Re-runs extraction against an existing uploaded file using the current
 // prompt. Deletes the old invoice + line items + sibling invoices, then
@@ -14,6 +17,15 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Not signed in." }, { status: 401 });
   }
+  const admin = createAdminClient();
+
+  const limit = await checkRateLimit(req, {
+    namespace: "invoice-reprocess",
+    identity: user.id,
+    maxRequests: 5,
+    windowSeconds: 3600,
+  });
+  if (!limit.allowed) return rateLimitResponse(limit);
 
   const { invoice_id } = (await req.json()) as { invoice_id?: string };
   if (!invoice_id) {
@@ -43,9 +55,9 @@ export async function POST(req: NextRequest) {
   const ids = Array.from(groupIds);
 
   // Delete line items, extraction jobs, then invoice rows (children of cascade)
-  await supabase.from("invoice_line_items").delete().in("invoice_id", ids);
-  await supabase.from("invoice_extraction_jobs").delete().in("invoice_id", ids);
-  await supabase.from("invoice_analyses").delete().in("id", ids);
+  await admin.from("invoice_line_items").delete().in("invoice_id", ids);
+  await admin.from("invoice_extraction_jobs").delete().in("invoice_id", ids);
+  await admin.from("invoice_analyses").delete().in("id", ids);
 
   // Split bucket out of stored file_path ("{bucket}/{user_id}/{name}")
   const filePath = inv.file_path;
@@ -54,7 +66,7 @@ export async function POST(req: NextRequest) {
   const storagePath = slash >= 0 ? filePath.slice(slash + 1) : filePath;
 
   // Forward cookies so /extract sees the same authenticated user
-  const origin = req.nextUrl.origin;
+  const origin = process.env.NODE_ENV === "development" ? req.nextUrl.origin : SITE.url;
   const cookieHeader = req.headers.get("cookie") || "";
 
   const extractRes = await fetch(`${origin}/api/invoices/extract`, {
@@ -70,7 +82,8 @@ export async function POST(req: NextRequest) {
 
   const extractJson = await extractRes.json();
   if (!extractRes.ok) {
-    return NextResponse.json({ error: "reprocess_failed", details: extractJson }, { status: extractRes.status });
+    console.error("Invoice reprocessing failed:", extractJson);
+    return NextResponse.json({ error: "Invoice reprocessing failed." }, { status: extractRes.status });
   }
   return NextResponse.json({ ok: true, ...extractJson });
 }

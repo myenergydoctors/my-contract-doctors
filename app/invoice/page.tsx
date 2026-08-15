@@ -25,7 +25,7 @@ function Tag({ children, variant="teal" }) {
 function Eyebrow({ children, color=C.blue }) {
   return <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.16em",textTransform:"uppercase",color,marginBottom:10}}>{children}</div>;
 }
-function Btn({ children, onClick, variant="navy", full=false, size="md", disabled=false }) {
+function Btn({ children, onClick=()=>{}, variant="navy", full=false, size="md", disabled=false }) {
   const sz = { lg:{padding:"15px 32px",fontSize:16}, md:{padding:"12px 24px",fontSize:14}, sm:{padding:"8px 16px",fontSize:13} }[size];
   const th = { navy:{background:C.navy,color:"#fff",border:"none"}, teal:{background:C.teal,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(23,168,130,0.3)"}, blue:{background:C.blue,color:"#fff",border:"none"}, outline:{background:"transparent",color:C.navy,border:`1.5px solid ${C.navy}`}, ghost:{background:C.gray100,color:C.gray700,border:"none"} }[variant];
   return <button onClick={disabled?undefined:onClick} style={{...sz,...th,fontFamily:"'DM Sans',sans-serif",fontWeight:500,cursor:disabled?"not-allowed":"pointer",borderRadius:9,display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,transition:"all 0.2s",opacity:disabled?0.5:1,width:full?"100%":"auto"}} onMouseEnter={e=>{if(!disabled)e.currentTarget.style.opacity="0.85"}} onMouseLeave={e=>{e.currentTarget.style.opacity="1"}}>{children}</button>;
@@ -80,7 +80,7 @@ function MobileView({ sessionId, onUploaded }) {
   const [preview, setPreview] = useState(null);
   const [busy, setBusy]       = useState(false);
   const [sent, setSent]       = useState(false);
-  const inputRef = useRef();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const pick = f => {
     if(!f) return;
@@ -115,13 +115,13 @@ function MobileView({ sessionId, onUploaded }) {
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:C.navy,margin:"10px 0 6px",lineHeight:1.2}}>Scan your invoice</div>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,lineHeight:1.6}}>Take a clear photo of your paper invoice and send it to your desktop session.</div>
           </div>
-          <input ref={inputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>pick(e.target.files[0])}/>
+          <input ref={inputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>pick(e.currentTarget.files?.[0])}/>
           {!mFile ? <>
-            <button onClick={()=>inputRef.current.click()} style={{width:"100%",padding:"14px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
+            <button onClick={()=>inputRef.current?.click()} style={{width:"100%",padding:"14px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#fff" strokeWidth="2" fill="none"/><circle cx="12" cy="13" r="4" stroke="#fff" strokeWidth="2"/></svg>
               Open Camera
             </button>
-            <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*,application/pdf";i.onchange=e=>pick(e.target.files[0]);i.click();}} style={{width:"100%",padding:"11px",borderRadius:10,background:C.offWhite,color:C.gray700,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer"}}>
+            <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*,application/pdf";i.onchange=e=>pick((e.currentTarget as HTMLInputElement).files?.[0]);i.click();}} style={{width:"100%",padding:"11px",borderRadius:10,background:C.offWhite,color:C.gray700,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer"}}>
               Choose from Library
             </button>
           </> : <>
@@ -153,8 +153,8 @@ function StepUpload({ onNext }) {
   const [sessionId]               = useState(mkId);
   const [mobileLinked, setLinked] = useState(false);
   const [showDemo, setShowDemo]   = useState(false);
-  const inputRef = useRef();
-  const pollRef  = useRef();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const pollRef  = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Poll localStorage for mobile completion
   useEffect(()=>{
@@ -162,10 +162,10 @@ function StepUpload({ onNext }) {
     pollRef.current = setInterval(()=>{
       try {
         const raw = localStorage.getItem(`mcd_${sessionId}`);
-        if(raw){ const d=JSON.parse(raw); if(d.done){ clearInterval(pollRef.current); setLinked(true); setFile({name:d.fileName||"invoice-mobile.jpg",size:200000,type:"image/jpeg",mobile:true}); }}
+        if(raw){ const d=JSON.parse(raw); if(d.done){ if(pollRef.current) clearInterval(pollRef.current); setLinked(true); setFile({name:d.fileName||"invoice-mobile.jpg",size:200000,type:"image/jpeg",mobile:true}); }}
       } catch{}
     }, 700);
-    return ()=>clearInterval(pollRef.current);
+    return ()=>{ if(pollRef.current) clearInterval(pollRef.current); };
   },[method, sessionId]);
 
   const handleFile = f => {
@@ -201,14 +201,14 @@ function StepUpload({ onNext }) {
       {method==="desktop" && (
         <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)}
           onDrop={e=>{e.preventDefault();setDragging(false);handleFile(e.dataTransfer.files[0]);}}
-          onClick={()=>!file&&inputRef.current.click()}
+          onClick={()=>!file&&inputRef.current?.click()}
           style={{border:`2px dashed ${dragging?C.teal:file?C.blue:C.gray300}`,borderRadius:18,padding:file?"32px":"52px 32px",textAlign:"center",background:dragging?C.tealLight:file?C.bluePale:C.offWhite,cursor:file?"default":"pointer",transition:"all 0.25s",marginBottom:20}}>
-          <input ref={inputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={e=>handleFile(e.target.files[0])}/>
+          <input ref={inputRef} type="file" accept="image/*,application/pdf" style={{display:"none"}} onChange={e=>handleFile(e.currentTarget.files?.[0])}/>
           {!file ? <>
             <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{margin:"0 auto 14px",display:"block"}}><rect width="48" height="48" rx="12" fill={C.bluePale}/><path d="M24 30V18M24 18L19 23M24 18L29 23" stroke={C.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><path d="M16 34h16" stroke={C.blue} strokeWidth="2" strokeLinecap="round"/></svg>
             <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:C.navy,marginBottom:8}}>Drop your invoice here</div>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,marginBottom:18}}>PDF or image (JPG, PNG)</div>
-            <Btn variant="outline" onClick={e=>{e.stopPropagation();inputRef.current.click();}}>Choose a file</Btn>
+            <Btn variant="outline" onClick={()=>inputRef.current?.click()}>Choose a file</Btn>
           </> : (
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
               {preview&&preview!=="pdf"?<img src={preview} alt="" style={{maxHeight:160,maxWidth:"100%",borderRadius:10,border:`1px solid ${C.gray200}`}}/>:<div style={{width:64,height:80,background:C.navy,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,color:C.blueLight}}>PDF</span></div>}

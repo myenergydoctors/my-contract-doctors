@@ -16,7 +16,10 @@
 
 -- ─── User-owned tables: full CRUD for authenticated, restricted by RLS ──
 
-grant select, insert, update, delete on table public.profiles            to authenticated;
+grant select, insert, delete         on table public.profiles            to authenticated;
+revoke update on table public.profiles from authenticated;
+grant update (first_name, last_name, business_name, industry)
+  on table public.profiles to authenticated;
 grant select, insert, update, delete on table public.invoice_analyses    to authenticated;
 grant select, insert, update, delete on table public.agreement_analyses  to authenticated;
 grant select, insert, update, delete on table public.notifications       to authenticated;
