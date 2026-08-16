@@ -10,8 +10,9 @@ import { listVendorProductsServer, normalizeItemCode, type VendorProduct } from 
 // PDFs can take a while.
 export const maxDuration = 300;
 
-// Anthropic pricing for cost tracking (Sonnet 4 — match the chat route)
-const MODEL = "claude-sonnet-4-20250514";
+// Keep the default pinned to an account-supported model while allowing an
+// operator-controlled override without a code deployment.
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 const INPUT_COST_PER_M = 3.0;   // $3 per 1M input tokens
 const OUTPUT_COST_PER_M = 15.0; // $15 per 1M output tokens
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
@@ -407,6 +408,12 @@ Return strict JSON only.`;
 
     const aiJson = await aiRes.json();
     if (!aiRes.ok) {
+      console.error("Anthropic invoice extraction error", {
+        status: aiRes.status,
+        type: aiJson?.error?.type || "unknown",
+        message: aiJson?.error?.message || aiRes.statusText,
+        model: MODEL,
+      });
       throw new Error(`Anthropic API error: ${aiJson?.error?.message || aiRes.statusText}`);
     }
 

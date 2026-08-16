@@ -65,7 +65,7 @@ set search_path = ''
 as $$
 declare
   current_row public.api_rate_limits%rowtype;
-  current_time timestamptz := clock_timestamp();
+  v_now timestamptz := clock_timestamp();
 begin
   if p_rate_key is null or length(p_rate_key) > 200 then
     raise exception 'invalid rate-limit key';
@@ -75,7 +75,7 @@ begin
   end if;
 
   insert into public.api_rate_limits (rate_key, window_started_at, request_count, updated_at)
-  values (p_rate_key, current_time, 0, current_time)
+  values (p_rate_key, v_now, 0, v_now)
   on conflict (rate_key) do nothing;
 
   select * into current_row
@@ -83,9 +83,9 @@ begin
   where rate_key = p_rate_key
   for update;
 
-  if current_row.window_started_at + make_interval(secs => p_window_seconds) <= current_time then
+  if current_row.window_started_at + make_interval(secs => p_window_seconds) <= v_now then
     update public.api_rate_limits
-    set window_started_at = current_time, request_count = 1, updated_at = current_time
+    set window_started_at = v_now, request_count = 1, updated_at = v_now
     where rate_key = p_rate_key;
     return query select true, p_max_requests - 1, 0;
   elsif current_row.request_count >= p_max_requests then
@@ -93,11 +93,11 @@ begin
       false,
       0,
       greatest(1, ceil(extract(epoch from (
-        current_row.window_started_at + make_interval(secs => p_window_seconds) - current_time
+        current_row.window_started_at + make_interval(secs => p_window_seconds) - v_now
       )))::integer);
   else
     update public.api_rate_limits
-    set request_count = request_count + 1, updated_at = current_time
+    set request_count = request_count + 1, updated_at = v_now
     where rate_key = p_rate_key;
     return query select true, p_max_requests - current_row.request_count - 1, 0;
   end if;
