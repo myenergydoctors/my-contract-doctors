@@ -394,7 +394,7 @@ Return strict JSON only.`;
       },
       body: JSON.stringify({
         model: MODEL,
-        max_tokens: 8192, // bumped from 4096 — multi-invoice files need more headroom
+        max_tokens: 16384, // multi-page and multi-invoice files can produce large structured responses
         system: systemPrompt,
         messages: [{
           role: "user",
@@ -429,7 +429,15 @@ Return strict JSON only.`;
     try {
       parsed = JSON.parse(cleaned);
       validateAIResponse(parsed);
-    } catch {
+    } catch (validationError: unknown) {
+      // Only log structure and parser state. Invoice text and extracted values
+      // are intentionally excluded because production logs are not data storage.
+      console.error("AI response validation failed", {
+        reason: validationError instanceof Error ? validationError.message : "unknown",
+        stopReason: aiJson.stop_reason || "unknown",
+        contentLength: text.length,
+        contentBlockCount: Array.isArray(aiJson.content) ? aiJson.content.length : 0,
+      });
       throw new Error("Could not validate the AI response.");
     }
 
