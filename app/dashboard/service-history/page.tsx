@@ -77,8 +77,8 @@ export default function ServiceHistoryPage() {
       {!displayedLoading && !error && displayedHistory.length === 0 && (
         <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
           <h3 className="font-serif text-xl text-navy">No tracked history yet</h3>
-          <p className="mt-2 font-sans text-sm text-gray-500">Your first confirmed invoice containing an explicitly approved replace-as-needed product will establish its baseline.</p>
-          <Link href="/dashboard/invoices" className="mt-4 inline-block font-sans text-sm font-medium text-blue no-underline">Review invoices →</Link>
+          <p className="mx-auto mt-2 max-w-2xl font-sans text-sm leading-6 text-gray-500">Add history while confirming an invoice. First approve replacement tracking for the relevant catalog item, then open an invoice containing it and choose Replaced, Not replaced, Not sure, or Don’t track.</p>
+          <Link href="/dashboard/invoices" className="mt-4 inline-block rounded-lg bg-blue px-4 py-2 font-sans text-sm font-medium text-white no-underline">Open an invoice to add history →</Link>
         </div>
       )}
 

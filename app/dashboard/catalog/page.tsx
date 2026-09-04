@@ -36,21 +36,34 @@ export default function CatalogPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [vendorFilter, setVendorFilter] = useState<string>("all");
+  const [trackingFilter, setTrackingFilter] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const [visibleCount, setVisibleCount] = useState(100);
 
   useEffect(() => {
     const supabase = createClient();
-    Promise.all([
-      supabase
-        .from("vendor_products")
-        .select("id, vendor_item_code, display_name, product_id, mapping_source, catalog_status, times_seen, replacement_tracking_eligibility, replacement_tracking_category, replacement_tracking_suggested_category, vendors ( slug, name )")
-        .order("times_seen", { ascending: false }),
-      supabase.from("products").select("id, slug, name, category").order("category").order("name"),
-    ]).then(([vp, p]) => {
-      if (vp.data) setRows(vp.data as unknown as Row[]);
-      if (p.data) setProducts(p.data as ProductOption[]);
-      setLoading(false);
-    });
+    async function load() {
+      const allRows: Row[] = [];
+      for (let start = 0; ; start += 1000) {
+        const page = await supabase
+          .from("vendor_products")
+          .select("id, vendor_item_code, display_name, product_id, mapping_source, catalog_status, times_seen, replacement_tracking_eligibility, replacement_tracking_category, replacement_tracking_suggested_category, vendors ( slug, name )")
+          .order("times_seen", { ascending: false })
+          .range(start, start + 999);
+        if (page.error) throw page.error;
+        const pageRows = (page.data || []) as unknown as Row[];
+        allRows.push(...pageRows);
+        if (pageRows.length < 1000) break;
+      }
+      const productResult = await supabase.from("products").select("id, slug, name, category").order("category").order("name");
+      if (productResult.error) throw productResult.error;
+      setRows(allRows);
+      setProducts((productResult.data || []) as ProductOption[]);
+    }
+    load().catch(caught => setError(caught instanceof Error ? caught.message : "Could not load the catalog.")).finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => setVisibleCount(100), [vendorFilter, trackingFilter, search]);
 
   const vendors = useMemo(() => {
     const seen = new Map<string, string>();
@@ -59,12 +72,21 @@ export default function CatalogPage() {
   }, [rows]);
 
   const filtered = useMemo(() => {
-    const list = vendorFilter === "all" ? rows : rows.filter(r => r.vendors?.slug === vendorFilter);
+    const query = search.trim().toLowerCase();
+    const list = rows.filter(row => {
+      if (vendorFilter !== "all" && row.vendors?.slug !== vendorFilter) return false;
+      if (trackingFilter === "suggested" && !row.replacement_tracking_suggested_category) return false;
+      if (trackingFilter === "eligible" && row.replacement_tracking_eligibility !== "eligible") return false;
+      if (trackingFilter === "unreviewed" && row.replacement_tracking_eligibility !== "unreviewed") return false;
+      return !query || `${row.vendor_item_code} ${row.display_name || ""} ${row.vendors?.name || ""}`.toLowerCase().includes(query);
+    });
     // Unmapped first, then by frequency
     return [...list].sort((a, b) =>
       (a.product_id === null ? 0 : 1) - (b.product_id === null ? 0 : 1) || b.times_seen - a.times_seen
     );
-  }, [rows, vendorFilter]);
+  }, [rows, vendorFilter, trackingFilter, search]);
+
+  const visibleRows = filtered.slice(0, visibleCount);
 
   async function assign(row: Row, productId: string | null) {
     setSavingId(row.id);
@@ -75,7 +97,12 @@ export default function CatalogPage() {
       body: JSON.stringify({ vendor_product_id: row.id, product_id: productId }),
     });
     if (res.ok) {
-      setRows(prev => prev.map(r => r.id === row.id ? { ...r, product_id: productId, mapping_source: "manual", catalog_status: productId ? "approved" : "candidate" } : r));
+      setRows(prev => prev.map(r => r.id === row.id ? {
+        ...r,
+        product_id: productId,
+        mapping_source: productId ? "manual" : (row.mapping_source === "seed" ? "seed" : "ai"),
+        catalog_status: productId || row.mapping_source === "seed" ? "approved" : "candidate",
+      } : r));
     } else {
       const j = await res.json().catch(() => null);
       setError(j?.error || "Could not save mapping.");
@@ -116,8 +143,7 @@ export default function CatalogPage() {
       <div className="mb-8">
         <h1 className="font-serif text-2xl text-navy mb-1">Vendor product catalog</h1>
         <p className="font-sans font-light text-gray-500 leading-relaxed">
-          New invoice labels are candidates only. Approve a mapping here before it can affect product
-          comparisons, recommendations, or any future customer invoice.
+          This is the shared master catalog from vendor price lists plus new labels observed on invoices—not just items from your own account. Imported vendor products are approved identities; invoice-only labels remain candidates until reviewed.
         </p>
         <p className="mt-2 font-sans text-sm text-gray-500 leading-relaxed">
           Replacement tracking is a second, explicit review. An AI suggestion is only a hint; it never turns tracking on.
@@ -130,8 +156,15 @@ export default function CatalogPage() {
         <StatCell label="Approved" value={rows.filter(row => row.catalog_status === "approved").length.toString()} accent="teal" />
       </div>
 
-      {vendors.length > 1 && (
-        <div className="mb-4">
+      <div className="mb-4 grid gap-3 md:grid-cols-[1fr_auto_auto]">
+          <input
+            type="search"
+            value={search}
+            onChange={event => setSearch(event.target.value)}
+            placeholder="Search item code or description"
+            className="rounded-lg border border-gray-200 bg-white px-3 py-2 font-sans text-sm text-navy"
+          />
+        {vendors.length > 1 && (
           <select
             value={vendorFilter}
             onChange={e => setVendorFilter(e.target.value)}
@@ -140,8 +173,14 @@ export default function CatalogPage() {
             <option value="all">All vendors</option>
             {vendors.map(([slug, name]) => <option key={slug} value={slug}>{name}</option>)}
           </select>
-        </div>
-      )}
+        )}
+        <select value={trackingFilter} onChange={event => setTrackingFilter(event.target.value)} className="rounded-lg border border-gray-200 bg-white px-3 py-2 font-sans text-sm text-navy">
+          <option value="all">All tracking states</option>
+          <option value="suggested">Suggested for review</option>
+          <option value="unreviewed">Tracking not reviewed</option>
+          <option value="eligible">Tracking enabled</option>
+        </select>
+      </div>
 
       {error && (
         <div className="mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 font-sans text-sm text-red-700">
@@ -168,7 +207,7 @@ export default function CatalogPage() {
             <div>Normalized product</div>
             <div>Replacement tracking</div>
           </div>
-          {filtered.map(row => (
+          {visibleRows.map(row => (
             <div key={row.id} className="px-6 py-3 border-b last:border-b-0 border-gray-100">
               <div className="grid grid-cols-1 md:grid-cols-[0.7fr_0.8fr_1.3fr_0.4fr_1.2fr_1.4fr] gap-2 md:gap-4 md:items-center">
                 <div className="font-sans text-sm text-gray-600">{row.vendors?.name ?? "—"}</div>
@@ -219,6 +258,12 @@ export default function CatalogPage() {
               </div>
             </div>
           ))}
+          {visibleRows.length < filtered.length && (
+            <div className="p-4 text-center">
+              <button type="button" onClick={() => setVisibleCount(count => count + 100)} className="rounded-lg border border-blue px-4 py-2 font-sans text-sm font-medium text-blue">Show 100 more</button>
+              <div className="mt-2 font-sans text-xs text-gray-500">Showing {visibleRows.length} of {filtered.length}</div>
+            </div>
+          )}
         </div>
       )}
     </div>

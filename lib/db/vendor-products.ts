@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { normalizeVendorDescription } from "@/lib/vendor-product-matching";
+
+export { normalizeItemCode, normalizeVendorDescription } from "@/lib/vendor-product-matching";
 
 export type VendorProduct = {
   id: string;
@@ -12,20 +15,6 @@ export type VendorProduct = {
   times_seen: number;
   notes: string | null;
 };
-
-// Normalize an item code the same way everywhere: what the AI extracts,
-// what we store, and what we look up must all agree.
-export function normalizeItemCode(code: string): string {
-  return code.trim().toUpperCase();
-}
-
-export function normalizeVendorDescription(description: string): string {
-  return description
-    .toUpperCase()
-    .replace(/\s*\([0-9]{1,10}\)\s*$/, "")
-    .replace(/[^A-Z0-9]+/g, " ")
-    .trim();
-}
 
 export function vendorProductSourceKey(itemCode: string | null, description: string): string {
   return `${itemCode || "NO-CODE"}::${normalizeVendorDescription(description)}`;

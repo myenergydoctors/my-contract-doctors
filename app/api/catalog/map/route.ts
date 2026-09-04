@@ -45,11 +45,18 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient();
   const update: Record<string, unknown> = {};
   if (Object.prototype.hasOwnProperty.call(body, "product_id")) {
+    const { data: current, error: currentError } = await admin
+      .from("vendor_products")
+      .select("mapping_source, catalog_status")
+      .eq("id", body.vendor_product_id)
+      .maybeSingle();
+    if (currentError) return NextResponse.json({ error: currentError.message }, { status: 500 });
+    const importedIdentity = current?.mapping_source === "seed" && current?.catalog_status === "approved";
     Object.assign(update, {
       product_id: body.product_id ?? null,
-      mapping_source: "manual",
-      catalog_status: body.product_id ? "approved" : "candidate",
-      ...(!body.product_id ? {
+      mapping_source: body.product_id ? "manual" : (importedIdentity ? "seed" : "ai"),
+      catalog_status: body.product_id || importedIdentity ? "approved" : "candidate",
+      ...(!body.product_id && !importedIdentity ? {
         replacement_tracking_eligibility: "unreviewed",
         replacement_tracking_category: null,
         replacement_tracking_reviewed_by: null,
