@@ -3,10 +3,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { CheckoutPlan } from "@/lib/checkout-plans";
-import { validateDiscount, redeemDiscount } from "@/lib/discount-codes";
+import { validateDiscount } from "@/lib/discount-codes";
 import Logo from "@/components/Logo";
 
-export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
+export default function CheckoutForm({ plan, initialQuantity = 1, invoiceId, agreementId }: { plan: CheckoutPlan; initialQuantity?: number; invoiceId?: string; agreementId?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -14,8 +14,10 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
   const [appliedDiscount, setAppliedDiscount] = useState<{ code: string; discountPct: number } | null>(null);
   const [codeError, setCodeError] = useState("");
   const [checkingCode, setCheckingCode] = useState(false);
+  const [quantity, setQuantity] = useState(initialQuantity);
+  const previewOnly = plan.checkoutMode === "preview";
 
-  const subtotalCents = plan.priceCents;
+  const subtotalCents = plan.priceCents * quantity;
   const discountCents = appliedDiscount ? Math.round(subtotalCents * appliedDiscount.discountPct) : 0;
   const totalCents = subtotalCents - discountCents;
 
@@ -37,19 +39,13 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Mark the discount redeemed BEFORE redirecting so success page reflects it
-    if (appliedDiscount) {
-      const redemption = await redeemDiscount(appliedDiscount.code, plan.id, email);
-      if (!redemption.ok) {
-        setLoading(false);
-        setCodeError(redemption.reason || "That code couldn't be redeemed.");
-        setAppliedDiscount(null);
-        return;
-      }
-    }
+    // Discount redemption belongs in the future payment-confirmation webhook.
+    // The client-side preview only validates and displays the estimate.
     // Simulate processing — replace with Stripe in Phase 2
     setTimeout(() => {
-      router.push(`/checkout/success?plan=${plan.id}`);
+      const invoiceParam = invoiceId ? `&invoice=${encodeURIComponent(invoiceId)}` : "";
+      const agreementParam = agreementId ? `&agreement=${encodeURIComponent(agreementId)}` : "";
+      router.push(`/checkout/success?plan=${plan.id}&quantity=${quantity}${invoiceParam}${agreementParam}`);
     }, 1200);
   };
 
@@ -62,7 +58,7 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
           <Logo href="/" variant="light-bg" size="md" />
           <div className="flex items-center gap-2 font-sans text-xs text-gray-500">
             <span>🔒</span>
-            <span>Secure checkout</span>
+            <span>{previewOnly ? "Checkout preview" : "Secure checkout"}</span>
           </div>
         </div>
       </header>
@@ -71,12 +67,18 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
 
         {/* Form */}
         <div>
-          <Link href="/pricing" className="inline-flex items-center font-sans text-sm text-blue hover:text-navy no-underline mb-4">
-            ← Back to pricing
+          <Link href={invoiceId ? `/dashboard/invoices/${invoiceId}` : agreementId ? `/dashboard/agreements/${agreementId}` : "/pricing"} className="inline-flex items-center font-sans text-sm text-blue hover:text-navy no-underline mb-4">
+            ← {invoiceId ? "Back to invoice" : agreementId ? "Back to agreement" : "Back to pricing"}
           </Link>
-          <h1 className="font-serif text-navy text-2xl md:text-3xl leading-tight mb-2">Complete your purchase</h1>
+          <h1 className="font-serif text-navy text-2xl md:text-3xl leading-tight mb-2">
+            {plan.fulfillment === "physical-preview" ? "Preview your mat order" : previewOnly ? "Preview your checkout" : "Complete your purchase"}
+          </h1>
           <p className="font-sans font-light text-gray-500 leading-relaxed mb-8">
-            This is a preview checkout. Card details aren't actually charged.
+            {previewOnly
+              ? plan.fulfillment === "physical-preview"
+                ? "This is a test order. No payment is taken and no product is shipped yet."
+                : "This is a checkout preview. No payment is taken and no access is activated."
+              : "This is a preview checkout. Card details aren't actually charged."}
           </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -94,22 +96,25 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
               />
             </div>
 
-            {/* Card info */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5">
-              <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Card information</div>
-              <div className="flex flex-col gap-3">
-                <Field label="Card number" placeholder="4242 4242 4242 4242" type="text" required />
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="Expiration" placeholder="MM / YY" type="text" required />
-                  <Field label="CVC" placeholder="123" type="text" required />
+            {!previewOnly && (
+              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+                <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Card information</div>
+                <div className="flex flex-col gap-3">
+                  <Field label="Card number" placeholder="4242 4242 4242 4242" type="text" required />
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Expiration" placeholder="MM / YY" type="text" required />
+                    <Field label="CVC" placeholder="123" type="text" required />
+                  </div>
+                  <Field label="Name on card" placeholder="Jane Smith" type="text" required />
                 </div>
-                <Field label="Name on card" placeholder="Jane Smith" type="text" required />
               </div>
-            </div>
+            )}
 
-            {/* Billing address */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5">
-              <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Billing address</div>
+            {/* Billing or shipping address */}
+            {(plan.fulfillment === "physical-preview" || !previewOnly) && <div className="bg-white border border-gray-200 rounded-2xl p-5">
+              <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">
+                {plan.fulfillment === "physical-preview" ? "Drop-ship address" : "Billing address"}
+              </div>
               <div className="flex flex-col gap-3">
                 <Field label="Country" defaultValue="United States" type="text" />
                 <Field label="Address" placeholder="123 Main St" type="text" />
@@ -118,10 +123,27 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
                   <Field label="ZIP" placeholder="04101" type="text" />
                 </div>
               </div>
-            </div>
+            </div>}
+
+            {plan.allowQuantity && (
+              <div className="bg-white border border-gray-200 rounded-2xl p-5">
+                <label htmlFor="quantity" className="block font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-2">Quantity</label>
+                <input
+                  id="quantity"
+                  type="number"
+                  min={1}
+                  max={100}
+                  step={1}
+                  value={quantity}
+                  onChange={event => setQuantity(Math.min(100, Math.max(1, Number.parseInt(event.target.value || "1", 10))))}
+                  className="w-28 font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-2.5 border-[1.5px] border-gray-300 outline-none focus:border-blue"
+                />
+                <div className="font-sans text-xs text-gray-500 mt-2">Adjust this if your confirmed invoice quantity needs a different replacement count.</div>
+              </div>
+            )}
 
             {/* Discount code */}
-            <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            {plan.fulfillment !== "physical-preview" && <div className="bg-white border border-gray-200 rounded-2xl p-5">
               <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-3">Discount code</div>
               {appliedDiscount ? (
                 <div className="flex justify-between items-center bg-teal-light border border-teal/30 rounded-lg p-3">
@@ -157,19 +179,27 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
                 </div>
               )}
               {codeError && <p className="font-sans text-xs text-red mt-2">{codeError}</p>}
-            </div>
+            </div>}
 
             <button
               type="submit"
               disabled={loading}
               className="font-sans text-base font-medium bg-teal text-white py-4 rounded-lg hover:opacity-90 transition-opacity cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {loading ? "Processing…" : `Pay ${fmt(totalCents)}`}
+              {loading
+                ? "Processing…"
+                : previewOnly
+                  ? `${plan.fulfillment === "physical-preview" ? "Preview order" : "Preview checkout"} — ${fmt(totalCents)}`
+                  : `Pay ${fmt(totalCents)}`}
             </button>
 
-            <p className="font-sans text-xs text-gray-500 text-center">
-              By completing this purchase, you agree to our <Link href="#" className="text-blue hover:text-navy no-underline">Terms</Link> and <Link href="#" className="text-blue hover:text-navy no-underline">Privacy Policy</Link>.
-            </p>
+            {previewOnly ? (
+              <p className="font-sans text-xs text-gray-500 text-center">This preview is for testing only. It does not {plan.fulfillment === "physical-preview" ? "reserve inventory, place an order, or " : "activate access or "}charge you.</p>
+            ) : (
+              <p className="font-sans text-xs text-gray-500 text-center">
+                By completing this purchase, you agree to our <Link href="#" className="text-blue hover:text-navy no-underline">Terms</Link> and <Link href="#" className="text-blue hover:text-navy no-underline">Privacy Policy</Link>.
+              </p>
+            )}
           </form>
         </div>
 
@@ -190,7 +220,7 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
             </ul>
 
             <div className="flex justify-between items-baseline mb-2">
-              <span className="font-sans text-sm text-gray-500">Subtotal</span>
+              <span className="font-sans text-sm text-gray-500">{plan.allowQuantity ? `${quantity} × ${plan.price}` : "Subtotal"}</span>
               <span className="font-sans text-navy">{fmt(subtotalCents)}</span>
             </div>
             {appliedDiscount && (
@@ -201,7 +231,7 @@ export default function CheckoutForm({ plan }: { plan: CheckoutPlan }) {
             )}
             <div className="flex justify-between items-baseline mb-4 pb-4 border-b border-gray-200">
               <span className="font-sans text-sm text-gray-500">Tax</span>
-              <span className="font-sans text-gray-500">Calculated at next step</span>
+              <span className="font-sans text-gray-500">{previewOnly ? "Not calculated in preview" : "Calculated at next step"}</span>
             </div>
             <div className="flex justify-between items-baseline mb-1">
               <span className="font-serif text-navy text-lg">Total</span>

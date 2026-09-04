@@ -139,7 +139,7 @@ export default function AboutPage() {
             Ready to see what we'd find?
           </h2>
           <p className="font-sans font-light text-gray-500 leading-relaxed mb-8">
-            Upload one invoice and we'll show you exactly where you're overpaying. First recommendation is free, no card required.
+            Upload one invoice, confirm the extracted charges, and see the first evidence-backed opportunity when the required facts are available.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/invoice" className="font-sans text-sm font-medium bg-teal text-white px-6 py-3 rounded-lg no-underline hover:opacity-90 transition-opacity">

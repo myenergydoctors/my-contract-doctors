@@ -17,7 +17,7 @@ export default function InvoicesListPage() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-8">
         <div>
           <p className="font-sans font-light text-gray-500 leading-relaxed">
-            Every invoice you've uploaded. Click any row for the full line-item breakdown.
+            Every invoice you've uploaded. Open one to confirm the extracted charges and view its available result.
           </p>
         </div>
         <Link
@@ -40,7 +40,7 @@ export default function InvoicesListPage() {
         <div className="bg-gradient-to-br from-teal/10 to-blue/10 border border-teal/20 rounded-2xl p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="font-sans text-sm text-navy font-medium leading-snug">You can see 1 free recommendation per invoice.</div>
-            <div className="font-sans text-xs text-gray-500 mt-1 leading-relaxed">Upgrade to Pro to unlock every flagged item, view annual savings, and get auto-renewal alerts.</div>
+            <div className="font-sans text-xs text-gray-500 mt-1 leading-relaxed">Upgrade to Pro to unlock every supported finding, ongoing invoice reviews, and eligible alerts.</div>
           </div>
           <Link href="/checkout/pro" className="font-sans text-sm font-medium bg-teal text-white px-4 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity whitespace-nowrap">
             Upgrade →
@@ -53,7 +53,7 @@ export default function InvoicesListPage() {
           illustration="upload"
           eyebrow="No invoices yet"
           title="Your first analysis is one upload away."
-          body="Drop in a PDF, JPG, or take a phone photo of a paper invoice. We'll line-item it against industry benchmarks and surface anything flagged within 60 seconds."
+          body="Upload a PDF, JPG, PNG, WEBP, or HEIC invoice. We'll extract the charges, ask you to confirm the math, and then show one evidence-backed opportunity when the required facts are available."
           primaryCta={{ label: "Upload an invoice →", href: "/invoice" }}
           secondaryCta={{ label: "How it works", href: "/demystifier" }}
         />
@@ -87,11 +87,11 @@ export default function InvoicesListPage() {
               </div>
               <div className="md:text-right">
                 <div className="font-sans text-[10px] uppercase tracking-wider text-gray-500 md:hidden">Potential savings</div>
-                <div className="font-serif text-teal text-base">${inv.potentialAnnualSavings.toLocaleString()}/yr</div>
+                <div className="font-serif text-teal text-base">{lockSavings ? "Locked" : `$${inv.potentialAnnualSavings.toLocaleString()}/yr`}</div>
               </div>
               <div className="flex items-center gap-2 md:justify-end">
                 <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-red-light text-red px-2 py-1 rounded">
-                  {inv.flaggedItemCount} flagged
+                  {lockSavings ? "1 free result" : `${inv.flaggedItemCount} flagged`}
                 </span>
                 <span className="hidden md:inline text-blue text-lg leading-none">→</span>
               </div>

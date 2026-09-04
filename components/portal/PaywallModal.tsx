@@ -172,12 +172,12 @@ function getContent(reason: PaywallReason): ModalContent {
   return {
     eyebrow: "Pro plan required",
     title: `${(reason as any).feature ?? "This feature"} is Pro-only.`,
-    body: "Upgrade to Pro to unlock this and everything else — unlimited invoice and contract analyses, Industry Insights, auto-renewal alerts.",
+    body: "Upgrade to Pro for ongoing invoice monitoring, up to five new invoice analyses per month, saved history, and eligible insights and alerts.",
     options: [
       {
         title: "Pro plan",
         price: "$29/mo",
-        description: "Unlimited everything. Cancel anytime.",
+        description: "Up to five new invoice analyses per month, one agreement credit per quarter, saved history, and ongoing monitoring. Cancel anytime.",
         cta: "Upgrade to Pro",
         href: "/checkout/pro",
         primary: true,

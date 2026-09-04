@@ -15,7 +15,7 @@ export default function OrganizationSchema() {
       "https://360fuelcard.com",
       "https://oscwebdesign.biz",
     ],
-    logo: `${SITE.url}/icon.svg`,
+    logo: `${SITE.url}/brand/my-contract-doctors-logo-light-bg.png`,
     foundingDate: "2026",
     knowsAbout: [
       "Uniform and linen service contracts",

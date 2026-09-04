@@ -137,7 +137,7 @@ export default async function IndustryDetailPage({ params }: { params: Promise<{
             See what's in <em className="italic text-blue-light">your</em> contracts.
           </h2>
           <p className="font-sans font-light text-white/70 leading-relaxed mb-8">
-            Upload one invoice — your first recommendation is free. We'll show you exactly what we'd flag for a business like yours.
+            Confirm your first invoice and see one evidence-backed opportunity free when the required facts are available.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/invoice" className="font-sans text-sm font-medium bg-teal text-white px-6 py-3 rounded-lg no-underline hover:opacity-90 transition-opacity">

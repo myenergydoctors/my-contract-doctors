@@ -715,7 +715,7 @@ export default function App() {
         eyebrow="The Invoice"
         headline="Upload your invoice. Get instant savings."
         subhead="One free recommendation, immediately."
-        body="Snap a photo or upload your latest uniform service invoice. Our AI reads every line item, calculates your annual spend, and surfaces where rates are above the market average — starting with one free recommendation the moment you upload."
+        body="Upload your latest uniform service invoice. We extract the line items and totals, ask you to confirm the math, and then show one evidence-backed opportunity when the invoice contains the required facts."
         cta="Upload My Invoice — Free"
         accent={COLORS.teal}
         badge="Free to start"

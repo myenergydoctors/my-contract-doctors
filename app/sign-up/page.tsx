@@ -1,13 +1,19 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import AuthShell from "@/components/auth/AuthShell";
 import AuthProviders from "@/components/auth/AuthProviders";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SignUpPage() {
+function safeRedirectPath(value: string | null): string {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/onboarding";
+}
+
+function SignUpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get("redirect"));
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [business, setBusiness] = useState("");
@@ -31,7 +37,7 @@ export default function SignUpPage() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
         data: {
           first_name: firstName,
           last_name: lastName,
@@ -47,7 +53,7 @@ export default function SignUpPage() {
     // If email confirmation is required, Supabase returns user but no session.
     // If confirmation is disabled, the user is auto-signed-in.
     if (data.session) {
-      router.push("/onboarding");
+      router.push(redirectTo);
       router.refresh();
     } else {
       setSent(true);
@@ -63,7 +69,7 @@ export default function SignUpPage() {
           <p className="font-sans font-light text-gray-500 text-sm leading-relaxed mb-6">
             Click the link in the email we sent to <strong className="text-navy">{email}</strong> to verify your account and sign in.
           </p>
-          <Link href="/sign-in" className="font-sans text-sm text-blue hover:text-navy no-underline">
+          <Link href={`/sign-in?redirect=${encodeURIComponent(redirectTo)}`} className="font-sans text-sm text-blue hover:text-navy no-underline">
             Back to sign in →
           </Link>
         </div>
@@ -75,7 +81,7 @@ export default function SignUpPage() {
     <AuthShell
       eyebrow="Get started — free"
       title="Create your account."
-      subtitle="Your first invoice recommendation is free. No card required."
+      subtitle="Your first confirmed invoice opportunity is free. No card required."
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {error && (
@@ -125,9 +131,17 @@ export default function SignUpPage() {
 
       <p className="text-center font-sans text-sm text-gray-500 mt-8">
         Already have an account?{" "}
-        <Link href="/sign-in" className="text-blue hover:text-navy font-medium no-underline">Sign in</Link>
+        <Link href={`/sign-in?redirect=${encodeURIComponent(redirectTo)}`} className="text-blue hover:text-navy font-medium no-underline">Sign in</Link>
       </p>
     </AuthShell>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<AuthShell eyebrow="Get started — free" title="Create your account."><div className="font-sans text-sm text-gray-500">Loading…</div></AuthShell>}>
+      <SignUpForm />
+    </Suspense>
   );
 }
 

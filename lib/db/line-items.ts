@@ -7,6 +7,7 @@ export type LineType = "charge" | "credit" | "past_balance" | "late_fee" | "disc
 export type LineItemForUI = {
   id: string;
   rawLabel: string;
+  description: string;
   lineType: LineType;
   productSlug: string | null;
   productName: string | null;
@@ -15,7 +16,9 @@ export type LineItemForUI = {
   vendorName: string | null;
   quantity: number | null;
   unitPriceCents: number | null;
+  lineTotalCents: number | null;
   billingFrequency: string | null;
+  identificationStatus: "matched" | "unclassified" | "customer_unsure" | "pending_review";
   annualCostCents: number | null;
   flagged: boolean;
   flagReason: string | null;
@@ -31,10 +34,18 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
     .select(`
       id,
       raw_label,
+      confirmed_description,
       line_type,
+      confirmed_line_type,
       quantity,
+      confirmed_quantity,
       unit_price_cents,
+      confirmed_unit_rate,
+      raw_line_total_cents,
+      confirmed_line_total_cents,
       billing_frequency,
+      confirmed_billing_frequency,
+      identification_status,
       annual_cost_cents,
       flagged,
       flag_reason,
@@ -53,10 +64,18 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
   return (data as unknown as Array<{
     id: string;
     raw_label: string;
+    confirmed_description: string | null;
     line_type: LineType | null;
+    confirmed_line_type: LineType | null;
     quantity: number | null;
+    confirmed_quantity: number | string | null;
     unit_price_cents: number | null;
+    confirmed_unit_rate: number | string | null;
+    raw_line_total_cents: number | null;
+    confirmed_line_total_cents: number | null;
     billing_frequency: string | null;
+    confirmed_billing_frequency: string | null;
+    identification_status: "matched" | "unclassified" | "customer_unsure" | "pending_review" | null;
     annual_cost_cents: number | null;
     flagged: boolean;
     flag_reason: string | null;
@@ -68,15 +87,18 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
   }>).map(row => ({
     id: row.id,
     rawLabel: row.raw_label,
-    lineType: (row.line_type ?? "charge") as LineType,
+    description: row.confirmed_description ?? row.raw_label,
+    lineType: (row.confirmed_line_type ?? row.line_type ?? "charge") as LineType,
     productSlug: row.products?.slug ?? null,
     productName: row.products?.name ?? null,
     productCategory: row.products?.category ?? null,
     vendorSlug: row.vendors?.slug ?? null,
     vendorName: row.vendors?.name ?? null,
-    quantity: row.quantity,
-    unitPriceCents: row.unit_price_cents,
-    billingFrequency: row.billing_frequency,
+    quantity: numberOrNull(row.confirmed_quantity) ?? row.quantity,
+    unitPriceCents: centsFromRate(row.confirmed_unit_rate, row.unit_price_cents),
+    lineTotalCents: row.confirmed_line_total_cents ?? row.raw_line_total_cents,
+    billingFrequency: row.confirmed_billing_frequency ?? row.billing_frequency,
+    identificationStatus: row.identification_status ?? "unclassified",
     annualCostCents: row.annual_cost_cents,
     flagged: row.flagged,
     flagReason: row.flag_reason,
@@ -84,4 +106,15 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
     suggestedAction: row.suggested_action,
     estimatedSavingsCents: row.estimated_savings_cents,
   }));
+}
+
+function numberOrNull(value: number | string | null): number | null {
+  if (value == null || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function centsFromRate(value: number | string | null, fallback: number | null): number | null {
+  const rate = numberOrNull(value);
+  return rate == null ? fallback : Math.round(rate * 100);
 }

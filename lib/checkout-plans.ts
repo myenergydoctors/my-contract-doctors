@@ -9,6 +9,9 @@ export type CheckoutPlan = {
   description: string;
   features: string[];
   postPurchaseRedirect: string;
+  checkoutMode: "preview" | "live";
+  allowQuantity?: boolean;
+  fulfillment?: "digital" | "physical-preview";
 };
 
 export const checkoutPlans: Record<string, CheckoutPlan> = {
@@ -18,15 +21,16 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
     price: "$29.00",
     priceCents: 2900,
     cadence: "billed monthly, cancel anytime",
-    description: "Unlimited invoice and contract analyses, plus Industry Insights and auto-renewal alerts.",
+    description: "Ongoing invoice monitoring with defined monthly allowances, saved history, and eligible alerts.",
     features: [
-      "Unlimited invoice analyses",
-      "Unlimited contract analyses",
-      "Industry Insights dashboard",
+      "Up to 5 new invoice analyses per month",
+      "1 agreement analysis credit per quarter",
+      "Saved invoice history and monitoring",
       "Auto-renewal alerts",
-      "All future modules included",
+      "Industry insights where data thresholds are met",
     ],
     postPurchaseRedirect: "/dashboard",
+    checkoutMode: "preview",
   },
   "pro-annual": {
     id: "pro-annual",
@@ -42,6 +46,7 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
       "Eligible for chat assistant discount codes",
     ],
     postPurchaseRedirect: "/dashboard",
+    checkoutMode: "preview",
   },
   agreement: {
     id: "agreement",
@@ -57,6 +62,7 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
       "Lifetime access to that analysis",
     ],
     postPurchaseRedirect: "/agreement",
+    checkoutMode: "preview",
   },
   demystifier: {
     id: "demystifier",
@@ -73,6 +79,42 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
       "Lifetime access",
     ],
     postPurchaseRedirect: "/demystifier",
+    checkoutMode: "preview",
+  },
+  "invoice-analysis": {
+    id: "invoice-analysis",
+    name: "Full invoice analysis",
+    price: "$49.00",
+    priceCents: 4900,
+    cadence: "one-time payment · provisional preview price",
+    description: "Unlock every finding, savings estimate, and action step for this invoice without a monthly membership.",
+    features: [
+      "Every savings opportunity on this invoice",
+      "Transparent cost and payback calculations",
+      "Recommended next steps",
+      "Lifetime access to this invoice analysis",
+    ],
+    postPurchaseRedirect: "/dashboard/invoices",
+    checkoutMode: "preview",
+    fulfillment: "digital",
+  },
+  "floor-mat": {
+    id: "floor-mat",
+    name: "Commercial replacement floor mat",
+    price: "$75.00",
+    priceCents: 7500,
+    cadence: "per mat · preview price",
+    description: "A mocked drop-ship replacement mat offer for testing the savings experience before a supplier is connected.",
+    features: [
+      "Commercial-grade replacement mat",
+      "Drop-shipped to your business",
+      "Quantity based on your confirmed invoice",
+      "Preview only — no order or payment is placed",
+    ],
+    postPurchaseRedirect: "/dashboard/invoices",
+    checkoutMode: "preview",
+    allowQuantity: true,
+    fulfillment: "physical-preview",
   },
 };
 

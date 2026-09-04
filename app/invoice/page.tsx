@@ -1,8 +1,9 @@
 "use client";
+import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { SITE } from "@/lib/site";
 import { createClient } from "@/lib/supabase/client";
 
 const C = {
@@ -14,16 +15,26 @@ const C = {
   red: "#DC2626", amber: "#D97706",
 };
 const FONTS = `@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap');`;
-const mkId  = () => Math.random().toString(36).slice(2,10).toUpperCase();
+const MAX_INVOICE_BYTES = 25 * 1024 * 1024;
+const ALLOWED_INVOICE_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp", "image/heic"]);
+
+type PhoneInvoiceFile = {
+  source: "phone";
+  sessionId: string;
+  storagePath: string;
+  name: string;
+  type: string;
+  size: number;
+};
+type InvoiceSource = File | PhoneInvoiceFile;
+type LeadCapture = { email: string; businessName: string; marketingConsent: boolean };
+type PhoneSession = { sessionId: string; token: string; uploadUrl: string; expiresAt: string };
 
 // ── primitives ──────────────────────────
 function Tag({ children, variant="teal" }) {
   const m = { teal:{bg:C.tealLight,color:"#0D6E52"}, blue:{bg:C.bluePale,color:C.blueMid}, navy:{bg:C.navy,color:C.blueLight}, red:{bg:"#FEE2E2",color:C.red} };
   const s = m[variant]||m.teal;
   return <span style={{background:s.bg,color:s.color,fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,padding:"4px 12px",borderRadius:20,display:"inline-block"}}>{children}</span>;
-}
-function Eyebrow({ children, color=C.blue }) {
-  return <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,letterSpacing:"0.16em",textTransform:"uppercase",color,marginBottom:10}}>{children}</div>;
 }
 function Btn({ children, onClick=()=>{}, variant="navy", full=false, size="md", disabled=false }) {
   const sz = { lg:{padding:"15px 32px",fontSize:16}, md:{padding:"12px 24px",fontSize:14}, sm:{padding:"8px 16px",fontSize:13} }[size];
@@ -33,7 +44,7 @@ function Btn({ children, onClick=()=>{}, variant="navy", full=false, size="md", 
 
 // ── Nav ─────────────────────────────────
 function Nav({ step }) {
-  const steps = ["Upload","Your Info","Scanning","Results"];
+  const steps = ["Upload","Email","Analyze","Confirm"];
   return (
     <nav style={{background:C.navy,padding:"0 32px",position:"sticky",top:0,zIndex:50,borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
       <div style={{maxWidth:1100,margin:"0 auto",height:64,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -59,138 +70,50 @@ function Nav({ step }) {
   );
 }
 
-// ── QR code (real, scannable) ────────────
-// Encodes a URL pointing to the mobile upload page. Cross-device handoff
-// (phone uploads → desktop sees them) still requires a real backend
-// (Supabase Realtime, polling, or websocket); for now the desktop side
-// continues to poll localStorage and only sees same-browser uploads.
-function QRCode({ sessionId, size=160 }) {
-  const url = `${SITE.url}/upload?session=${sessionId}`;
-  return (
-    <div style={{background:"#fff",padding:14,borderRadius:12,border:`2px solid ${C.bluePale}`,display:"inline-block",boxShadow:"0 4px 20px rgba(12,45,84,0.08)"}}>
-      <QRCodeSVG value={url} size={size} fgColor={C.navy} bgColor="#FFFFFF" level="M" includeMargin={false} />
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:C.gray500,textAlign:"center",marginTop:8,letterSpacing:"0.1em"}}>SESSION · {sessionId}</div>
-    </div>
-  );
-}
-
-// ── Mobile phone simulator ───────────────
-function MobileView({ sessionId, onUploaded }) {
-  const [mFile, setMFile]     = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [busy, setBusy]       = useState(false);
-  const [sent, setSent]       = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const pick = f => {
-    if(!f) return;
-    setMFile(f);
-    const r = new FileReader(); r.onload=e=>setPreview(e.target.result); r.readAsDataURL(f);
-  };
-  const send = () => {
-    setBusy(true);
-    setTimeout(()=>{
-      setBusy(false); setSent(true);
-      try { localStorage.setItem(`mcd_${sessionId}`,JSON.stringify({done:true,fileName:mFile.name})); } catch{}
-      setTimeout(()=>onUploaded(mFile), 700);
-    }, 1600);
-  };
-
-  return (
-    <div style={{width:300,background:C.offWhite,borderRadius:22,overflow:"hidden",boxShadow:"0 24px 60px rgba(12,45,84,0.22)",border:`6px solid ${C.navyDark}`}}>
-      {/* status bar */}
-      <div style={{background:C.navy,padding:"8px 18px 6px",display:"flex",justifyContent:"space-between"}}>
-        <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"rgba(255,255,255,0.6)"}}>9:41</span>
-        <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"rgba(255,255,255,0.6)"}}>●●● WiFi 100%</span>
-      </div>
-      {/* mini nav */}
-      <div style={{background:C.navy,padding:"6px 16px 12px",textAlign:"center",borderBottom:"1px solid rgba(255,255,255,0.08)"}}>
-        <div style={{fontFamily:"'DM Serif Display',serif",fontSize:15,color:"#fff"}}>Contract <span style={{fontStyle:"italic",color:C.blueLight}}>Doctors</span></div>
-        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,color:"rgba(255,255,255,0.45)",marginTop:1}}>mycontractdoctors.com/upload?session={sessionId}</div>
-      </div>
-      <div style={{padding:"18px 16px"}}>
-        {!sent ? <>
-          <div style={{textAlign:"center",marginBottom:16}}>
-            <Tag variant="blue">Session #{sessionId}</Tag>
-            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:C.navy,margin:"10px 0 6px",lineHeight:1.2}}>Scan your invoice</div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,lineHeight:1.6}}>Take a clear photo of your paper invoice and send it to your desktop session.</div>
-          </div>
-          <input ref={inputRef} type="file" accept="image/*" style={{display:"none"}} onChange={e=>pick(e.currentTarget.files?.[0])}/>
-          {!mFile ? <>
-            <button onClick={()=>inputRef.current?.click()} style={{width:"100%",padding:"14px",borderRadius:10,background:C.navy,color:"#fff",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:500,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginBottom:8}}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" stroke="#fff" strokeWidth="2" fill="none"/><circle cx="12" cy="13" r="4" stroke="#fff" strokeWidth="2"/></svg>
-              Open Camera
-            </button>
-            <button onClick={()=>{const i=document.createElement("input");i.type="file";i.accept="image/*,application/pdf";i.onchange=e=>pick((e.currentTarget as HTMLInputElement).files?.[0]);i.click();}} style={{width:"100%",padding:"11px",borderRadius:10,background:C.offWhite,color:C.gray700,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:13,cursor:"pointer"}}>
-              Choose from Library
-            </button>
-          </> : <>
-            {preview&&<img src={preview} alt="" style={{width:"100%",borderRadius:8,marginBottom:10,maxHeight:150,objectFit:"cover",border:`1px solid ${C.gray200}`}}/>}
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,textAlign:"center",marginBottom:10}}>{mFile.name}</div>
-            <Btn variant="teal" full onClick={send} disabled={busy}>
-              {busy?<span style={{display:"flex",alignItems:"center",gap:8}}><span style={{width:13,height:13,border:"2px solid rgba(255,255,255,0.4)",borderTopColor:"#fff",borderRadius:"50%",display:"inline-block",animation:"spin 0.7s linear infinite"}}/>Sending...</span>:"Send to Desktop →"}
-            </Btn>
-            <button onClick={()=>{setMFile(null);setPreview(null);}} style={{marginTop:8,width:"100%",background:"none",border:"none",fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,cursor:"pointer",textDecoration:"underline"}}>Retake</button>
-          </>}
-        </> : (
-          <div style={{textAlign:"center",padding:"16px 0"}}>
-            <div style={{width:52,height:52,borderRadius:"50%",background:C.tealLight,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 12px",fontSize:24}}>✓</div>
-            <div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:C.navy,marginBottom:6}}>Sent!</div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,lineHeight:1.6}}>Your invoice is linked to your desktop session. You can close this tab.</div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // ── STEP 0 — Upload ──────────────────────
 function StepUpload({ onNext }) {
-  const [method, setMethod]       = useState("desktop");
+  const [method, setMethod] = useState<"desktop" | "phone">("desktop");
   const [dragging, setDragging]   = useState(false);
   const [file, setFile]           = useState(null);
   const [preview, setPreview]     = useState(null);
-  const [sessionId]               = useState(mkId);
-  const [mobileLinked, setLinked] = useState(false);
-  const [showDemo, setShowDemo]   = useState(false);
+  const [fileError, setFileError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const pollRef  = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Poll localStorage for mobile completion
-  useEffect(()=>{
-    if(method!=="qr") return;
-    pollRef.current = setInterval(()=>{
-      try {
-        const raw = localStorage.getItem(`mcd_${sessionId}`);
-        if(raw){ const d=JSON.parse(raw); if(d.done){ if(pollRef.current) clearInterval(pollRef.current); setLinked(true); setFile({name:d.fileName||"invoice-mobile.jpg",size:200000,type:"image/jpeg",mobile:true}); }}
-      } catch{}
-    }, 700);
-    return ()=>{ if(pollRef.current) clearInterval(pollRef.current); };
-  },[method, sessionId]);
 
   const handleFile = f => {
-    if(!f) return; setFile(f);
+    if(!f) return;
+    setFileError("");
+    if (!ALLOWED_INVOICE_TYPES.has(f.type)) {
+      setFile(null);
+      setPreview(null);
+      setFileError("Choose a PDF, JPG, PNG, WEBP, or HEIC invoice.");
+      return;
+    }
+    if (f.size < 1 || f.size > MAX_INVOICE_BYTES) {
+      setFile(null);
+      setPreview(null);
+      setFileError("Choose a file smaller than 25 MB.");
+      return;
+    }
+    setFile(f);
     if(f.type?.startsWith("image/")){ const r=new FileReader(); r.onload=e=>setPreview(e.target.result); r.readAsDataURL(f); }
     else setPreview("pdf");
   };
 
-  const vendors = ["Cintas","UniFirst","ALSCO","Aramark","G&K Services","Other"];
-
   return (
     <div style={{maxWidth:780,margin:"0 auto",padding:"52px 24px"}}>
       <div style={{textAlign:"center",marginBottom:38}}>
-        <Tag variant="teal">Free — no credit card required</Tag>
-        <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,4vw,44px)",color:C.navy,lineHeight:1.15,margin:"16px 0 12px"}}>Upload your invoice.<br/><em style={{fontStyle:"italic",color:C.blue}}>Get your first saving instantly.</em></h1>
-        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:300,color:C.gray500,lineHeight:1.75,maxWidth:500,margin:"0 auto"}}>Upload a PDF or photo of your latest uniform invoice. We'll analyze it and give you one free recommendation right away.</p>
+        <Tag variant="teal">First confirmed invoice opportunity free</Tag>
+        <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,4vw,44px)",color:C.navy,lineHeight:1.15,margin:"16px 0 12px"}}>Upload your invoice.<br/><em style={{fontStyle:"italic",color:C.blue}}>Confirm the charges. See where to look first.</em></h1>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:300,color:C.gray500,lineHeight:1.75,maxWidth:540,margin:"0 auto"}}>Upload a PDF or photo of your latest uniform invoice. We'll extract the line items, ask you to confirm the math, and show one evidence-backed opportunity when the required facts are available.</p>
       </div>
 
       {/* Method tabs */}
       <div style={{display:"flex",background:C.gray100,borderRadius:12,padding:4,marginBottom:26,gap:4}}>
         {[
           {key:"desktop", label:"📄  Upload a file",    sub:"PDF or image from this device"},
-          {key:"qr",      label:"📱  Scan with phone",  sub:"Paper invoice? Use your camera"},
+          {key:"phone",   label:"📱  Scan with phone",  sub:"Take a photo on your phone"},
         ].map(({key,label,sub})=>(
-          <button key={key} onClick={()=>{setMethod(key);setFile(null);setPreview(null);setLinked(false);}} style={{flex:1,padding:"12px 16px",borderRadius:9,border:"none",cursor:"pointer",background:method===key?C.white:"transparent",boxShadow:method===key?"0 1px 6px rgba(12,45,84,0.08)":"none",transition:"all 0.2s",textAlign:"center"}}>
+          <button key={key} onClick={() => { setMethod(key as "desktop" | "phone"); setFile(null); setPreview(null); setFileError(""); }} style={{flex:1,padding:"12px 16px",borderRadius:9,border:"none",cursor:"pointer",background:method===key?C.white:"transparent",boxShadow:method===key?"0 1px 6px rgba(12,45,84,0.08)":"none",textAlign:"center"}}>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,color:method===key?C.navy:C.gray500}}>{label}</div>
             <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,marginTop:2}}>{sub}</div>
           </button>
@@ -198,8 +121,7 @@ function StepUpload({ onNext }) {
       </div>
 
       {/* ── Desktop upload ── */}
-      {method==="desktop" && (
-        <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)}
+      {method === "desktop" ? <div onDragOver={e=>{e.preventDefault();setDragging(true);}} onDragLeave={()=>setDragging(false)}
           onDrop={e=>{e.preventDefault();setDragging(false);handleFile(e.dataTransfer.files[0]);}}
           onClick={()=>!file&&inputRef.current?.click()}
           style={{border:`2px dashed ${dragging?C.teal:file?C.blue:C.gray300}`,borderRadius:18,padding:file?"32px":"52px 32px",textAlign:"center",background:dragging?C.tealLight:file?C.bluePale:C.offWhite,cursor:file?"default":"pointer",transition:"all 0.25s",marginBottom:20}}>
@@ -211,7 +133,7 @@ function StepUpload({ onNext }) {
             <Btn variant="outline" onClick={()=>inputRef.current?.click()}>Choose a file</Btn>
           </> : (
             <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:12}}>
-              {preview&&preview!=="pdf"?<img src={preview} alt="" style={{maxHeight:160,maxWidth:"100%",borderRadius:10,border:`1px solid ${C.gray200}`}}/>:<div style={{width:64,height:80,background:C.navy,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,color:C.blueLight}}>PDF</span></div>}
+              {preview&&preview!=="pdf"?<Image src={preview} alt="Selected invoice preview" width={640} height={800} unoptimized style={{width:"auto",height:"auto",maxHeight:160,maxWidth:"100%",borderRadius:10,border:`1px solid ${C.gray200}`}}/>:<div style={{width:64,height:80,background:C.navy,borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center"}}><span style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,color:C.blueLight}}>PDF</span></div>}
               <div style={{fontFamily:"'DM Serif Display',serif",fontSize:17,color:C.navy}}>{file.name}</div>
               <div style={{display:"flex",gap:10,alignItems:"center"}}>
                 <Tag variant="teal">✓ Ready to analyze</Tag>
@@ -219,57 +141,11 @@ function StepUpload({ onNext }) {
               </div>
             </div>
           )}
-        </div>
-      )}
+      </div> : <PhoneUpload onReady={setFile} onError={setFileError} />}
 
-      {/* ── QR mobile handoff ── */}
-      {method==="qr" && (
-        <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:18,overflow:"hidden",marginBottom:20}}>
-          {!mobileLinked ? (
-            <div className="grid grid-cols-1 md:grid-cols-2">
-              {/* Left — QR */}
-              <div className="p-8 md:p-9 border-b md:border-b-0 md:border-r" style={{borderColor:C.gray200}}>
-                <Eyebrow color={C.teal}>Step 1</Eyebrow>
-                <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.navy,marginBottom:10,lineHeight:1.2}}>Scan this QR code with your phone</div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,lineHeight:1.7,marginBottom:22}}>Your camera app will open a mobile-optimized page where you can photograph your paper invoice — it'll link automatically to this session.</div>
-                <QRCode sessionId={sessionId} size={148}/>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,marginTop:12}}>QR code expires in 30 minutes</div>
-              </div>
-              {/* Right — waiting */}
-              <div style={{padding:"36px 32px",background:C.offWhite,display:"flex",flexDirection:"column"}}>
-                <Eyebrow color={C.navy}>Step 2</Eyebrow>
-                <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.navy,marginBottom:18,lineHeight:1.2}}>Photograph & send from your phone</div>
-                <div style={{display:"flex",flexDirection:"column",gap:14,marginBottom:28}}>
-                  {["Open your camera and scan the QR code","Tap 'Open Camera' on the page that loads","Photograph your paper invoice clearly","Tap 'Send to Desktop' — this page updates automatically"].map((t,i)=>(
-                    <div key={i} style={{display:"flex",gap:12,alignItems:"flex-start"}}>
-                      <div style={{width:24,height:24,borderRadius:"50%",background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:"#fff"}}>{i+1}</div>
-                      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray700,lineHeight:1.6,paddingTop:2}}>{t}</div>
-                    </div>
-                  ))}
-                </div>
-                {/* Waiting dots */}
-                <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:12,padding:"14px 18px",display:"flex",alignItems:"center",gap:14,marginBottom:16}}>
-                  <div style={{display:"flex",gap:4,flexShrink:0}}>
-                    {[0,1,2].map(i=><div key={i} style={{width:8,height:8,borderRadius:"50%",background:C.blue,animation:`bounce 1.2s ease-in-out ${i*0.2}s infinite`}}/>)}
-                  </div>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray700}}>Waiting for your phone upload...</div>
-                </div>
-                {/* Demo button */}
-                <button onClick={()=>setShowDemo(true)} style={{background:"none",border:`1px dashed ${C.gray300}`,borderRadius:8,padding:"10px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,cursor:"pointer",display:"flex",alignItems:"center",gap:6,justifyContent:"center"}}>
-                  <span style={{fontSize:14}}>👀</span> Preview the mobile experience
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div style={{padding:"40px",textAlign:"center"}}>
-              <div style={{width:64,height:64,borderRadius:"50%",background:C.tealLight,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 16px",fontSize:28}}>✓</div>
-              <Tag variant="teal">Phone upload received</Tag>
-              <div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:C.navy,margin:"14px 0 8px"}}>Invoice linked from your phone</div>
-              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.gray500,marginBottom:6}}><strong>{file?.name}</strong> received from session <strong>{sessionId}</strong></div>
-              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,marginBottom:20}}>Your phone can be put away — everything continues here on desktop.</div>
-              <Tag variant="blue">Ready to analyze</Tag>
-            </div>
-          )}
+      {fileError && (
+        <div role="alert" style={{background:"#FEE2E2",border:`1px solid ${C.red}`,borderRadius:9,padding:"11px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.red,marginBottom:20}}>
+          {fileError}
         </div>
       )}
 
@@ -281,88 +157,122 @@ function StepUpload({ onNext }) {
         </div>
       </div>
 
-      <Btn variant="teal" full size="lg" disabled={!file} onClick={()=>onNext(file)}>Continue — Enter Your Info →</Btn>
+      <Btn variant="teal" full size="lg" disabled={!file} onClick={()=>onNext(file)}>Continue →</Btn>
 
       <div style={{display:"flex",justifyContent:"center",gap:28,marginTop:22,flexWrap:"wrap"}}>
-        {[{icon:"🔒",text:"Encrypted & never shared"},{icon:"⚡",text:"Results in under 2 minutes"},{icon:"💰",text:"First recommendation free"}].map(({icon,text})=>(
+        {[{icon:"🔒",text:"Private account storage"},{icon:"⚡",text:"Most files ready in a few minutes"},{icon:"✓",text:"You confirm before analysis"}].map(({icon,text})=>(
           <div key={text} style={{display:"flex",alignItems:"center",gap:7}}><span style={{fontSize:14}}>{icon}</span><span style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500}}>{text}</span></div>
         ))}
       </div>
 
-      {/* Mobile demo modal */}
-      {showDemo && (
-        <div style={{position:"fixed",inset:0,zIndex:999,background:"rgba(8,30,56,0.8)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24,flexDirection:"column",gap:20}} onClick={e=>{if(e.target===e.currentTarget)setShowDemo(false);}}>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:"#fff",textAlign:"center"}}>Mobile upload experience</div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.6)",textAlign:"center",marginBottom:4}}>This is what your customer sees after scanning the QR code</div>
-          <MobileView sessionId={sessionId} onUploaded={f=>{setShowDemo(false);setLinked(true);setFile(f);setMethod("qr");}}/>
-          <button onClick={()=>setShowDemo(false)} style={{background:"rgba(255,255,255,0.15)",border:"1px solid rgba(255,255,255,0.3)",color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:13,padding:"8px 20px",borderRadius:8,cursor:"pointer"}}>Close preview</button>
-        </div>
+    </div>
+  );
+}
+
+function PhoneUpload({ onReady, onError }: { onReady: (file: PhoneInvoiceFile | null) => void; onError: (message: string) => void }) {
+  const [session, setSession] = useState<PhoneSession | null>(null);
+  const [starting, setStarting] = useState(true);
+  const [status, setStatus] = useState("Creating a secure phone link…");
+
+  useEffect(() => {
+    let cancelled = false;
+    let pollId: ReturnType<typeof setInterval> | null = null;
+    void fetch("/api/invoices/upload-sessions", { method: "POST" })
+      .then(async response => {
+        const data = await response.json();
+        if (!response.ok) throw new Error(data?.error || "Phone upload could not be started.");
+        if (cancelled) return;
+        setSession(data);
+        setStarting(false);
+        setStatus("Scan this code with your phone, then take or choose a photo.");
+        pollId = setInterval(async () => {
+          try {
+            const check = await fetch(`/api/invoices/upload-sessions/${data.sessionId}`, { headers: { "x-upload-token": data.token }, cache: "no-store" });
+            const result = await check.json();
+            if (!check.ok) throw new Error(result?.error || "Could not check the phone upload.");
+            if (result.status === "uploaded" && result.file?.storagePath) {
+              if (pollId) clearInterval(pollId);
+              setStatus(`${result.file.name || "Invoice"} arrived from your phone.`);
+              onReady({ source: "phone", sessionId: data.sessionId, storagePath: result.file.storagePath, name: result.file.name || "phone-invoice", type: result.file.type || "application/octet-stream", size: result.file.size || 0 });
+            } else if (result.status === "expired") {
+              if (pollId) clearInterval(pollId);
+              setStatus("This phone link expired. Switch tabs and return to create a fresh link.");
+            } else if (result.status === "failed") {
+              if (pollId) clearInterval(pollId);
+              setStatus("The phone upload failed. Switch tabs and try again.");
+            } else if (result.status === "uploading") {
+              setStatus("Your phone is sending the invoice…");
+            }
+          } catch (error) {
+            if (pollId) clearInterval(pollId);
+            onError(error instanceof Error ? error.message : "Could not check the phone upload.");
+          }
+        }, 1500);
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setStarting(false);
+          onError(error instanceof Error ? error.message : "Phone upload could not be started.");
+        }
+      });
+    return () => { cancelled = true; if (pollId) clearInterval(pollId); };
+  }, [onError, onReady]);
+
+  return (
+    <div style={{border:`2px dashed ${C.blue}`,borderRadius:18,padding:"34px 24px",textAlign:"center",background:C.bluePale,marginBottom:20,minHeight:300,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+      {starting || !session ? (
+        <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.gray500}}>{status}</div>
+      ) : (
+        <>
+          <div style={{background:C.white,padding:14,borderRadius:14,lineHeight:0,marginBottom:16}}><QRCodeSVG value={session.uploadUrl} size={176} level="M" /></div>
+          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:20,color:C.navy,marginBottom:7}}>Open the camera on your phone</div>
+          <div aria-live="polite" style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,maxWidth:430,lineHeight:1.55}}>{status}</div>
+          <a href={session.uploadUrl} style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.blue,marginTop:12}}>Open this upload link on this device</a>
+        </>
       )}
     </div>
   );
 }
 
-// ── STEP 1 — Contact ─────────────────────
-const CONTACT_STORAGE_KEY = "mcd_invoice_contact_v1";
-
-function StepContact({ onNext, onBack }) {
-  // Hydrate from localStorage so re-uploads don't lose what the user typed.
-  const [form, setForm] = useState({name:"",email:"",phone:"",business:"",vendor:"",frequency:""});
+function StepLeadCapture({ onNext }: { onNext: (lead: LeadCapture) => void }) {
+  const [email, setEmail] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const valid = /^\S+@\S+\.\S+$/.test(email.trim());
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(CONTACT_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setForm(f => ({ ...f, ...parsed }));
-      }
-    } catch {}
+    let cancelled = false;
+    const supabase = createClient();
+    void supabase.auth.getUser().then(async ({ data: { user } }) => {
+      if (!user || cancelled) return;
+      setEmail(user.email || "");
+      const { data } = await supabase.from("profiles").select("business_name").eq("id", user.id).maybeSingle();
+      if (!cancelled && data?.business_name) setBusinessName(data.business_name);
+    });
+    return () => { cancelled = true; };
   }, []);
 
-  const set = k => e => {
-    const v = e.target.value;
-    setForm(f => {
-      const next = {...f, [k]: v};
-      try { localStorage.setItem(CONTACT_STORAGE_KEY, JSON.stringify(next)); } catch {}
-      return next;
-    });
-  };
-  const valid = form.name.trim()&&form.email.trim()&&form.business.trim();
-  const iSt = {width:"100%",padding:"12px 14px",borderRadius:8,border:`1.5px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.navy,background:C.white,outline:"none",transition:"border-color 0.2s"};
-  const lSt = {fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:C.gray700,marginBottom:6,display:"block"};
-  const fo = e=>{ e.target.style.borderColor=C.blue; };
-  const bl = e=>{ e.target.style.borderColor=C.gray300; };
-  const selBg=`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none'/%3E%3C/svg%3E") no-repeat right 14px center`;
-
   return (
-    <div style={{maxWidth:640,margin:"0 auto",padding:"52px 24px"}}>
-      <div style={{marginBottom:30}}>
-        <Tag variant="blue">Step 2 of 4</Tag>
-        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:34,color:C.navy,margin:"14px 0 8px"}}>Tell us about your business</h2>
-        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,lineHeight:1.7}}>We use this to personalize your analysis and send your free recommendation.</p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-[18px] mb-[18px]">
-        {[{k:"name",l:"Full name *",p:"Jane Smith",t:"text"},{k:"business",l:"Business name *",p:"Acme Restaurant Group",t:"text"},{k:"email",l:"Email address *",p:"jane@acme.com",t:"email"},{k:"phone",l:"Phone number",p:"(555) 000-0000",t:"tel"}].map(({k,l,p,t})=>(
-          <div key={k}><label style={lSt}>{l}</label><input style={iSt} type={t} placeholder={p} value={form[k]} onChange={set(k)} onFocus={fo} onBlur={bl}/></div>
-        ))}
-        <div><label style={lSt}>Vendor</label><select style={{...iSt,background:`${C.white} ${selBg}`,appearance:"none"}} value={form.vendor} onChange={set("vendor")} onFocus={fo} onBlur={bl}><option value="">Select...</option>{["Cintas","UniFirst","ALSCO","Aramark","G&K Services","Other"].map(v=><option key={v}>{v}</option>)}</select></div>
-        <div><label style={lSt}>Invoice frequency</label><select style={{...iSt,background:`${C.white} ${selBg}`,appearance:"none"}} value={form.frequency} onChange={set("frequency")} onFocus={fo} onBlur={bl}><option value="">Select...</option>{["Weekly","Bi-weekly","Monthly"].map(f=><option key={f}>{f}</option>)}</select></div>
-      </div>
-      <div style={{background:C.offWhite,border:`1px solid ${C.gray200}`,borderRadius:10,padding:"13px 16px",marginBottom:26,display:"flex",gap:12,alignItems:"flex-start"}}>
-        <input type="checkbox" defaultChecked style={{marginTop:2,accentColor:C.teal,flexShrink:0,cursor:"pointer"}}/>
-        <span style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray500,lineHeight:1.6}}>Send me my savings report by email and keep me updated on ways to reduce my uniform costs. Unsubscribe anytime.</span>
-      </div>
-      <div style={{display:"flex",gap:12}}>
-        <Btn variant="ghost" onClick={onBack}>← Back</Btn>
-        <div style={{flex:1}}><Btn variant="teal" full size="lg" disabled={!valid} onClick={()=>onNext(form)}>Analyze My Invoice →</Btn></div>
-      </div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,textAlign:"center",marginTop:12}}>By continuing you agree to our Privacy Policy and Terms &amp; Conditions.</div>
+    <div style={{maxWidth:600,margin:"0 auto",padding:"64px 24px 90px"}}>
+      <Tag variant="blue">Before we analyze</Tag>
+      <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(28px,4vw,40px)",color:C.navy,lineHeight:1.18,margin:"16px 0 10px"}}>Where should we connect this invoice result?</h1>
+      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,lineHeight:1.7,marginBottom:26}}>We save the result to your account and use this email to associate the invoice, its finding categories, and the number of locked findings with your lead record.</p>
+      <label style={{display:"block",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:C.navy,marginBottom:7}}>Email for this result</label>
+      <input value={email} onChange={event=>setEmail(event.target.value)} type="email" autoComplete="email" style={{width:"100%",border:`1px solid ${C.gray300}`,borderRadius:9,padding:"12px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:15,marginBottom:18}} />
+      <label style={{display:"block",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:600,color:C.navy,marginBottom:7}}>Business name <span style={{fontWeight:400,color:C.gray500}}>(optional)</span></label>
+      <input value={businessName} onChange={event=>setBusinessName(event.target.value)} autoComplete="organization" style={{width:"100%",border:`1px solid ${C.gray300}`,borderRadius:9,padding:"12px 14px",fontFamily:"'DM Sans',sans-serif",fontSize:15,marginBottom:18}} />
+      <label style={{display:"flex",alignItems:"flex-start",gap:10,fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray700,lineHeight:1.5,marginBottom:24,cursor:"pointer"}}>
+        <input type="checkbox" checked={marketingConsent} onChange={event=>setMarketingConsent(event.target.checked)} style={{marginTop:3}} />
+        Send me occasional invoice-saving tips and relevant offers based on what this analysis finds. This is optional and does not affect my result.
+      </label>
+      <Btn variant="teal" full size="lg" disabled={!valid} onClick={()=>onNext({ email: email.trim().toLowerCase(), businessName: businessName.trim(), marketingConsent })}>Analyze my invoice →</Btn>
+      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,lineHeight:1.5,textAlign:"center",marginTop:14}}>Your analysis is stored in your account whether or not you opt into marketing.</p>
     </div>
   );
 }
 
 // ── STEP 2 — Scanning ────────────────────
-function StepScanning({ contact, file, onDone }) {
+function StepScanning({ file, lead }: { file: InvoiceSource | null; lead: LeadCapture | null }) {
   const router = useRouter();
   const [phase, setPhase]       = useState(0);
   const [progress, setProgress] = useState(0);
@@ -370,45 +280,22 @@ function StepScanning({ contact, file, onDone }) {
 
   // All mutable state lives in refs to avoid stale closures entirely
   const started  = useRef(false);
-  const resultR  = useRef(null);
-  const doneR    = useRef(false);
   const progR    = useRef(0);       // single source of truth for progress value
   const phT      = useRef(null);
   const progT    = useRef(null);
   const finishT  = useRef(null);
 
-  const PHASES = ["Reading your invoice...","Identifying line items...","Calculating annual spend...","Comparing to regional averages...","Generating your recommendations..."];
-  const MOCK = {
-    vendor: contact?.vendor||"Cintas", invoiceTotal:487, annualTotal:25324,
-    lineItems:[
-      {name:"Uniform rental — 8 employees",weeklyCharge:192,annualCost:9984,flagged:false,annualSaving:null},
-      {name:"Commercial floor mats × 6",weeklyCharge:156,annualCost:8112,flagged:true,flagReason:"38% above regional average",annualSaving:2184},
-      {name:"Shop rags (bulk service)",weeklyCharge:74,annualCost:3848,flagged:true,flagReason:"Competitors charge ~20% less",annualSaving:770},
-      {name:"Restroom supplies",weeklyCharge:41,annualCost:2132,flagged:false,annualSaving:null},
-      {name:"Facility service fee",weeklyCharge:24,annualCost:1248,flagged:true,flagReason:"Rose 12% since contract signing",annualSaving:500},
-    ],
-    freeRec:{item:"Commercial floor mats × 6",weeklyCharge:156,annualCost:8112,annualSaving:2184,explanation:"You're paying $156/week to rent 6 floor mats — $8,112 a year. Commercial-grade mats of equivalent quality can be purchased outright for about $300 total, with a payback period of under 3 weeks.",action:"Purchase replacement mats from our shop and cancel this line item at your next contract review."},
-    totalPotentialSaving:3454, lockedCount:3,
-    shopProduct:{name:"Heavy-Duty Commercial Floor Mat",theirAnnualCost:8112,ourPrice:49,quantity:6,yearlySaving:2184,tip:"Vacuum weekly and hose down monthly — commercial mats last 5–8 years with basic care."},
-  };
-
-  // Called once AI is done — drives progress from wherever it is to 100
-  const finish = useRef(()=>{
+  const PHASES = [
+    "Uploading your invoice...",
+    "Checking the document and pages...",
+    "Reading line items and charges...",
+    "Checking invoice totals...",
+    "Preparing your invoice review...",
+  ];
+  const stopWaitingAnimation = () => {
     clearInterval(progT.current);
     clearInterval(phT.current);
-    setPhase(PHASES.length - 1);
-    finishT.current = setInterval(()=>{
-      progR.current = Math.min(progR.current + 2, 100);
-      setProgress(progR.current);
-      if (progR.current >= 100) {
-        clearInterval(finishT.current);
-        if (!doneR.current) {
-          doneR.current = true;
-          setTimeout(() => onDone(resultR.current || MOCK), 350);
-        }
-      }
-    }, 40);
-  });
+  };
 
   useEffect(()=>{
     if (started.current) return;
@@ -421,10 +308,15 @@ function StepScanning({ contact, file, onDone }) {
       setPhase(ph);
     }, 1400);
 
-    // Progress crawls to 88 then holds
+    // This is an estimated progress animation, not server-reported progress.
+    // Move quickly through the early work, then visibly slow-crawl toward 98.
+    // Only a completed server response is allowed to set it to 100.
     progT.current = setInterval(()=>{
-      if (progR.current >= 88) { clearInterval(progT.current); return; }
-      progR.current = Math.min(progR.current + Math.random() * 2.5 + 0.5, 88);
+      if (progR.current < 88) {
+        progR.current = Math.min(progR.current + Math.random() * 2.5 + 0.5, 88);
+      } else {
+        progR.current = Math.min(progR.current + (98 - progR.current) * 0.004, 98);
+      }
       setProgress(progR.current);
     }, 120);
 
@@ -434,17 +326,36 @@ function StepScanning({ contact, file, onDone }) {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
 
-        // If signed in AND we have a real File, do the real flow
-        if (user && file instanceof File) {
-          // 1) Upload to Supabase Storage at {user_id}/{timestamp}-{name}
-          const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-          const path = `${user.id}/${Date.now()}-${safeName}`;
-          const { error: upErr } = await supabase.storage
-            .from("invoices")
-            .upload(path, file, { contentType: file.type, upsert: false });
-          if (upErr) {
-            setErrorState({ kind: "upload_failed", message: upErr.message });
-            return;
+        if (!user) {
+          router.replace("/sign-in?redirect=%2Finvoice");
+          return;
+        }
+        if (!file || !lead) {
+          stopWaitingAnimation();
+          setErrorState({ kind: "upload_failed", message: "Choose the invoice and results email again." });
+          return;
+        }
+
+        // Signed-in users always use the real extraction and review flow.
+        {
+          // 1) Desktop files are uploaded here. Phone files have already been
+          // securely stored by the expiring upload session.
+          let path: string;
+          let uploadSessionId: string | undefined;
+          if (file instanceof File) {
+            const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+            path = `${user.id}/${Date.now()}-${safeName}`;
+            const { error: upErr } = await supabase.storage
+              .from("invoices")
+              .upload(path, file, { contentType: file.type, upsert: false });
+            if (upErr) {
+              stopWaitingAnimation();
+              setErrorState({ kind: "upload_failed", message: upErr.message });
+              return;
+            }
+          } else {
+            path = file.storagePath;
+            uploadSessionId = file.sessionId;
           }
 
           // 2) Call extraction API
@@ -454,15 +365,14 @@ function StepScanning({ contact, file, onDone }) {
             body: JSON.stringify({
               storage_path: path,
               bucket: "invoices",
-              business_hint: contact?.business,
-              vendor_hint: contact?.vendor,
-              state_hint: contact?.state,
+              upload_session_id: uploadSessionId,
             }),
           });
           const data = await res.json();
 
           // 2a) Wrong document type — show specialized error UI
           if (res.status === 422 && data?.error === "wrong_document_type") {
+            stopWaitingAnimation();
             setErrorState({
               kind: "wrong_document_type",
               detected: data.detected_type,
@@ -472,8 +382,9 @@ function StepScanning({ contact, file, onDone }) {
           }
 
           if (!res.ok) {
+            stopWaitingAnimation();
             setErrorState({
-              kind: "extraction_failed",
+              kind: data?.error === "invoice_limit_reached" ? "invoice_limit_reached" : "extraction_failed",
               message: data?.message || data?.error || "Something went wrong analyzing this file.",
               code: data?.code,
               details: data?.details,
@@ -482,27 +393,43 @@ function StepScanning({ contact, file, onDone }) {
             return;
           }
 
-          // 3) Bypass the mock results screen entirely — go straight to the
-          // real dashboard detail page with the new analysis
-          router.push(`/dashboard/invoices/${data.invoice_id}`);
+          // 3) Connect the pre-results email and optional marketing consent to
+          // the saved invoice. Result categories are added after confirmation.
+          const leadResponse = await fetch(`/api/invoices/${data.invoice_id}/lead`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              stage: "capture",
+              email: lead.email,
+              businessName: lead.businessName || undefined,
+              marketingConsent: lead.marketingConsent,
+            }),
+          });
+          if (!leadResponse.ok) {
+            stopWaitingAnimation();
+            setErrorState({ kind: "lead_failed", invoiceId: data.invoice_id, message: "The invoice was analyzed, but we could not connect the results email. You can still open the saved review." });
+            return;
+          }
+
+          // 4) Go to the real dashboard detail page. The customer confirms the
+          // extraction there before findings are revealed.
+          stopWaitingAnimation();
+          setPhase(PHASES.length - 1);
+          progR.current = 100;
+          setProgress(100);
+          finishT.current = setTimeout(() => {
+            router.push(`/dashboard/invoices/${data.invoice_id}`);
+          }, 300);
           return;
         }
 
-        // Otherwise: fall back to the legacy mock-AI flow so the public
-        // /invoice page still demos something to unauthenticated visitors
-        const res = await fetch("/api/analyze-invoice", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            business: contact?.business,
-            vendor: contact?.vendor,
-          }),
-        });
-        resultR.current = await res.json();
-        finish.current();
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
-        setErrorState({ kind: "extraction_failed", message: err?.message || "Something went wrong." });
+        stopWaitingAnimation();
+        setErrorState({
+          kind: "extraction_failed",
+          message: err instanceof Error ? err.message : "Something went wrong.",
+        });
       }
     };
 
@@ -578,6 +505,31 @@ function StepScanning({ contact, file, onDone }) {
     );
   }
 
+  if (errorState?.kind === "invoice_limit_reached") {
+    return (
+      <div style={{maxWidth:560,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
+        <div style={{width:80,height:80,borderRadius:20,background:C.bluePale,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px",fontSize:34}}>▤</div>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.navy,marginBottom:10,lineHeight:1.2}}>Your current invoice allowance is used.</h2>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,marginBottom:24,lineHeight:1.65}}>{errorState.message}</p>
+        <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
+          <Link href="/checkout/pro" style={{display:"inline-block",background:C.teal,color:C.white,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,padding:"12px 24px",borderRadius:9,textDecoration:"none"}}>Preview Pro checkout →</Link>
+          <Link href="/dashboard/invoices" style={{display:"inline-block",background:C.white,color:C.navy,border:`1px solid ${C.gray300}`,fontFamily:"'DM Sans',sans-serif",fontSize:14,padding:"11px 24px",borderRadius:9,textDecoration:"none"}}>View saved invoices</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorState?.kind === "lead_failed") {
+    return (
+      <div style={{maxWidth:560,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
+        <div style={{width:80,height:80,borderRadius:20,background:"#FEF3C7",display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px",fontSize:34}}>✉</div>
+        <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.navy,marginBottom:10}}>Your invoice review is saved.</h2>
+        <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.gray500,lineHeight:1.65,marginBottom:24}}>{errorState.message}</p>
+        <Link href={`/dashboard/invoices/${errorState.invoiceId}`} style={{display:"inline-block",background:C.navy,color:C.white,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:500,padding:"12px 28px",borderRadius:9,textDecoration:"none"}}>Open the invoice review →</Link>
+      </div>
+    );
+  }
+
   return (
     <div style={{maxWidth:500,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
       <div style={{width:80,height:80,borderRadius:20,background:C.navy,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px",animation:"pulse 2s ease-in-out infinite"}}>
@@ -588,7 +540,13 @@ function StepScanning({ contact, file, onDone }) {
       <div style={{background:C.gray200,borderRadius:8,height:8,marginBottom:10,overflow:"hidden"}}>
         <div style={{height:"100%",borderRadius:8,background:`linear-gradient(90deg,${C.blue},${C.teal})`,width:`${Math.round(progress)}%`,transition:"width 0.3s ease"}}/>
       </div>
-      <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginBottom:44}}>{Math.round(progress)}% complete</div>
+      <div aria-live="polite" style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginBottom:44,minHeight:18}}>
+        {progress >= 88 && progress < 100
+          ? `About ${Math.round(progress)}% complete · Still working — larger files can take a little longer.`
+          : progress >= 100
+            ? "100% complete · Opening your invoice review..."
+            : `About ${Math.round(progress)}% complete`}
+      </div>
       <div style={{display:"flex",flexDirection:"column",gap:12,textAlign:"left"}}>
         {PHASES.map((p,i)=>(
           <div key={p} style={{display:"flex",alignItems:"center",gap:12,opacity:i<=phase?1:0.28,transition:"opacity 0.4s"}}>
@@ -601,133 +559,27 @@ function StepScanning({ contact, file, onDone }) {
   );
 }
 
-// ── STEP 3 — Results ─────────────────────
-function StepResults({ result, contact }) {
-  const [showUpgrade, setShowUpgrade] = useState(false);
-  const [upgradeType, setUpgradeType] = useState("onetime");
-  if(!result) return null;
-  const { freeRec:free, shopProduct:shop } = result;
-
-  return (
-    <div style={{maxWidth:980,margin:"0 auto",padding:"44px 24px 80px"}}>
-      {/* Banner */}
-      <div style={{background:`linear-gradient(135deg,${C.navy} 0%,#153D6B 100%)`,borderRadius:18,padding:"28px 34px",marginBottom:26,display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:20}}>
-        <div>
-          <Tag variant="teal">Analysis complete</Tag>
-          <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(22px,3vw,34px)",color:"#fff",margin:"12px 0 6px",lineHeight:1.1}}>We found <span style={{color:C.teal}}>${result.totalPotentialSaving?.toLocaleString()}</span> in potential annual savings</h2>
-          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:"rgba(255,255,255,0.6)"}}>{contact?.business} · {result.vendor} · ${result.invoiceTotal?.toLocaleString()}/week · ${result.annualTotal?.toLocaleString()}/year</p>
-        </div>
-        <div style={{textAlign:"right",flexShrink:0}}>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"rgba(255,255,255,0.4)",marginBottom:2}}>Savings identified</div>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:52,color:C.teal,lineHeight:1}}>${result.totalPotentialSaving?.toLocaleString()}</div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:"rgba(255,255,255,0.4)"}}>per year</div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-[22px] mb-[22px]">
-        {/* Free rec */}
-        <div style={{gridColumn:"1 / -1"}}>
-          <Eyebrow color={C.teal}>Your free recommendation</Eyebrow>
-          <div style={{background:C.white,border:`2px solid ${C.teal}`,borderRadius:16,padding:28,position:"relative",overflow:"hidden"}}>
-            <div style={{position:"absolute",top:0,right:0,background:C.teal,color:"#fff",fontFamily:"'DM Sans',sans-serif",fontSize:11,fontWeight:600,padding:"5px 14px",borderRadius:"0 14px 0 10px"}}>FREE</div>
-            <div className="grid grid-cols-1 sm:[grid-template-columns:1fr_auto] gap-6 items-start">
-              <div>
-                <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.navy,marginBottom:10}}>{free?.item}</div>
-                <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.75,marginBottom:16}}>{free?.explanation}</p>
-                <div style={{background:C.tealLight,borderRadius:10,padding:"12px 16px",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"#0D6E52",lineHeight:1.6}}><strong>Action:</strong> {free?.action}</div>
-              </div>
-              <div style={{textAlign:"center",flexShrink:0}}>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,marginBottom:3}}>Annual saving</div>
-                <div style={{fontFamily:"'DM Serif Display',serif",fontSize:44,color:C.teal,lineHeight:1}}>${free?.annualSaving?.toLocaleString()}</div>
-                <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500}}>/year</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Locked */}
-        <div>
-          <Eyebrow>Additional savings — locked</Eyebrow>
-          <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:16,overflow:"hidden"}}>
-            {(result.lineItems||[]).filter(i=>i.flagged&&i.name!==free?.item).slice(0,result.lockedCount||3).map((item,i)=>(
-              <div key={i} style={{padding:"16px 22px",borderBottom:`1px solid ${C.gray100}`,filter:"blur(4px)",userSelect:"none"}}>
-                <div style={{display:"flex",justifyContent:"space-between"}}>
-                  <div><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,color:C.navy,marginBottom:3}}>████████████████</div><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500}}>████████████████████</div></div>
-                  <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.teal}}>$███</div>
-                </div>
-              </div>
-            ))}
-            <div style={{padding:"18px 22px",background:C.navy,textAlign:"center"}}>
-              <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,color:"rgba(255,255,255,0.6)",marginBottom:12}}>🔒 {result.lockedCount||3} more savings identified</div>
-              <Btn variant="teal" onClick={()=>setShowUpgrade(true)}>Unlock All Savings →</Btn>
-            </div>
-          </div>
-        </div>
-
-        {/* Shop */}
-        <div>
-          <Eyebrow color={C.blue}>From our shop — own it, don't rent it</Eyebrow>
-          <div style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:16,padding:22}}>
-            <div style={{background:C.bluePale,borderRadius:10,padding:"13px 16px",marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div><div style={{fontFamily:"'DM Serif Display',serif",fontSize:18,color:C.navy}}>{shop?.name}</div><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginTop:3}}>Qty: {shop?.quantity} · Commercial grade</div></div>
-              <div style={{textAlign:"right"}}><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500}}>Our price</div><div style={{fontFamily:"'DM Serif Display',serif",fontSize:26,color:C.blue}}>${shop?.ourPrice}</div><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500}}>each</div></div>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
-              <div style={{background:C.offWhite,borderRadius:8,padding:"11px 13px"}}><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,marginBottom:2}}>You pay now</div><div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.red}}>${shop?.theirAnnualCost?.toLocaleString()}<span style={{fontSize:12,color:C.gray500}}>/yr</span></div></div>
-              <div style={{background:C.tealLight,borderRadius:8,padding:"11px 13px"}}><div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:"#0D6E52",marginBottom:2}}>You'd save</div><div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.teal}}>${shop?.yearlySaving?.toLocaleString()}<span style={{fontSize:12,color:C.gray500}}>/yr</span></div></div>
-            </div>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,background:C.offWhite,borderRadius:8,padding:"9px 12px",marginBottom:14,lineHeight:1.6}}>💡 <strong>Care tip:</strong> {shop?.tip}</div>
-            <Btn variant="blue" full>View in Our Shop →</Btn>
-          </div>
-        </div>
-      </div>
-
-      {/* Agreement upsell */}
-      <div style={{background:`linear-gradient(135deg,${C.offWhite},${C.bluePale})`,border:`1px solid ${C.gray200}`,borderRadius:16,padding:"26px 30px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:20}}>
-        <div>
-          <Tag variant="navy">Next step</Tag>
-          <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:24,color:C.navy,margin:"10px 0 8px"}}>Want to go deeper? Upload your actual contract.</h3>
-          <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,maxWidth:500,lineHeight:1.7}}>Your invoice shows what you're paying. Your agreement shows <em>why</em> — and what you can negotiate. Our AI will flag every clause worth challenging.</p>
-        </div>
-        <div style={{textAlign:"center"}}>
-          <div style={{fontFamily:"'DM Serif Display',serif",fontSize:36,color:C.navy}}>$49<span style={{fontSize:18}}>.99</span></div>
-          <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,color:C.gray500,marginBottom:12}}>one-time · instant access</div>
-          <Btn variant="navy">Analyze My Agreement</Btn>
-        </div>
-      </div>
-
-      {/* Upgrade modal */}
-      {showUpgrade&&(
-        <div style={{position:"fixed",inset:0,zIndex:999,background:"rgba(8,30,56,0.75)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",padding:24}} onClick={e=>{if(e.target===e.currentTarget)setShowUpgrade(false);}}>
-          <div style={{background:C.white,borderRadius:20,padding:40,maxWidth:460,width:"100%",boxShadow:"0 24px 80px rgba(12,45,84,0.25)",animation:"popIn 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards"}}>
-            <button onClick={()=>setShowUpgrade(false)} style={{float:"right",background:"none",border:"none",fontSize:22,cursor:"pointer",color:C.gray500,lineHeight:1}}>×</button>
-            <Tag variant="teal">Unlock all savings</Tag>
-            <h3 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.navy,margin:"14px 0 10px"}}>${result.totalPotentialSaving?.toLocaleString()} is waiting</h3>
-            <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:300,color:C.gray500,lineHeight:1.7,marginBottom:22}}>Get the full breakdown — every flagged item, exact overpayments, and step-by-step instructions to fix each one.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-[22px]">
-              {[{key:"onetime",label:"One-time report",price:"$29.99",sub:"Full analysis, single invoice"},{key:"sub",label:"Monthly monitoring",price:"$19.99/mo",sub:"Ongoing analysis + alerts"}].map(({key,label,price,sub})=>(
-                <div key={key} onClick={()=>setUpgradeType(key)} style={{border:`2px solid ${upgradeType===key?C.teal:C.gray200}`,background:upgradeType===key?C.tealLight:C.white,borderRadius:10,padding:"14px 12px",cursor:"pointer",transition:"all 0.2s"}}>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:13,fontWeight:600,color:C.navy,marginBottom:4}}>{label}</div>
-                  <div style={{fontFamily:"'DM Serif Display',serif",fontSize:22,color:C.teal}}>{price}</div>
-                  <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,marginTop:3}}>{sub}</div>
-                </div>
-              ))}
-            </div>
-            <Btn variant="teal" full size="lg">Get My Full Report →</Btn>
-            <div style={{fontFamily:"'DM Sans',sans-serif",fontSize:11,color:C.gray500,textAlign:"center",marginTop:10}}>Secure checkout · Cancel anytime · Satisfaction guaranteed</div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 // ── Root ─────────────────────────────────
 export default function InvoicePage() {
+  const [authState, setAuthState] = useState<"signed-in" | "signed-out">("signed-out");
   const [step, setStep]       = useState(0);
-  const [file, setFile]       = useState(null);
-  const [contact, setContact] = useState(null);
-  const [result, setResult]   = useState(null);
+  const [file, setFile]       = useState<InvoiceSource | null>(null);
+  const [lead, setLead]       = useState<LeadCapture | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const supabase = createClient();
+    void supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        if (!cancelled) setAuthState(user ? "signed-in" : "signed-out");
+      })
+      .catch(() => {
+        if (!cancelled) setAuthState("signed-out");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -741,10 +593,31 @@ export default function InvoicePage() {
         @keyframes popIn{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}
       `}</style>
       <Nav step={step}/>
-      {step===0 && <StepUpload  onNext={f=>{setFile(f);setStep(1);}}/>}
-      {step===1 && <StepContact onNext={c=>{setContact(c);setStep(2);}} onBack={()=>setStep(0)}/>}
-      {step===2 && <StepScanning contact={contact} file={file} onDone={r=>{setResult(r);setStep(3);}}/>}
-      {step===3 && <StepResults result={result} contact={contact}/>}
+      {authState === "signed-out" && <InvoiceAccountGate />}
+      {authState === "signed-in" && <>
+        {step===0 && <StepUpload onNext={f=>{setFile(f);setStep(1);}}/>}
+        {step===1 && <StepLeadCapture onNext={value=>{setLead(value);setStep(2);}}/>}
+        {step===2 && <StepScanning file={file} lead={lead}/>}
+      </>}
     </>
+  );
+}
+
+function InvoiceAccountGate() {
+  return (
+    <div style={{maxWidth:720,margin:"0 auto",padding:"64px 24px 90px",textAlign:"center"}}>
+      <Tag variant="teal">First confirmed invoice opportunity free</Tag>
+      <h1 style={{fontFamily:"'DM Serif Display',serif",fontSize:"clamp(30px,4vw,44px)",color:C.navy,lineHeight:1.15,margin:"18px 0 12px"}}>Your invoice analysis belongs in a secure account.</h1>
+      <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:16,fontWeight:300,color:C.gray500,lineHeight:1.75,maxWidth:560,margin:"0 auto 26px"}}>Create a free account or sign in before choosing your file. That keeps the original invoice, your corrections, and your saved result tied to you from upload through review.</p>
+      <div style={{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap"}}>
+        <Link href="/sign-up?redirect=%2Finvoice" style={{background:C.teal,color:C.white,fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:600,padding:"13px 24px",borderRadius:9,textDecoration:"none"}}>Create free account →</Link>
+        <Link href="/sign-in?redirect=%2Finvoice" style={{background:C.white,color:C.navy,border:`1.5px solid ${C.navy}`,fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:500,padding:"12px 24px",borderRadius:9,textDecoration:"none"}}>Sign in</Link>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:12,marginTop:34,textAlign:"left"}}>
+        {["Upload one PDF or photo","Confirm every charge and total","See one verified opportunity free"].map((text,index) => (
+          <div key={text} style={{background:C.white,border:`1px solid ${C.gray200}`,borderRadius:12,padding:"16px 18px",fontFamily:"'DM Sans',sans-serif",fontSize:13,color:C.gray700,lineHeight:1.5}}><strong style={{color:C.teal,marginRight:7}}>{index + 1}.</strong>{text}</div>
+        ))}
+      </div>
+    </div>
   );
 }

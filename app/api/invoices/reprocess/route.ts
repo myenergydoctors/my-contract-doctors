@@ -5,9 +5,8 @@ import { SITE } from "@/lib/site";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 
 // Re-runs extraction against an existing uploaded file using the current
-// prompt. Deletes the old invoice + line items + sibling invoices, then
-// re-calls /api/invoices/extract with the original storage_path. Returns
-// the new invoice_id so the client can redirect.
+// prompt. The original rows are retained until the replacement succeeds, so
+// a provider/network failure cannot destroy the customer's existing review.
 
 export const maxDuration = 300;
 
@@ -54,11 +53,6 @@ export async function POST(req: NextRequest) {
   for (const s of siblings || []) groupIds.add(s.id);
   const ids = Array.from(groupIds);
 
-  // Delete line items, extraction jobs, then invoice rows (children of cascade)
-  await admin.from("invoice_line_items").delete().in("invoice_id", ids);
-  await admin.from("invoice_extraction_jobs").delete().in("invoice_id", ids);
-  await admin.from("invoice_analyses").delete().in("id", ids);
-
   // Split bucket out of stored file_path ("{bucket}/{user_id}/{name}")
   const filePath = inv.file_path;
   const slash = filePath.indexOf("/");
@@ -84,6 +78,13 @@ export async function POST(req: NextRequest) {
   if (!extractRes.ok) {
     console.error("Invoice reprocessing failed:", extractJson);
     return NextResponse.json({ error: "Invoice reprocessing failed." }, { status: extractRes.status });
+  }
+
+  // The replacement exists. Remove only the superseded rows; child review,
+  // line-item, and extraction-job records cascade from invoice_analyses.
+  const { error: deleteError } = await admin.from("invoice_analyses").delete().in("id", ids);
+  if (deleteError) {
+    console.error("Replacement succeeded but old invoice cleanup failed:", deleteError);
   }
   return NextResponse.json({ ok: true, ...extractJson });
 }
