@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 type LogoProps = {
   href?: string | null;
@@ -10,38 +11,57 @@ type LogoProps = {
 };
 
 const sizeMap = {
-  sm: { mark: 26, text: 17, eyebrowGap: -1 },
-  md: { mark: 32, text: 20, eyebrowGap: -1 },
-  lg: { mark: 40, text: 24, eyebrowGap: -1 },
+  sm: { width: 110 },
+  md: { width: 150 },
+  lg: { width: 190 },
+};
+
+const logoCrop = {
+  canvasWidth: 1774,
+  canvasHeight: 887,
+  x: 179,
+  y: 219,
+  width: 1444,
+  height: 411,
 };
 
 export default function Logo({
   href = "/",
   variant = "dark-bg",
   size = "md",
-  showMark = true,
   onClick,
   className = "",
 }: LogoProps) {
   const s = sizeMap[size];
-  const textColor = variant === "dark-bg" ? "text-white" : "text-navy";
-  const italicColor = variant === "dark-bg" ? "text-blue-light" : "text-blue";
-  const eyebrowColor = "text-blue-light";
+  const scale = s.width / logoCrop.width;
+  const isDark = variant === "dark-bg";
 
   const inner = (
-    <span className={`inline-flex items-center gap-2.5 leading-none ${className}`}>
-      {showMark && (
-        <span aria-hidden style={{ width: s.mark, height: s.mark }} className="flex-shrink-0">
-          <Mark size={s.mark} />
-        </span>
-      )}
-      <span className="flex flex-col leading-none">
-        <span className={`font-sans text-[9px] font-semibold tracking-[0.22em] uppercase ${eyebrowColor}`}>My</span>
-        <span className="flex items-baseline" style={{ marginTop: s.eyebrowGap }}>
-          <span className={`font-serif ${textColor}`} style={{ fontSize: s.text }}>Contract&nbsp;</span>
-          <span className={`font-serif italic ${italicColor}`} style={{ fontSize: s.text }}>Doctors</span>
-        </span>
-      </span>
+    <span
+      className={`relative inline-flex shrink-0 overflow-hidden leading-none ${className}`}
+      style={{ width: s.width, height: logoCrop.height * scale }}
+    >
+      <Image
+        src={isDark
+          ? "/brand/my-contract-doctors-logo-dark-bg.png"
+          : "/brand/my-contract-doctors-logo-light-bg.png"}
+        alt="My Contract Doctors"
+        width={logoCrop.canvasWidth}
+        height={logoCrop.canvasHeight}
+        sizes={`${s.width}px`}
+        loading="eager"
+        unoptimized
+        style={{
+          position: "absolute",
+          left: -logoCrop.x * scale,
+          top: -logoCrop.y * scale,
+          width: logoCrop.canvasWidth * scale,
+          height: logoCrop.canvasHeight * scale,
+          maxWidth: "none",
+          mixBlendMode: isDark ? "screen" : "multiply",
+          filter: "contrast(1.08)",
+        }}
+      />
     </span>
   );
 

@@ -72,7 +72,7 @@ export default function CustomersPage() {
             See what we'd find in <em className="italic text-blue-light">your</em> contract.
           </h2>
           <p className="font-sans font-light text-white/70 leading-relaxed mb-8">
-            Upload one invoice and we'll show you exactly where you're overpaying. First recommendation is free, no card required.
+            Upload one invoice, confirm the extracted charges, and see the first evidence-backed opportunity when the required facts are available.
           </p>
           <Link href="/invoice" className="inline-block font-sans text-base font-medium bg-teal text-white px-6 py-3 rounded-lg no-underline hover:opacity-90 transition-opacity">
             Upload an invoice — free

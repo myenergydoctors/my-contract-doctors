@@ -9,7 +9,10 @@ import { createClient } from "@/lib/supabase/client";
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const requestedRedirect = searchParams.get("redirect");
+  const redirectTo = requestedRedirect?.startsWith("/") && !requestedRedirect.startsWith("//")
+    ? requestedRedirect
+    : "/dashboard";
   const errorParam = searchParams.get("error");
 
   const [email, setEmail] = useState("");
@@ -132,7 +135,7 @@ function SignInForm() {
 
           <p className="text-center font-sans text-sm text-gray-500 mt-8">
             Don't have an account?{" "}
-            <Link href="/sign-up" className="text-blue hover:text-navy font-medium no-underline">Sign up free</Link>
+            <Link href={`/sign-up?redirect=${encodeURIComponent(redirectTo)}`} className="text-blue hover:text-navy font-medium no-underline">Sign up free</Link>
           </p>
         </>
       )}

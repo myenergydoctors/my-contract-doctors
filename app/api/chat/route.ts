@@ -10,7 +10,7 @@ const SYSTEM = `You are the AI sales assistant for My Contract Doctors, a SaaS p
 
 1. The Invoice — free to start, $29/month for Pro
    - Upload an invoice, get one free savings recommendation
-   - Pro plan = unlimited invoices, full reports, Industry Insights dashboard, auto-renewal alerts
+   - Pro plan = up to 5 new invoice analyses per month, full supported reports, saved history, eligible insights, and alerts
    - Buy URL: /invoice (free trial), /checkout/pro (Pro subscription)
 
 2. The Agreement — $49 one-time

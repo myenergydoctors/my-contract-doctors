@@ -1,23 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useEffectiveData } from "@/lib/use-effective-plan";
 import EmptyState from "@/components/portal/EmptyState";
-import PaywallModal from "@/components/portal/PaywallModal";
 
 export default function AgreementsListPage() {
-  const { plan, agreements } = useEffectiveData();
-  const router = useRouter();
-  const [showPaywall, setShowPaywall] = useState(false);
-
-  const handleAdd = (e: React.MouseEvent) => {
-    if (plan !== "pro") {
-      e.preventDefault();
-      setShowPaywall(true);
-    }
-    // else: link navigates normally to /agreement
-  };
+  const { agreements } = useEffectiveData();
 
   return (
     <div className="max-w-6xl">
@@ -31,7 +18,6 @@ export default function AgreementsListPage() {
         </div>
         <Link
           href="/agreement"
-          onClick={handleAdd}
           className="inline-flex items-center font-sans text-sm font-medium bg-teal text-white px-5 py-2.5 rounded-lg no-underline hover:opacity-90 transition-opacity self-start"
         >
           + Analyze new agreement
@@ -44,11 +30,7 @@ export default function AgreementsListPage() {
           eyebrow="No agreements yet"
           title="Get a full breakdown of your contract."
           body="Upload your uniform or linen service agreement and we'll score it, flag every clause worth negotiating, and draft the emails you can send to fix them."
-          primaryCta={
-            plan === "pro"
-              ? { label: "Analyze an agreement →", href: "/agreement" }
-              : { label: "See pricing →", href: "/pricing" }
-          }
+          primaryCta={{ label: "Analyze an agreement →", href: "/agreement" }}
           secondaryCta={{ label: "See a sample first", href: "/demystifier" }}
         />
       ) : (
@@ -96,18 +78,13 @@ export default function AgreementsListPage() {
             {/* Top action */}
             <div className="bg-red-light border border-red/20 rounded-lg p-3">
               <div className="font-sans text-[10px] font-semibold uppercase tracking-wider text-red mb-1">Top priority</div>
-              <div className="font-sans text-sm text-navy leading-snug">{agr.topActions[0].title}</div>
+              <div className="font-sans text-sm text-navy leading-snug">{agr.topActions[0]?.title || "Review the saved agreement"}</div>
             </div>
           </Link>
         ))}
       </div>
       )}
 
-      <PaywallModal
-        open={showPaywall}
-        onClose={() => setShowPaywall(false)}
-        reason={{ type: "agreement", currentPlan: plan }}
-      />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import PlansGrid from "./PlansGrid";
 
 export const metadata = {
   title: "Pricing",
-  description: "Free to start. $29/month Pro plan for unlimited contract and invoice analyses. $49 one-time for a single Agreement audit. Cancel anytime.",
+  description: "Free to start with one confirmed invoice opportunity and one agreement-clause preview. $29/month Pro includes ongoing monitoring. $49 one-time for a full Agreement review.",
 };
 
 const plans = [
@@ -14,18 +14,19 @@ const plans = [
     name: "Free",
     price: "$0",
     cadence: "forever",
-    description: "Get one free recommendation on every invoice you upload. Best for testing the waters.",
+    description: "Confirm your first invoice and first agreement to see one supported preview from each when the document contains enough evidence.",
     cta: "Start free",
-    ctaHref: "/sign-up",
+    ctaHref: "/sign-up?redirect=%2Finvoice",
     features: [
-      "1 free recommendation per invoice",
-      "Unlimited invoice uploads",
-      "Basic line-item flagging",
+      "1 confirmed invoice",
+      "1 evidence-backed opportunity",
+      "1 agreement clause preview",
+      "Customer correction and totals check",
       "Email support",
     ],
     missing: [
       "Full savings breakdown",
-      "Contract analysis",
+      "Full contract analysis",
       "Industry insights",
       "Dispute letters & negotiation emails",
     ],
@@ -55,14 +56,14 @@ const plans = [
     name: "Pro",
     price: "$29",
     cadence: "per month",
-    description: "For businesses serious about controlling their service spend. Unlimited everything.",
+    description: "For businesses that want ongoing invoice monitoring and repeated reviews.",
     cta: "Start Pro plan",
     ctaHref: "/checkout/pro",
     highlighted: true,
     features: [
-      "Unlimited invoice analyses",
-      "Unlimited contract analyses",
-      "Industry Insights dashboard",
+      "Up to 5 new invoice analyses per month",
+      "1 agreement credit per quarter",
+      "Industry Insights where data thresholds are met",
       "Priority dispute letter generation",
       "Quarterly contract review reminders",
       "Auto-renewal alerts (90 days before)",
@@ -73,8 +74,8 @@ const plans = [
 ];
 
 const comparison = [
-  { feature: "Invoice analysis", free: "1 free rec.", agreement: "—", pro: "Unlimited" },
-  { feature: "Contract analysis", free: "—", agreement: "1 contract", pro: "Unlimited" },
+  { feature: "Invoice analysis", free: "1 confirmed invoice", agreement: "—", pro: "Up to 5/month" },
+  { feature: "Contract analysis", free: "1 clause preview", agreement: "1 full contract", pro: "1 full credit/quarter" },
   { feature: "Industry Insights dashboard", free: "—", agreement: "—", pro: "✓" },
   { feature: "Dispute letter templates", free: "—", agreement: "✓", pro: "✓" },
   { feature: "Negotiation email drafts", free: "—", agreement: "✓", pro: "✓" },
@@ -85,7 +86,7 @@ const comparison = [
 ];
 
 const faqs = [
-  { q: "Is there a trial for the Pro plan?", a: "The Free plan is your trial — you can upload as many invoices as you want and get one free recommendation each. When you're ready for the full picture, upgrade and you'll have access to every flagged item, contract analysis, and the insights dashboard." },
+  { q: "Is there a trial for the Pro plan?", a: "The Free plan lets you confirm your first invoice and agreement and see one supported preview from each when the documents contain enough verified information. Upgrade when you want the full analysis and ongoing monitoring." },
   { q: "What if I'm not sure which plan I need?", a: "Most businesses start by uploading an invoice on the Free plan to see what we find. If we identify enough savings to make Pro a no-brainer (we usually do), you can upgrade right from your dashboard." },
   { q: "Can I cancel anytime?", a: "Yes. Cancel from your billing settings at any time. You'll retain access through the end of your billing period. We don't lock you into annual contracts." },
   { q: "What about the one-time Agreement purchase?", a: "Agreement is for businesses who just want one contract analyzed without committing to a subscription. You pay $49, get the full analysis with negotiation emails and dispute letters, and keep lifetime access to that report." },
@@ -98,7 +99,7 @@ export default function PricingPage() {
       <FaqSchema items={faqs} />
       <ProductSchema
         name="Pro plan — My Contract Doctors"
-        description="Unlimited uniform and linen contract and invoice analyses, plus Industry Insights and auto-renewal alerts."
+        description="Ongoing uniform and linen invoice monitoring with up to five new invoice analyses per month, saved history, and eligible alerts."
         price={29}
         url="/pricing"
       />
@@ -115,10 +116,10 @@ export default function PricingPage() {
           <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">Pricing</span>
           <h1 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(32px,4.5vw,52px)" }}>
             Fair pricing for fair contracts.<br />
-            <em className="italic text-blue-light">Find $1,000s in 60 seconds.</em>
+            <em className="italic text-blue-light">Understand a real invoice, line by line.</em>
           </h1>
           <p className="font-sans font-light text-white/70 leading-relaxed text-base md:text-lg">
-            One free recommendation per invoice, forever. Upgrade when you want the full picture.
+            Confirm your first invoice and see one evidence-backed opportunity. Upgrade when you want ongoing reviews.
           </p>
         </div>
       </section>

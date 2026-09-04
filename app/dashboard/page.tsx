@@ -74,8 +74,8 @@ export default function DashboardHome() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <StatCard
           eyebrow="Identified savings"
-          value={`$${totalSavingsIdentified.toLocaleString()}`}
-          sub={empty ? "Upload an invoice to get started" : "across all contracts and invoices"}
+          value={plan === "pro" ? `$${totalSavingsIdentified.toLocaleString()}` : empty ? "$0" : "Locked"}
+          sub={empty ? "Upload an invoice to get started" : plan === "pro" ? "across all contracts and invoices" : "Open an invoice for its free result"}
           accent="teal"
         />
         <StatCard
@@ -132,14 +132,14 @@ export default function DashboardHome() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <div className="font-sans text-xs text-gray-500">Potential savings</div>
-                      <div className="font-serif text-teal text-lg">${inv.potentialAnnualSavings.toLocaleString()}/yr</div>
+                      <div className="font-sans text-xs text-gray-500">{plan === "pro" ? "Potential savings" : "Available result"}</div>
+                      <div className="font-serif text-teal text-lg">{plan === "pro" ? `$${inv.potentialAnnualSavings.toLocaleString()}/yr` : "1 free"}</div>
                     </div>
                   </div>
-                  <div className="font-sans text-xs text-gray-500 leading-relaxed">{inv.topFinding}</div>
+                  <div className="font-sans text-xs text-gray-500 leading-relaxed">{plan === "pro" ? inv.topFinding : "Confirm the extracted invoice to see the evidence-backed free opportunity."}</div>
                   <div className="flex gap-2 mt-3">
                     <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-red-light text-red px-2 py-1 rounded">
-                      {inv.flaggedItemCount} flagged
+                      {plan === "pro" ? `${inv.flaggedItemCount} flagged` : "Full findings locked"}
                     </span>
                     <span className="font-sans text-[10px] font-semibold uppercase tracking-wider bg-gray-100 text-gray-500 px-2 py-1 rounded">
                       ${inv.totalSpend}/mo

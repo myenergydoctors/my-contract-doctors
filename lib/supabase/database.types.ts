@@ -78,6 +78,22 @@ export type AgreementAnalysisRow = {
   clauses: unknown[];
   file_path: string | null;
   raw_analysis: unknown | null;
+  organization_id?: string | null;
+  status?: "processing" | "completed" | "failed";
+  review_status?: "needs_review" | "confirmed";
+  agreement_number?: string | null;
+  effective_date?: string | null;
+  expiration_date?: string | null;
+  renewal_notice_days?: number | null;
+  renewal_deadline?: string | null;
+  detected_type?: string | null;
+  page_count?: number | null;
+  document_quality?: string | null;
+  document_quality_notes?: string | null;
+  finding_count?: number | null;
+  free_finding_kind?: string | null;
+  confirmed_at?: string | null;
+  updated_at?: string;
 };
 
 export type NotificationRow = {
