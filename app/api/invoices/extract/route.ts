@@ -19,6 +19,7 @@ import {
   vendorProductSourceKey,
   type VendorProduct,
 } from "@/lib/db/vendor-products";
+import { findApprovedVendorProduct } from "@/lib/vendor-product-matching";
 
 // Allow up to 300s for the extraction (Vercel Pro). Claude calls on large
 // PDFs can take a while.
@@ -802,10 +803,8 @@ Return strict JSON only.`;
       }
     }
     const catalog = await listVendorProductsServer([...involvedVendorIds]);
-    const catalogByKey = new Map<string, VendorProduct>(
-      catalog.map(cp => [`${cp.vendor_id}:${cp.source_key}`, cp])
-    );
     const catalogById = new Map<string, VendorProduct>(catalog.map(cp => [cp.id, cp]));
+    const vendorSlugById = new Map(vendors.map(vendor => [vendor.id, vendor.slug]));
     type NewCatalogRow = {
       vendor_id: string;
       vendor_item_code: string | null;
@@ -941,7 +940,13 @@ Return strict JSON only.`;
           : null;
         if (vendorSourceKey && lineVendorId) {
           const key = `${lineVendorId}:${vendorSourceKey}`;
-          const known = catalogByKey.get(key);
+          const known = findApprovedVendorProduct(
+            catalog,
+            vendorSlugById,
+            lineVendorId,
+            itemCode,
+            li.raw_label || "",
+          );
           if (known) {
             vendorProductId = known.id;
             if (known.product_id && lt === "charge") productId = known.product_id;
@@ -1071,22 +1076,35 @@ Return strict JSON only.`;
 
         const { data: refreshedCatalog } = await admin
           .from("vendor_products")
-          .select("id, vendor_id, source_key")
+          .select("id, vendor_id, vendor_item_code, display_name, source_key, product_id, mapping_source, catalog_status, times_seen, notes")
           .in("vendor_id", [...involvedVendorIds])
           .eq("catalog_status", "approved");
-        const refreshedByKey = new Map(
-          (refreshedCatalog ?? []).map(row => [`${row.vendor_id}:${row.source_key}`, row.id])
-        );
+        const refreshedRows = (refreshedCatalog ?? []) as VendorProduct[];
         for (const invoiceId of invoiceIds) {
           const { data: unlinkedLines } = await admin
             .from("invoice_line_items")
-            .select("id, vendor_id, vendor_product_source_key")
+            .select("id, vendor_id, raw_vendor_item_code, raw_description")
             .eq("invoice_id", invoiceId)
             .is("vendor_product_id", null)
-            .not("vendor_product_source_key", "is", null);
+            .not("vendor_id", "is", null);
           for (const line of unlinkedLines ?? []) {
-            const linkedId = refreshedByKey.get(`${line.vendor_id}:${line.vendor_product_source_key}`);
-            if (linkedId) await admin.from("invoice_line_items").update({ vendor_product_id: linkedId }).eq("id", line.id);
+            if (!line.vendor_id) continue;
+            const linked = findApprovedVendorProduct(
+              refreshedRows,
+              vendorSlugById,
+              line.vendor_id,
+              line.raw_vendor_item_code,
+              line.raw_description || "",
+            );
+            if (linked) {
+              await admin.from("invoice_line_items").update({
+                vendor_product_id: linked.id,
+                product_id: linked.product_id,
+                mapping_source: "vendor_code",
+                review_status: "system_matched",
+                identification_status: "matched",
+              }).eq("id", line.id);
+            }
           }
         }
       } catch (catErr) {
