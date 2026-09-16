@@ -36,7 +36,7 @@ Source of truth: `output/pdf/my-contract-doctors-product-revenue-blueprint.pdf`,
 | Saved invoice views | Ready in code | Free users do not see paid savings totals or paid findings in the dashboard list or home summary. |
 | Checkout continuity | Preview-ready | Invoice and quantity context survive into checkout and back to the invoice. Preview completion does not charge, unlock access, or consume a discount code. |
 | One-time paid entitlement | Not launch-ready | A verified payment webhook and invoice-specific access grant do not exist yet. |
-| Pro billing activation | Not launch-ready | Stripe products, checkout sessions, webhook verification, subscription synchronization, and recovery handling are not connected. |
+| Pro billing activation | Staging only | Provider-neutral no-charge subscription previews and billing records are implemented locally. A payment provider, verified events, and failed-payment recovery are not connected. |
 | Supported paid findings | Preview-ready | Confirmed late fees, distinct service fees, unexplained charges, and a largest recurring charge are produced by stable rules. Broader benchmarks and contract-backed savings still require more evidence. |
 | Regional benchmarks | Correctly withheld | Averages remain unavailable until the stated minimum sample and geography requirements are met. |
 | Floor-mat fulfillment | Preview-only | The $75 unit price, inventory, shipping, tax, and supplier fulfillment are not live. |
@@ -52,7 +52,7 @@ Source of truth: `output/pdf/my-contract-doctors-product-revenue-blueprint.pdf`,
 
 ## Remaining launch sequence
 
-1. Connect Stripe products and server-created checkout sessions.
+1. Select a payment provider and connect server-created checkout sessions.
 2. Add verified webhook handling for completed, renewed, canceled, refunded, and failed payments.
 3. Persist invoice-specific one-time entitlements and enforce them on the server when reading paid findings.
 4. Connect the authorized email-marketing provider and sync only records with `marketing_consent = true`; use finding metadata for segmentation.

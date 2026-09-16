@@ -37,8 +37,8 @@ Source of truth: `output/pdf/my-contract-doctors-product-revenue-blueprint.pdf`,
 | Zero-finding Pro pitch | Ready in code | The page remains accurate while pitching Pro for more agreements and invoice monitoring. |
 | Saved agreement views | Ready in code | New analyses appear in the account agreement list and open their real saved result rather than mock data. |
 | Checkout continuity | Preview-ready | The agreement ID survives one-time and Pro checkout previews and returns to the same result. Preview completion does not charge or unlock access. |
-| One-time paid entitlement | Not launch-ready | Stripe checkout, a verified webhook, and creation/revocation of the agreement-specific entitlement still need to be connected. |
-| Pro billing activation | Not launch-ready | Subscription activation, renewal, cancellation, refund, failure handling, and allowance purchase behavior still need verified Stripe events. |
+| One-time paid entitlement | Not launch-ready | Provider-neutral entitlement storage exists, but verified payment fulfillment and agreement-specific access still need to be connected. |
+| Pro billing activation | Staging only | No-charge subscription lifecycle previews are implemented locally. Real activation, renewal, cancellation, refunds, and failed-payment recovery need verified provider events. |
 | Marketing provider delivery | Not connected | The consented, segmented lead record is stored; no external email service receives or sends it yet. |
 | Longitudinal overcharge detection | Foundation ready | Agreement-to-invoice links and monitoring instructions exist. A scheduled comparison engine and human-confirmed vendor matching are still needed before claiming automated overcharge detection. |
 | Replacement history | Foundation only | The result asks the right replacement questions when agreement or invoice evidence supports them. A dated asset/replacement event log is not yet implemented. |
@@ -54,8 +54,8 @@ Source of truth: `output/pdf/my-contract-doctors-product-revenue-blueprint.pdf`,
 
 ## Remaining launch sequence
 
-1. Connect Stripe products and server-created checkout sessions.
-2. Verify payment webhooks and grant an `agreement_entitlements` row for the purchased result; synchronize Pro subscription state.
+1. Select a payment provider and connect server-created checkout sessions.
+2. Verify provider events and grant agreement-specific access for the purchased result; synchronize Pro subscription state.
 3. Connect the authorized email-marketing provider and sync only consented leads with their finding and linked-invoice segments.
 4. Add a customer confirmation step when vendor-name matching is ambiguous, then compare each new invoice with the applicable agreement clauses and prior invoices.
 5. Add renewal alert delivery and a dated replacement/service event record for questions such as when a floor mat was actually replaced.
