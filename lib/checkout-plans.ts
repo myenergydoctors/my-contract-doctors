@@ -1,4 +1,4 @@
-// Checkout plan catalog. Mocked. Replace with Stripe Product IDs in Phase 2.
+// Provider-neutral catalog used for no-charge staging checkout estimates.
 
 export type CheckoutPlan = {
   id: string;
@@ -37,13 +37,13 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
     name: "Pro plan — annual",
     price: "$348.00",
     priceCents: 34800,
-    cadence: "billed yearly · pay upfront and save",
-    description: "Everything in Pro, billed once a year instead of monthly. Eligible for one-time discount codes from our chat assistant.",
+    cadence: "annual preview · no charge",
+    description: "Everything in Pro, shown with an annual estimate for staging. No payment is taken.",
     features: [
       "Everything in Pro monthly",
-      "Pay $348 once instead of 12 × $29",
-      "Best price for the year",
-      "Eligible for chat assistant discount codes",
+      "Annual listed price: $348 (same as 12 × $29)",
+      "One annual staging period",
+      "No charge or paid access in staging",
     ],
     postPurchaseRedirect: "/dashboard",
     checkoutMode: "preview",

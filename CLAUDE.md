@@ -15,7 +15,7 @@ An AI-powered SaaS platform helping businesses identify overpayments and optimiz
 - **Styling:** Tailwind CSS v4 + inline styles (partial — see Current State below)
 - **AI:** Anthropic Claude API (server-side secured routes)
 - **Email:** SendGrid (`@sendgrid/mail`)
-- **Payments:** Stripe (not yet implemented — mocked UI only)
+- **Payments:** Provider-neutral no-charge staging checkout; no payment provider selected
 - **Hosting:** Vercel
 - **Domain registrar:** GoDaddy
 - **Version control:** GitHub (`myenergydoctors/my-contract-doctors`)
@@ -80,11 +80,9 @@ lib/
 - Upgrade modal: one-time $29.99 or subscription $19.99/mo (MOCKED — Stripe not wired)
 
 ### The Demystifier (`/demystifier`)
-- $49.99 one-time purchase (MOCKED — Stripe not wired)
+- $49.99 listed price in a no-charge checkout preview; no paid access yet
 - Pre-purchase: marketing/education page
-- Post-purchase: 3-column split-screen app
-- Uses real ImageFirst/Berstein-Magoon-Gay LLC contract (Ragged Coast Chocolates)
-- 8 clauses from actual contract mapped with explanations, risk ratings, negotiation emails
+- The fake card form and browser-only unlock have been removed. Full access needs a server-authoritative entitlement flow.
 
 ### The Agreement (`/agreement`)
 - Personalized AI contract analysis (price TBD — currently shows $XX placeholder)
@@ -149,12 +147,12 @@ The form submits but returns a server error. Likely cause: `SENDGRID_API_KEY` mi
 
 **Note:** Some inline styles must stay — dynamic values like `width: ${progress}%`, SVG attributes, and styles computed from JavaScript variables at runtime.
 
-### 3. Stripe Payments
+### 3. Payment Provider Integration
 - Demystifier: $49.99 one-time
 - Agreement: price TBD (currently shows $XX placeholder)
 - Invoice upgrade: $29.99 one-time or $19.99/mo subscription
-- All payment modals exist in the UI but are mocked (they simulate success after 2 seconds)
-- Need: Stripe account, product/price IDs, webhook to unlock access after payment
+- Checkout is a no-charge staging preview. It saves billing records without granting access.
+- Need: select a provider, verify its events, and connect paid entitlements after payment.
 
 ### 4. Agreement Pricing
 Currently shows `$XX` placeholder throughout the Agreement page. Decide on price and do a find/replace.
