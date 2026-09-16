@@ -1,6 +1,6 @@
 "use client";
 import { createClient } from "@/lib/supabase/client";
-import type { ProfileRow, Plan } from "@/lib/supabase/database.types";
+import type { ProfileRow } from "@/lib/supabase/database.types";
 
 export async function getProfile(): Promise<ProfileRow | null> {
   const supabase = createClient();
@@ -19,10 +19,13 @@ export async function updateProfile(updates: Partial<Pick<ProfileRow, "first_nam
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: "Not signed in." };
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("profiles")
     .update(updates)
-    .eq("id", user.id);
+    .eq("id", user.id)
+    .select("id")
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+  if (!data) return { ok: false, error: "Your profile could not be found." };
   return { ok: true };
 }

@@ -1,105 +1,150 @@
-import { mockUser } from "@/lib/mock-data";
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getProfile, updateProfile } from "@/lib/db/profiles";
+import { createClient } from "@/lib/supabase/client";
+import { SITE } from "@/lib/site";
+
+type ProfileForm = { firstName: string; lastName: string; businessName: string; industry: string };
+const emptyProfile: ProfileForm = { firstName: "", lastName: "", businessName: "", industry: "" };
 
 export default function SettingsPage() {
-  return (
-    <div className="max-w-3xl flex flex-col gap-6">
+  const [profile, setProfile] = useState<ProfileForm>(emptyProfile);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [profileMessage, setProfileMessage] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [requestingDeactivation, setRequestingDeactivation] = useState(false);
+  const [deactivationMessage, setDeactivationMessage] = useState("");
 
-      {/* Profile */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-1">Profile</div>
-        <h3 className="font-serif text-navy text-xl mb-5">Your information</h3>
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      const supabase = createClient();
+      const [{ data: { user } }, row] = await Promise.all([supabase.auth.getUser(), getProfile()]);
+      if (!mounted) return;
+      setEmail(user?.email ?? "");
+      if (row) setProfile({ firstName: row.first_name ?? "", lastName: row.last_name ?? "", businessName: row.business_name ?? "", industry: row.industry ?? "" });
+      else setProfileMessage("Your profile is unavailable. Please reload and try again.");
+      setLoading(false);
+    };
+    void load();
+    return () => { mounted = false; };
+  }, []);
 
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-full bg-blue-pale text-blue font-sans text-xl font-semibold flex items-center justify-center">
-            {mockUser.avatarInitials}
-          </div>
-          <div>
-            <button className="font-sans text-sm font-medium bg-off-white border border-gray-300 text-navy px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
-              Change photo
-            </button>
-            <div className="font-sans text-xs text-gray-500 mt-1.5">JPG or PNG, max 2MB</div>
-          </div>
-        </div>
+  const saveProfile = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setProfileMessage("");
+    const firstName = profile.firstName.trim();
+    const lastName = profile.lastName.trim();
+    const businessName = profile.businessName.trim();
+    const industry = profile.industry.trim();
+    if (!firstName || !lastName || !businessName || [firstName, lastName, businessName, industry].some(value => value.length > 100)) {
+      setProfileMessage("Enter your name and business name (100 characters or fewer each).");
+      return;
+    }
+    setSaving(true);
+    const result = await updateProfile({ first_name: firstName, last_name: lastName, business_name: businessName, industry: industry || null });
+    setSaving(false);
+    if (!result.ok) { setProfileMessage(result.error || "Could not save your profile."); return; }
+    setProfile({ firstName, lastName, businessName, industry });
+    setProfileMessage("Profile saved.");
+    window.dispatchEvent(new Event("mcd:profile-updated"));
+  };
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Full name" defaultValue={mockUser.name} />
-          <Field label="Email" defaultValue={mockUser.email} type="email" />
-          <Field label="Business name" defaultValue={mockUser.businessName} />
-          <Field label="Phone" defaultValue="" placeholder="(555) 000-0000" type="tel" />
-        </div>
-        <div className="mt-5 flex justify-end">
-          <button className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer">
-            Save changes
-          </button>
-        </div>
-      </section>
+  const changePassword = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setPasswordMessage("");
+    if (!email || !currentPassword) { setPasswordMessage("Enter your current password first."); return; }
+    if (newPassword.length < 8 || newPassword !== confirmPassword) { setPasswordMessage("Use a new password of at least 8 characters and confirm it exactly."); return; }
+    setChangingPassword(true);
+    try {
+      const response = await fetch("/api/account/change-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ currentPassword, newPassword }) });
+      const result = await response.json() as { error?: string };
+      if (!response.ok) { setPasswordMessage(result.error || "Could not update your password."); return; }
+    } catch { setPasswordMessage("Could not update your password. Please try again."); return; }
+    finally { setChangingPassword(false); }
+    const { error: sessionError } = await createClient().auth.signOut({ scope: "others" });
+    setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+    setPasswordMessage(sessionError
+      ? "Password updated. We could not sign out other sessions; please review your account security."
+      : "Password updated. Other signed-in sessions have been signed out.");
+  };
 
-      {/* Password */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-1">Security</div>
-        <h3 className="font-serif text-navy text-xl mb-5">Password</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Current password" type="password" />
-          <div />
-          <Field label="New password" type="password" />
-          <Field label="Confirm new password" type="password" />
-        </div>
-        <div className="mt-5 flex justify-end">
-          <button className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer">
-            Update password
-          </button>
-        </div>
-      </section>
+  const requestDeactivation = async () => {
+    setDeactivationMessage("");
+    setRequestingDeactivation(true);
+    try {
+      const response = await fetch("/api/account/deactivation-request", { method: "POST", headers: { "Content-Type": "application/json" } });
+      const result = await response.json() as { error?: string };
+      setDeactivationMessage(response.ok ? `Confirmation email sent to ${email}. Your account remains active until you confirm it.` : result.error || "Could not send the confirmation email.");
+    } catch { setDeactivationMessage("Could not send the confirmation email. Please try again."); }
+    finally { setRequestingDeactivation(false); }
+  };
 
-      {/* Notifications */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-1">Notifications</div>
-        <h3 className="font-serif text-navy text-xl mb-5">Email alerts</h3>
-        <div className="flex flex-col gap-4">
-          {[
-            { label: "New invoice analysis ready", sub: "When an upload finishes processing", on: true },
-            { label: "Auto-renewal window opening", sub: "90 days before your contract auto-renews", on: true },
-            { label: "Weekly Industry Insights digest", sub: "Pro plan only", on: true },
-            { label: "Product updates and new features", sub: "Occasional, no marketing fluff", on: false },
-          ].map(n => (
-            <label key={n.label} className="flex justify-between items-start gap-4 cursor-pointer">
-              <div>
-                <div className="font-sans text-sm text-navy">{n.label}</div>
-                <div className="font-sans text-xs text-gray-500 mt-0.5">{n.sub}</div>
-              </div>
-              <div className={`w-11 h-6 rounded-full relative flex-shrink-0 transition-colors ${n.on ? "bg-teal" : "bg-gray-300"}`}>
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${n.on ? "translate-x-[22px]" : "translate-x-0.5"}`} />
-              </div>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* Danger */}
-      <section className="bg-white border-2 border-red/30 rounded-2xl p-6">
-        <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-red mb-1">Danger zone</div>
-        <h3 className="font-serif text-navy text-xl mb-3">Delete account</h3>
-        <p className="font-sans font-light text-gray-500 text-sm leading-relaxed mb-5">
-          Permanently delete your account and all uploaded contracts, invoices, and analyses. This cannot be undone.
-        </p>
-        <button className="font-sans text-sm font-medium bg-red text-white px-5 py-2.5 rounded-lg hover:opacity-90 transition-opacity cursor-pointer">
-          Delete my account
-        </button>
-      </section>
-    </div>
+  const field = (label: string, value: string, key: keyof ProfileForm, required = false) => (
+    <label className="block font-sans text-xs font-semibold text-gray-700">{label}
+      <input value={value} maxLength={100} required={required} onChange={event => setProfile(current => ({ ...current, [key]: event.target.value }))}
+        className="mt-1.5 w-full font-sans text-sm font-normal text-navy bg-white rounded-lg px-3.5 py-2.5 border border-gray-300 outline-none focus:border-blue" />
+    </label>
   );
+
+  return <div className="max-w-3xl flex flex-col gap-6">
+    <section className="bg-white border border-gray-200 rounded-2xl p-6">
+      <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-1">Profile</div>
+      <h2 className="font-serif text-navy text-xl mb-5">Your information</h2>
+      {loading ? <p className="font-sans text-sm text-gray-500">Loading your profile…</p> : <form onSubmit={saveProfile} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {field("First name", profile.firstName, "firstName", true)}
+          {field("Last name", profile.lastName, "lastName", true)}
+          {field("Business name", profile.businessName, "businessName", true)}
+          {field("Industry (optional)", profile.industry, "industry")}
+        </div>
+        <label className="block font-sans text-xs font-semibold text-gray-700">Sign-in email
+          <input type="email" value={email} readOnly className="mt-1.5 w-full font-sans text-sm font-normal text-gray-600 bg-gray-50 rounded-lg px-3.5 py-2.5 border border-gray-200" />
+        </label>
+        <p className="font-sans text-xs text-gray-500">Email changes are not available here yet. Contact <a href={`mailto:${SITE.email}`} className="text-blue">{SITE.email}</a> if your sign-in email needs to change.</p>
+        <div className="flex items-center justify-between gap-4"><p role="status" className="font-sans text-sm text-gray-600">{profileMessage}</p>
+          <button disabled={saving} className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg disabled:opacity-60 cursor-pointer">{saving ? "Saving…" : "Save changes"}</button></div>
+      </form>}
+    </section>
+
+    <section className="bg-white border border-gray-200 rounded-2xl p-6">
+      <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-1">Security</div>
+      <h2 className="font-serif text-navy text-xl mb-3">Password</h2>
+      <p className="font-sans text-sm text-gray-600 mb-5">Enter your current password to change it. If you use email links or cannot remember it, <Link href="/forgot-password" className="text-blue">send yourself a password reset link</Link>.</p>
+      <form onSubmit={changePassword} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <PasswordField label="Current password" value={currentPassword} onChange={setCurrentPassword} autoComplete="current-password" />
+          <div />
+          <PasswordField label="New password" value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
+          <PasswordField label="Confirm new password" value={confirmPassword} onChange={setConfirmPassword} autoComplete="new-password" />
+        </div>
+        <div className="flex items-center justify-between gap-4"><p role="status" className="font-sans text-sm text-gray-600">{passwordMessage}</p>
+          <button disabled={changingPassword} className="font-sans text-sm font-medium bg-navy text-white px-5 py-2.5 rounded-lg disabled:opacity-60 cursor-pointer">{changingPassword ? "Updating…" : "Update password"}</button></div>
+      </form>
+    </section>
+
+    <section className="bg-white border-2 border-red/30 rounded-2xl p-6">
+      <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-red mb-1">Account access</div>
+      <h2 className="font-serif text-navy text-xl mb-3">Deactivate account</h2>
+      <p className="font-sans text-sm text-gray-600 leading-relaxed mb-4">We will email you a confirmation link. After you confirm, access to your dashboard and new file requests is blocked. Your uploaded contracts, invoices, analyses, and billing previews remain stored while a retention policy is finalized. No files are deleted by deactivation. File links you opened earlier may work for up to 10 minutes.</p>
+      <p className="font-sans text-xs text-gray-500 mb-5">To ask about reactivation or your stored data, contact <a href={`mailto:${SITE.email}`} className="text-blue">{SITE.email}</a>.</p>
+      <div className="flex items-center justify-between gap-4"><p role="status" className="font-sans text-sm text-gray-600">{deactivationMessage}</p>
+        <button type="button" onClick={requestDeactivation} disabled={requestingDeactivation || !email} className="font-sans text-sm font-medium bg-red text-white px-5 py-2.5 rounded-lg disabled:opacity-60 cursor-pointer">{requestingDeactivation ? "Sending…" : "Email deactivation link"}</button></div>
+    </section>
+  </div>;
 }
 
-function Field({ label, defaultValue, placeholder, type = "text" }: { label: string; defaultValue?: string; placeholder?: string; type?: string }) {
-  return (
-    <div>
-      <label className="block font-sans text-xs font-semibold text-gray-700 mb-1.5">{label}</label>
-      <input
-        type={type}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
-        className="w-full font-sans text-sm text-navy bg-white rounded-lg px-3.5 py-2.5 border-[1.5px] border-gray-300 outline-none focus:border-blue transition-colors placeholder:text-gray-400"
-      />
-    </div>
-  );
+function PasswordField({ label, value, onChange, autoComplete }: { label: string; value: string; onChange: (value: string) => void; autoComplete: string }) {
+  return <label className="block font-sans text-xs font-semibold text-gray-700">{label}
+    <input type="password" value={value} required autoComplete={autoComplete} onChange={event => onChange(event.target.value)}
+      className="mt-1.5 w-full font-sans text-sm font-normal text-navy bg-white rounded-lg px-3.5 py-2.5 border border-gray-300 outline-none focus:border-blue" />
+  </label>;
 }

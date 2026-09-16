@@ -71,7 +71,19 @@ Avoid inventing discounts, pause support, refund rights, or retention offers tha
 
 ## Priority 2 — Legal and account lifecycle
 
-Status: Important customer-trust and launch work.
+Status: Account-lifecycle implementation is in `codex/account-lifecycle` for review; it has not been deployed. Legal copy remains pending the owner's templates and counsel review.
+
+Account decision (September 16, 2026): A confirmed account request **deactivates access and retains uploaded contracts, invoices, analyses, files, and billing preview records** while a retention policy is set. This is not permanent deletion. The confirmation screen and settings must say this plainly. Reactivation and data requests go through the support address until an approved policy and process exist.
+
+The branch wires real profile editing, password recovery and signed-in password change, email-confirmed deactivation, account-access guards, and an audit trail. The database migration must be applied before this app version is released. Do not release either until the complete account flow is verified and approved.
+
+Release check: Supabase Authentication URL Configuration currently allows `https://mycontractdoctors.com/**` and `http://localhost:3002/**`. Add the exact review deployment origin before testing its emailed reset/deactivation links; avoid a broad preview-domain wildcard. The account migration has passed a transaction that ended in `ROLLBACK` on the approved project, and a follow-up check confirmed its tables, profile column, and policy changes were absent afterward. No account migration has been applied to production.
+
+After the migration is approved and applied, run the opt-in deactivation test with `ACCOUNT_E2E=true`, `ACCOUNT_E2E_PROJECT_REF=xrchncayomnwcnphrwhx`, and the matching Supabase credentials. It creates and removes only its own disposable account, checking expired/replayed confirmation, retained profile data, blocked customer reads/writes, and organization access. Browser-test the emailed reset and deactivation links against an allowlisted origin before release.
+
+Operations: Account deactivation records `deactivated_at` and attempts a long-term Supabase Auth ban. The access rules block customer data even if the Auth ban call fails; such failures are logged as `auth_ban_failed` for a manual ban retry. Previously issued invoice file links can remain usable for up to 10 minutes. Reactivation requires an explicit support decision and clearing both the Auth ban and `deactivated_at`; there is no self-service reactivation yet.
+
+Auth configuration check: The approved project's Email provider currently has **Secure password change** and **Require current password when updating** disabled. The new Settings route verifies the current password itself, but direct Supabase Auth calls can bypass that app route. Evaluate provider-level enforcement before launch and verify that the recovery-link flow still works with the chosen setting; this branch does not change production Auth configuration.
 
 - Create real Terms & Conditions and Privacy Policy routes; replace every `#` link in sign-up, checkout, footer, and cookie notices.
 - Document data collected, AI processing, document retention, subprocessors, marketing consent, cookies, deletion, refunds, and contact information. Treat legal copy as requiring counsel review before launch.
@@ -80,7 +92,7 @@ Status: Important customer-trust and launch work.
 - Implement avatar upload/removal with type and size validation.
 - Implement Forgot Password, reset-password completion, and signed-in password change.
 - Persist notification and marketing preferences.
-- Implement account deletion with reauthentication, clear consequences, deletion/export rules, storage cleanup, and subscription handling.
+- Define an approved retention/deletion/export policy and subscription consequences before implementing permanent deletion. Until then, retain records on deactivation and block account access.
 - Add success/error states and an audit trail for sensitive account changes.
 
 ### New-session prompt: legal and account lifecycle

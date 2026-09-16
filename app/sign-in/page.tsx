@@ -99,7 +99,7 @@ function SignInForm() {
             <div>
               <div className="flex justify-between items-baseline mb-1.5">
                 <label className="font-sans text-xs font-semibold text-gray-700">Password</label>
-                <Link href="#" className="font-sans text-xs text-blue hover:text-navy no-underline">Forgot?</Link>
+                <Link href="/forgot-password" className="font-sans text-xs text-blue hover:text-navy no-underline">Forgot?</Link>
               </div>
               <input
                 type="password"

@@ -2,9 +2,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { mockUser } from "@/lib/mock-data";
-import { getDemoMode, setDemoMode, planForMode, demoModes, type DemoMode } from "@/lib/demo-mode";
-import { useEffectivePlan, useEffectiveData } from "@/lib/use-effective-plan";
+import { getDemoMode, setDemoMode, demoModes, type DemoMode } from "@/lib/demo-mode";
+import { useEffectiveData } from "@/lib/use-effective-plan";
 import { createClient } from "@/lib/supabase/client";
 import { getProfile } from "@/lib/db/profiles";
 import Logo from "@/components/Logo";
@@ -57,13 +56,13 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   }, []);
 
   useEffect(() => {
-    // Load real Supabase user metadata if signed in
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    const loadUser = async () => {
+      const [{ data: { user } }, profile] = await Promise.all([supabase.auth.getUser(), getProfile()]);
       if (user) {
         const meta = user.user_metadata || {};
-        const first = (meta.first_name || "").trim();
-        const last = (meta.last_name || "").trim();
-        const business = (meta.business_name || "").trim();
+        const first = (profile?.first_name || meta.first_name || "").trim();
+        const last = (profile?.last_name || meta.last_name || "").trim();
+        const business = (profile?.business_name || meta.business_name || "").trim();
         const initials = ((first[0] || "") + (last[0] || "")).toUpperCase() || (user.email?.[0]?.toUpperCase() ?? "?");
         setRealUser({
           email: user.email ?? null,
@@ -73,7 +72,10 @@ export default function PortalShell({ children }: { children: React.ReactNode })
           initials: initials || "?",
         });
       }
-    });
+    };
+    void loadUser();
+    window.addEventListener("mcd:profile-updated", loadUser);
+    return () => window.removeEventListener("mcd:profile-updated", loadUser);
   }, [supabase]);
 
   const switchMode = (next: DemoMode) => {
@@ -169,13 +171,13 @@ export default function PortalShell({ children }: { children: React.ReactNode })
                 className="flex items-center gap-2.5 bg-transparent border-none cursor-pointer"
               >
                 <div className="w-9 h-9 rounded-full bg-blue-pale text-blue font-sans text-sm font-semibold flex items-center justify-center">
-                  {realUser?.initials || mockUser.avatarInitials}
+                  {realUser?.initials || "?"}
                 </div>
                 <div className="hidden md:block text-left">
                   <div className="font-sans text-sm font-medium text-navy leading-tight">
-                    {realUser ? `${realUser.firstName} ${realUser.lastName}`.trim() : mockUser.name}
+                    {realUser ? `${realUser.firstName} ${realUser.lastName}`.trim() : "Account"}
                   </div>
-                  <div className="font-sans text-xs text-gray-500 leading-tight">{realUser?.business || mockUser.businessName}</div>
+                  <div className="font-sans text-xs text-gray-500 leading-tight">{realUser?.business || ""}</div>
                 </div>
               </button>
               {userMenuOpen && (
@@ -184,9 +186,9 @@ export default function PortalShell({ children }: { children: React.ReactNode })
                   <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-20 overflow-hidden">
                     <div className="px-4 py-3 border-b border-gray-100">
                       <div className="font-sans text-sm font-medium text-navy">
-                        {realUser ? `${realUser.firstName} ${realUser.lastName}`.trim() : mockUser.name}
+                        {realUser ? `${realUser.firstName} ${realUser.lastName}`.trim() : "Account"}
                       </div>
-                      <div className="font-sans text-xs text-gray-500 truncate">{realUser?.email || mockUser.email}</div>
+                      <div className="font-sans text-xs text-gray-500 truncate">{realUser?.email || ""}</div>
                     </div>
                     <Link href="/dashboard/settings" className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline" onClick={() => setUserMenuOpen(false)}>Account settings</Link>
                     <Link href="/dashboard/billing"  className="block px-4 py-2.5 font-sans text-sm text-gray-700 hover:bg-off-white no-underline" onClick={() => setUserMenuOpen(false)}>Billing</Link>
