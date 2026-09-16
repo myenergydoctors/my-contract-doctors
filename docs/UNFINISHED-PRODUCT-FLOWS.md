@@ -71,7 +71,23 @@ Avoid inventing discounts, pause support, refund rights, or retention offers tha
 
 ## Priority 2 — Legal and account lifecycle
 
-Status: Important customer-trust and launch work.
+Status: Account-lifecycle implementation is in `codex/account-lifecycle` for review, with a Ready Vercel review deployment and draft PR #9. Its migration was applied to the approved Supabase project on September 16, 2026; production is still on the prior release. Legal copy remains pending the owner's templates and counsel review.
+
+Account decision (September 16, 2026): A confirmed account request **deactivates access and retains uploaded contracts, invoices, analyses, files, and billing preview records** while a retention policy is set. This is not permanent deletion. The confirmation screen and settings must say this plainly. Reactivation and data requests go through the support address until an approved policy and process exist.
+
+The branch wires real profile editing, password recovery and signed-in password change, email-confirmed deactivation, account-access guards, and an audit trail. Do not release the app until the complete account flow is verified.
+
+Release check: Supabase Authentication URL Configuration currently allows `https://mycontractdoctors.com/**` and `http://localhost:3002/**`. Add the exact review deployment origin before testing its emailed password-reset link; avoid a broad preview-domain wildcard. Deactivation now uses a direct expiring confirmation link through the site's existing SendGrid service, so that link does not require a Supabase Auth redirect. The account migration first passed a rollback-only transaction; after approval it was applied to project `xrchncayomnwcnphrwhx` and recorded as migration `20260916200000`. A post-check confirmed both tables, the profile column, and 22 guarded customer-data policies.
+
+The opt-in deactivation test passed against the approved project with `ACCOUNT_E2E=true`, `ACCOUNT_E2E_PROJECT_REF=xrchncayomnwcnphrwhx`, and matching Supabase credentials. It created and removed only its own disposable account, checking expired/replayed confirmation, retained profile data, blocked customer reads/writes, and organization access. Browser-test the actual emailed reset and deactivation links before release.
+
+Review-deployment browser check: a disposable account signed in against project `xrchncayomnwcnphrwhx`, saved profile edits that survived a reload, requested a deactivation email, and confirmed deactivation using a short-lived test challenge. Dashboard access then redirected to sign-in; another sign-in was rejected as banned. The profile and audit entries remained in Supabase. Testing exposed that the server-issued Supabase magic link used an implicit redirect unsupported by this app's PKCE callback; the branch now sends its own direct confirmation link through SendGrid. This corrected email delivery and the actual password-reset email link still need a walkthrough.
+
+On the corrected Ready preview (`https://my-contract-doctors-o2zbjyquz-osc-web-design.vercel.app/`, commit `7b5a0e7`), a second disposable account signed in and the SendGrid deactivation request returned success. Its `example.invalid` address cannot confirm receipt. The Forgot Password form also accepted a recovery request against the approved project, but the actual emailed PKCE link could not be opened without a controlled inbox. Both disposable accounts were removed after testing. Keep PR #9 in draft until both email links are checked, then remove any temporary preview redirect allowlist entry.
+
+Operations: Account deactivation records `deactivated_at` and attempts a long-term Supabase Auth ban. The access rules block customer data even if the Auth ban call fails; such failures are logged as `auth_ban_failed` for a manual ban retry. Previously issued invoice file links can remain usable for up to 10 minutes. Reactivation requires an explicit support decision and clearing both the Auth ban and `deactivated_at`; there is no self-service reactivation yet.
+
+Auth configuration check: The approved project's Email provider currently has **Secure password change** and **Require current password when updating** disabled. The new Settings route verifies the current password itself, but direct Supabase Auth calls can bypass that app route. Evaluate provider-level enforcement before launch and verify that the recovery-link flow still works with the chosen setting; this branch does not change production Auth configuration.
 
 - Create real Terms & Conditions and Privacy Policy routes; replace every `#` link in sign-up, checkout, footer, and cookie notices.
 - Document data collected, AI processing, document retention, subprocessors, marketing consent, cookies, deletion, refunds, and contact information. Treat legal copy as requiring counsel review before launch.
@@ -80,7 +96,7 @@ Status: Important customer-trust and launch work.
 - Implement avatar upload/removal with type and size validation.
 - Implement Forgot Password, reset-password completion, and signed-in password change.
 - Persist notification and marketing preferences.
-- Implement account deletion with reauthentication, clear consequences, deletion/export rules, storage cleanup, and subscription handling.
+- Define an approved retention/deletion/export policy and subscription consequences before implementing permanent deletion. Until then, retain records on deactivation and block account access.
 - Add success/error states and an audit trail for sensitive account changes.
 
 ### New-session prompt: legal and account lifecycle
