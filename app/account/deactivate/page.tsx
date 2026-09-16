@@ -31,7 +31,8 @@ export default async function DeactivatePage({ searchParams }: { searchParams: P
         <p className="font-sans text-sm text-gray-600 leading-relaxed mb-4">Confirming blocks access to your dashboard and new file requests. Your uploaded contracts, invoices, analyses, and billing preview records remain stored. No files are deleted. File links you opened earlier may work for up to 10 minutes.</p>
         <p className="font-sans text-sm text-gray-600 leading-relaxed mb-6">To ask about reactivation or your stored data, contact <a href={`mailto:${SITE.email}`} className="text-blue">{SITE.email}</a>.</p>
         <DeactivationConfirm token={token} />
-      </> : lookupFailed ? <p className="font-sans text-sm text-gray-600">We could not check this link right now. Please reload and try again.</p>
+      </> : !user && token && /^[a-f0-9]{64}$/.test(token) ? <p className="font-sans text-sm text-gray-600">Sign in to the account that requested deactivation, then review this confirmation. <Link href={`/sign-in?redirect=${encodeURIComponent(`/account/deactivate?token=${token}`)}`} className="text-blue">Sign in to continue</Link>.</p>
+        : lookupFailed ? <p className="font-sans text-sm text-gray-600">We could not check this link right now. Please reload and try again.</p>
         : <p className="font-sans text-sm text-gray-600">This confirmation link is invalid, expired, or already used. <Link href="/dashboard/settings" className="text-blue">Return to Settings</Link> to request another.</p>}
     </div>
   </div>;

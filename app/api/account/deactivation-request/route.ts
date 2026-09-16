@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { createClient as createAnonClient } from "@supabase/supabase-js";
+import sgMail from "@sendgrid/mail";
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
   const { data: profile, error: profileError } = await admin.from("profiles").select("deactivated_at").eq("id", user.id).maybeSingle();
   if (profileError || !profile || profile.deactivated_at) return NextResponse.json({ error: "Account deactivation is unavailable." }, { status: 409, headers });
+  const mailKey = process.env.SENDGRID_API_KEY;
+  if (!mailKey) return NextResponse.json({ error: "Confirmation email is temporarily unavailable." }, { status: 503, headers });
 
   const token = randomBytes(32).toString("hex");
   const tokenHash = createHash("sha256").update(token).digest("hex");
@@ -31,13 +33,17 @@ export async function POST(request: NextRequest) {
   const { error: auditError } = await admin.from("account_lifecycle_events").insert({ user_id: user.id, event_type: "deactivation_requested" });
   if (auditError) return NextResponse.json({ error: "Could not prepare deactivation. Please try again." }, { status: 503, headers });
 
-  const callback = new URL("/auth/callback", request.nextUrl.origin);
-  callback.searchParams.set("next", `/account/deactivate?token=${token}`);
-  const mailer = createAnonClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, { auth: { persistSession: false } });
-  const { error: emailError } = await mailer.auth.signInWithOtp({
-    email: user.email, options: { shouldCreateUser: false, emailRedirectTo: callback.toString() },
-  });
-  if (emailError) {
+  const confirmationUrl = new URL("/account/deactivate", request.nextUrl.origin);
+  confirmationUrl.searchParams.set("token", token);
+  try {
+    sgMail.setApiKey(mailKey);
+    await sgMail.send({
+      to: user.email,
+      from: "noreply@mycontractdoctors.com",
+      subject: "Confirm account deactivation — My Contract Doctors",
+      text: `You requested to deactivate your My Contract Doctors account. Open this link within 20 minutes to review and confirm: ${confirmationUrl.toString()}\n\nYou must sign in to the same account to confirm. Your uploaded documents and analyses will be retained while a retention policy is finalized. If you did not request this, you can ignore this email.`,
+    });
+  } catch {
     await admin.from("account_deactivation_challenges").delete().eq("user_id", user.id).eq("token_hash", tokenHash);
     return NextResponse.json({ error: "Could not send the confirmation email. Please try again." }, { status: 503, headers });
   }
