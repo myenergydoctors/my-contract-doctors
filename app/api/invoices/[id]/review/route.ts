@@ -52,10 +52,9 @@ async function profileInvoiceLead(invoiceId: string, userId: string) {
     unit_price_cents,confirmed_unit_rate,raw_line_total_cents,confirmed_line_total_cents,
     billing_frequency,confirmed_billing_frequency,identification_status,annual_cost_cents,
     products ( slug, name, category )
-  `).eq("invoice_id", invoiceId).eq("excluded_from_totals", false);
+  `).eq("invoice_id", invoiceId).eq("review_status", "confirmed");
   if (error || !data) {
-    console.error("Could not load confirmed findings for lead profile:", error);
-    return;
+    throw new InvoiceReviewError("Invoice confirmed, but result details could not be saved. Retry confirmation.", 503, "result_profile_failed");
   }
   const asNumber = (value: unknown): number | null => {
     if (value === null || value === undefined || value === "") return null;
@@ -90,7 +89,7 @@ async function profileInvoiceLead(invoiceId: string, userId: string) {
     result_profiled_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }).eq("invoice_analysis_id", invoiceId).eq("user_id", userId);
-  if (updateError) console.error("Could not profile invoice lead result:", updateError);
+  if (updateError) throw new InvoiceReviewError("Invoice confirmed, but result details could not be saved. Retry confirmation.", 503, "result_profile_failed");
 }
 
 export async function GET(_request: NextRequest, context: ReviewRouteContext) {

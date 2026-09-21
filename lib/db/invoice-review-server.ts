@@ -19,6 +19,7 @@ import {
 const RECONCILIATION_TOLERANCE_CENTS = 100;
 
 type InvoiceRow = {
+  status: string;
   id: string;
   user_id: string;
   organization_id: string | null;
@@ -94,7 +95,7 @@ export class InvoiceReviewError extends Error {
 
 const invoiceColumns = `
   id, user_id, organization_id, document_upload_id, source_classification_revision, vendor, vendor_id, invoice_number, state, zip,
-  review_status, review_version, reviewed_at,
+  status, review_status, review_version, reviewed_at,
   gross_charges_cents, credits_cents, past_balance_cents,
   late_fees_cents, taxes_cents, total_due_cents
 `;
@@ -151,7 +152,7 @@ async function loadAuthorizedInvoice(invoiceId: string, userId: string): Promise
   if (!data) throw new InvoiceReviewError("Invoice not found.", 404, "not_found");
 
   const invoice = data as unknown as InvoiceRow;
-  if (invoice.user_id === userId) return invoice;
+  if (invoice.user_id === userId) return requireCompletedInvoice(invoice);
   if (!invoice.organization_id) throw new InvoiceReviewError("You do not have access to this invoice.", 403, "forbidden");
 
   const { data: membership, error: membershipError } = await admin
@@ -164,6 +165,11 @@ async function loadAuthorizedInvoice(invoiceId: string, userId: string): Promise
 
   if (membershipError) throw new InvoiceReviewError(membershipError.message, 503, "review_schema_unavailable");
   if (!membership) throw new InvoiceReviewError("You do not have access to this invoice.", 403, "forbidden");
+  return requireCompletedInvoice(invoice);
+}
+
+function requireCompletedInvoice(invoice: InvoiceRow): InvoiceRow {
+  if (invoice.status !== "completed") throw new InvoiceReviewError("This invoice has not finished saving. Wait for processing or retry the failed upload.", 409, "invoice_not_ready");
   return invoice;
 }
 
