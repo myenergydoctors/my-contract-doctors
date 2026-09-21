@@ -37,6 +37,22 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
 
+  if (path === "/account/deactivate" || path === "/reset-password") {
+    supabaseResponse.headers.set("Cache-Control", "no-store");
+    supabaseResponse.headers.set("Referrer-Policy", "no-referrer");
+  }
+
+  if (user && path !== "/account/deactivated") {
+    const { data: active, error: statusError } = await supabase.rpc("account_is_active");
+    if (statusError) {
+      if (path.startsWith("/api/")) return NextResponse.json({ error: "Account status is unavailable." }, { status: 503 });
+      if (path.startsWith("/dashboard")) return NextResponse.redirect(new URL("/account/status-unavailable", request.url));
+    } else if (active === false) {
+      if (path.startsWith("/api/")) return NextResponse.json({ error: "Account deactivated." }, { status: 403 });
+      return NextResponse.redirect(new URL("/account/deactivated", request.url));
+    }
+  }
+
   // Gate the portal: unauthenticated users hitting /dashboard/* go to /sign-in
   if (path.startsWith("/dashboard") && !user) {
     const url = request.nextUrl.clone();
