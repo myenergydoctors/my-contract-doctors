@@ -18,6 +18,10 @@ const contentSecurityPolicy = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["pdfjs-dist"],
+  outputFileTracingIncludes: {
+    "/api/analyze-agreement": ["./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"],
+  },
   poweredByHeader: false,
   async headers() {
     return [

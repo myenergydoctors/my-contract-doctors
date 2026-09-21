@@ -69,6 +69,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       storage_path: storagePath,
       bucket,
+      reprocess: true,
       vendor_hint: inv.vendor ?? undefined,
       state_hint: inv.state ?? undefined,
     }),

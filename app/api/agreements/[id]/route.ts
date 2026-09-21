@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildAgreementEmailTemplate, selectFreeAgreementFinding, type AgreementFinding } from "@/lib/agreement-recommendations";
+import { buildAgreementEmailTemplate, buildAgreementFindings, agreementRiskScore, selectFreeAgreementFinding, type AgreementFinding } from "@/lib/agreement-recommendations";
 import { isProAgreementPlan } from "@/lib/agreement-access";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
   const { data: lead } = await admin.from("agreement_leads").select("business_name").eq("agreement_analysis_id", id).eq("user_id", user.id).maybeSingle();
   const { data: entitlement } = await admin.from("agreement_entitlements").select("id").eq("user_id", user.id).eq("agreement_analysis_id", id).eq("active", true).maybeSingle();
   const fullAccess = isProAgreementPlan(profile?.plan) || Boolean(entitlement);
-  const findings = Array.isArray(agreement.clauses) ? agreement.clauses as AgreementFinding[] : [];
+  const findings = buildAgreementFindings(Array.isArray(agreement.clauses) ? agreement.clauses as AgreementFinding[] : []);
   const freeFinding = selectFreeAgreementFinding(findings);
   const visibleFindings = agreement.review_status === "confirmed" ? (fullAccess ? findings : freeFinding ? [freeFinding] : []) : [];
   const invoiceContext = await getInvoiceContext(admin, user.id, agreement.organization_id, agreement.vendor, findings);
@@ -30,7 +30,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       effectiveDate: agreement.effective_date, expirationDate: agreement.expiration_date,
       renewalDeadline: agreement.renewal_deadline, renewalNoticeDays: agreement.renewal_notice_days,
       termLength: agreement.term_length, autoRenewal: agreement.auto_renewal,
-      riskScore: agreement.risk_score, pageCount: agreement.page_count,
+      riskScore: agreementRiskScore(findings), pageCount: agreement.page_count,
       documentQuality: agreement.document_quality, documentQualityNotes: agreement.document_quality_notes,
       findingCount: findings.length, lockedFindingCount: fullAccess ? 0 : Math.max(0, findings.length - (freeFinding ? 1 : 0)),
       freeFindingKind: freeFinding?.kind ?? null, fullAccess,
@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
   const { error } = await admin.from("agreement_analyses").update({ review_status: "confirmed", confirmed_at: now, updated_at: now }).eq("id", id).eq("user_id", user.id);
   if (error) return NextResponse.json({ error: "Agreement confirmation could not be saved." }, { status: 503 });
 
-  const findings = Array.isArray(agreement.clauses) ? agreement.clauses as AgreementFinding[] : [];
+  const findings = buildAgreementFindings(Array.isArray(agreement.clauses) ? agreement.clauses as AgreementFinding[] : []);
   const freeFinding = selectFreeAgreementFinding(findings);
   const invoiceContext = await getInvoiceContext(admin, user.id, agreement.organization_id, agreement.vendor, findings);
   if (invoiceContext.matchingInvoiceIds.length > 0) {
@@ -89,7 +89,9 @@ async function getInvoiceContext(admin: AdminClient, userId: string, organizatio
   const monitoringChecks: string[] = [];
   if (kinds.has("price_escalation")) monitoringChecks.push("Track future unit-rate changes against the agreement's increase language and notice requirements.");
   if (kinds.has("fee_rights")) monitoringChecks.push("Compare invoice surcharges and add-ons with the agreement's permitted-fee language.");
-  if (kinds.has("minimum_commitment")) monitoringChecks.push("Check whether invoice minimums are driving charges above actual usage.");
+  if (kinds.has("minimum_commitment")) monitoringChecks.push(findings.some(finding => finding.kind === "minimum_commitment" && finding.assessment === "protection")
+    ? "Check future invoices against the agreement's protections against minimum billing."
+    : "Check whether invoice minimums are driving charges above actual usage.");
   if (kinds.has("replacement_obligation") || floorMatLines > 0) monitoringChecks.push("Track replacement charges and ask when each billed item—such as a floor mat—was last replaced.");
   if (kinds.has("auto_renewal")) monitoringChecks.push("Keep the renewal notice deadline attached to the ongoing vendor record.");
   return { totalSavedInvoices: all.length, sameVendorInvoices: matching.length, matchingInvoiceIds: matching.map(invoice => invoice.id), floorMatLines, monitoringChecks };

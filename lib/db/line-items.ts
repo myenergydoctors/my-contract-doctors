@@ -56,6 +56,7 @@ export async function listLineItemsForInvoice(invoiceId: string): Promise<LineIt
       vendors ( slug, name )
     `)
     .eq("invoice_id", invoiceId)
+    .neq("review_status", "excluded")
     .order("line_type", { ascending: true }) // group charges, credits, etc.
     .order("flagged", { ascending: false })
     .order("annual_cost_cents", { ascending: false, nullsFirst: false });

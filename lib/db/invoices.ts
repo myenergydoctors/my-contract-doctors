@@ -38,6 +38,7 @@ export type InvoiceForUI = {
 
 const c = (n: number | null | undefined) => (n ?? 0) / 100;
 const cn = (n: number | null | undefined): number | null => (n == null ? null : n / 100);
+const invoiceColumns = "id,user_id,uploaded_at,vendor,invoice_number,invoice_date,status,file_path,total_spend_cents,flagged_item_count,period_start,period_end,gross_charges_cents,credits_cents,past_balance_cents,late_fees_cents,taxes_cents,total_due_cents,extracted_total_check_cents,totals_reconciled,parent_upload_id,sibling_count,sibling_index,state";
 
 function toUI(row: InvoiceAnalysisRow): InvoiceForUI {
   return {
@@ -47,11 +48,11 @@ function toUI(row: InvoiceAnalysisRow): InvoiceForUI {
     invoiceNumber: row.invoice_number ?? "—",
     invoiceDate: row.invoice_date ?? null,
     totalSpend: c(row.total_spend_cents),
-    potentialAnnualSavings: c(row.potential_annual_savings_cents),
+    potentialAnnualSavings: 0,
     flaggedItemCount: row.flagged_item_count,
     status: row.status,
-    topFinding: row.top_finding ?? "",
-    lineItems: row.line_items ?? [],
+    topFinding: "",
+    lineItems: [],
     filePath: row.file_path,
 
     periodStart: row.period_start ?? null,
@@ -75,7 +76,7 @@ export async function listInvoices(): Promise<InvoiceForUI[]> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("invoice_analyses")
-    .select("*")
+    .select(invoiceColumns)
     .order("uploaded_at", { ascending: false });
   if (error || !data) return [];
   return (data as InvoiceAnalysisRow[]).map(toUI);
@@ -85,7 +86,7 @@ export async function getInvoice(id: string): Promise<InvoiceForUI | null> {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("invoice_analyses")
-    .select("*")
+    .select(invoiceColumns)
     .eq("id", id)
     .single();
   if (error) {
@@ -102,7 +103,7 @@ export async function listInvoiceSiblings(parentUploadId: string): Promise<Invoi
   const supabase = createClient();
   const { data, error } = await supabase
     .from("invoice_analyses")
-    .select("*")
+    .select(invoiceColumns)
     .eq("parent_upload_id", parentUploadId)
     .order("sibling_index", { ascending: true });
   if (error || !data) return [];
@@ -115,7 +116,7 @@ export async function getInvoiceWithStatus(id: string): Promise<{ invoice: Invoi
   const supabase = createClient();
   const { data, error } = await supabase
     .from("invoice_analyses")
-    .select("*")
+    .select(invoiceColumns)
     .eq("id", id)
     .single();
   if (error) {
@@ -123,5 +124,5 @@ export async function getInvoiceWithStatus(id: string): Promise<{ invoice: Invoi
   }
   if (!data) return { invoice: null, rawStatus: null, topFinding: null, error: "not_found" };
   const row = data as InvoiceAnalysisRow;
-  return { invoice: toUI(row), rawStatus: row.status, topFinding: row.top_finding, error: null };
+  return { invoice: toUI(row), rawStatus: row.status, topFinding: row.status === "failed" ? "Processing failed. Retry the original file." : "", error: null };
 }

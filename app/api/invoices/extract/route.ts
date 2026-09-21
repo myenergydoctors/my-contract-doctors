@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { PDFDocument } from "pdf-lib";
+import { validateInvoicePageCoverage } from "@/lib/invoice-page-coverage";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { listProductsServer } from "@/lib/db/products";
@@ -56,6 +58,7 @@ type ExtractRequestBody = {
   business_hint?: string;
   vendor_hint?: string;
   state_hint?: string;
+  reprocess?: boolean;
 };
 
 type LineType = "charge" | "credit" | "past_balance" | "late_fee" | "discount" | "tax" | "other";
@@ -231,6 +234,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "storage_path is required." }, { status: 400 });
   }
   const bucket = body.bucket || "invoices";
+  if (body.reprocess !== undefined && typeof body.reprocess !== "boolean") return NextResponse.json({ error: "Invalid reprocess option." }, { status: 400 });
   if (bucket !== "invoices") {
     return NextResponse.json({ error: "Invalid storage bucket." }, { status: 400 });
   }
@@ -258,7 +262,7 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id)
       .maybeSingle();
     if (
-      phoneSessionError || !phoneSession || phoneSession.status !== "uploaded" ||
+      phoneSessionError || !phoneSession || !["uploaded", "consumed"].includes(phoneSession.status) ||
       phoneSession.storage_path !== body.storage_path
     ) {
       return NextResponse.json({ error: "This phone upload is unavailable." }, { status: 409 });
@@ -270,13 +274,27 @@ export async function POST(req: NextRequest) {
   const originalFilename = body.storage_path.split("/").pop()?.replace(/^\d+-/, "") || null;
   const { data: existingUpload, error: existingUploadError } = await admin
     .from("document_uploads")
-    .select("id,current_classification_revision,classification_status")
+    .select("id,current_classification_revision,classification_status,updated_at")
     .eq("user_id", user.id)
     .eq("storage_bucket", bucket)
     .eq("storage_path", body.storage_path)
     .maybeSingle();
   if (existingUploadError) {
     return NextResponse.json({ error: "Could not check document intake record." }, { status: 500 });
+  }
+  // A retry after a lost success response reopens the already saved result.
+  // Explicit reprocessing is a separate operation and retains the old result until success.
+  if (existingUpload && body.reprocess !== true && existingUpload.classification_status !== "processing") {
+    const { data: saved, error: savedError } = await admin.from("invoice_analyses")
+      .select("id,sibling_count,sibling_index").eq("document_upload_id", existingUpload.id)
+      .eq("source_classification_revision", existingUpload.current_classification_revision)
+      .eq("status", "completed").order("sibling_index", { ascending: true });
+    if (savedError) return NextResponse.json({ error: "Could not check the saved invoice result." }, { status: 503 });
+    if (saved?.length) {
+      if (saved.length !== saved[0].sibling_count || saved[0].sibling_index !== 0) return NextResponse.json({ error: "The saved invoice group is incomplete. Reprocess it from the saved invoice." }, { status: 409 });
+      return NextResponse.json({ ok: true, reused: true, document_upload_id: existingUpload.id,
+        invoice_id: saved[0].id, invoice_ids: saved.map(invoice => invoice.id), invoice_count: saved.length });
+    }
   }
 
   // Enforce the launch allowances before spending AI tokens. Reprocessing an
@@ -291,7 +309,7 @@ export async function POST(req: NextRequest) {
       .from("invoice_analyses")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id)
-      .is("parent_upload_id", null)
+      .eq("sibling_index", 0)
       .in("status", ["processing", "completed"]);
     if (proPlan) countQuery = countQuery.gte("uploaded_at", startOfMonth.toISOString());
 
@@ -302,7 +320,6 @@ export async function POST(req: NextRequest) {
 
     const allowance = invoiceUploadAllowance(typedProfile?.plan);
     if (invoiceAllowanceReached(typedProfile?.plan, usedCount)) {
-      await admin.storage.from(bucket).remove([body.storage_path]);
       return NextResponse.json({
         error: "invoice_limit_reached",
         message: proPlan
@@ -319,15 +336,17 @@ export async function POST(req: NextRequest) {
   let createdDocumentUpload = false;
   let currentClassificationRevision = existingUpload?.current_classification_revision ?? 0;
   if (existingUpload) {
+    const lastUpdate = new Date(existingUpload.updated_at).getTime();
+    if (existingUpload.classification_status === "processing" && (!Number.isFinite(lastUpdate) || Date.now() - lastUpdate < 15 * 60 * 1000)) return NextResponse.json({ error: "This file is already processing. Please wait before retrying." }, { status: 409 });
     documentUploadId = existingUpload.id;
     previousUploadStatus = existingUpload.classification_status;
-    const { error: reuseError } = await admin.from("document_uploads").update({
+    const { data: claimedUpload, error: reuseError } = await admin.from("document_uploads").update({
       classification_status: "processing",
       classifier_model: MODEL,
       classifier_prompt_version: PROMPT_VERSION,
       classifier_schema_version: EXTRACTION_SCHEMA_VERSION,
-    }).eq("id", documentUploadId);
-    if (reuseError) return NextResponse.json({ error: "Could not prepare document reprocessing." }, { status: 500 });
+    }).eq("id", documentUploadId).eq("classification_status", previousUploadStatus).eq("updated_at", existingUpload.updated_at).select("id").maybeSingle();
+    if (reuseError || !claimedUpload) return NextResponse.json({ error: "Could not prepare document reprocessing. Another attempt may be running." }, { status: 409 });
   } else {
     const { data: uploadRow, error: uploadErr } = await admin
       .from("document_uploads")
@@ -377,6 +396,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Could not create analysis record." }, { status: 500 });
   }
   const primaryInvoiceId: string = invoiceRow.id;
+  const createdInvoiceIds = [primaryInvoiceId];
   if (body.upload_session_id) {
     const { error: consumeSessionError } = await admin.from("invoice_upload_sessions").update({
       status: "consumed",
@@ -405,6 +425,13 @@ export async function POST(req: NextRequest) {
   const jobId: string | undefined = jobRow?.id;
 
   try {
+    if (jobErr || !jobId) throw new Error("Could not create extraction job.");
+    if (existingUpload?.classification_status === "processing") {
+      // A timed-out worker may have left an unpublished revision. The claimed
+      // updated_at lease prevents a second retry from cleaning the same revision.
+      const { error: staleError } = await admin.from("document_segments").delete().eq("upload_id", documentUploadId).gt("classification_revision", currentClassificationRevision);
+      if (staleError) throw new Error("Could not clear the timed-out document attempt.");
+    }
     // 5) Download the file
     const { data: fileBlob, error: dlErr } = await admin.storage.from(bucket).download(body.storage_path);
     if (dlErr || !fileBlob) {
@@ -424,6 +451,7 @@ export async function POST(req: NextRequest) {
       size_bytes: fileBlob.size,
     }).eq("id", documentUploadId);
     const isPdf = mediaType === "application/pdf";
+    const physicalPageCount = isPdf ? (await PDFDocument.load(arrayBuf)).getPageCount() : 1;
 
     // 6) Build the AI prompt with product + vendor taxonomy
     const [products, vendors] = await Promise.all([listProductsServer(), listVendorsServer()]);
@@ -693,6 +721,7 @@ Return strict JSON only.`;
     try {
       parsed = removeSummaryRows(normalizeDocumentClassification(JSON.parse(cleaned)) as AIResponse);
       validateAIResponse(parsed);
+      validateInvoicePageCoverage(parsed, physicalPageCount);
     } catch (validationError: unknown) {
       // Only log structure and parser state. Invoice text and extracted values
       // are intentionally excluded because production logs are not data storage.
@@ -705,20 +734,14 @@ Return strict JSON only.`;
       throw new Error("Could not validate the AI response.");
     }
 
-    const { error: uploadClassificationError } = await admin
-      .from("document_uploads")
-      .update({
-        classification_status: "needs_review",
+    const classificationPayload = {
         detected_type: parsed.document_type,
         detected_type_confidence: parsed.document_type_confidence,
         page_count: parsed.page_count,
         document_quality: parsed.document_quality ?? null,
         document_quality_notes: parsed.document_quality_notes ?? null,
         raw_classification: parsed as unknown as object,
-        current_classification_revision: nextClassificationRevision,
-      })
-      .eq("id", documentUploadId);
-    if (uploadClassificationError) throw new Error("Could not store document classification.");
+      };
 
     const segmentRows = parsed.document_segments.map((segment, segmentIndex) => ({
       upload_id: documentUploadId,
@@ -741,7 +764,7 @@ Return strict JSON only.`;
       .from("document_segments")
       .insert(segmentRows)
       .select("id,segment_index");
-    if (segmentsError || !storedSegments) throw new Error("Could not store document segments.");
+    if (segmentsError || storedSegments?.length !== segmentRows.length) throw new Error("Could not store every document segment.");
     const segmentIdByIndex = new Map<number, string>(
       storedSegments.map(segment => [segment.segment_index, segment.id])
     );
@@ -750,6 +773,10 @@ Return strict JSON only.`;
 
     // 8a) Classification gate — abort cleanly if not an invoice
     if (invoiceSegments.length === 0) {
+      const { error: classificationError } = await admin.from("document_uploads").update({ ...classificationPayload,
+        classification_status: "needs_review", current_classification_revision: nextClassificationRevision,
+      }).eq("id", documentUploadId);
+      if (classificationError) throw new Error("Could not store document classification.");
       await admin
         .from("invoice_analyses")
         .update({
@@ -855,7 +882,7 @@ Return strict JSON only.`;
       const flaggedCount = (inv.line_items || []).filter(li => li.flagged && (li.line_type ?? "charge") === "charge").length;
 
       const updatePayload = {
-        status: "completed",
+        status: "processing",
         vendor: inv.vendor_name ?? null,
         vendor_id: vendorIdTop,
         invoice_number: inv.invoice_number ?? null,
@@ -901,7 +928,8 @@ Return strict JSON only.`;
       let thisInvoiceId: string;
       if (idx === 0) {
         thisInvoiceId = primaryInvoiceId;
-        await admin.from("invoice_analyses").update(updatePayload).eq("id", thisInvoiceId);
+        const { data: savedInvoice, error: saveError } = await admin.from("invoice_analyses").update(updatePayload).eq("id", thisInvoiceId).select("id").single();
+        if (saveError || !savedInvoice) throw new Error("Could not save invoice result.");
       } else {
         const { data: newRow, error: newErr } = await admin
           .from("invoice_analyses")
@@ -914,9 +942,10 @@ Return strict JSON only.`;
           .single();
         if (newErr || !newRow) {
           console.error("Failed to insert sibling invoice row:", newErr);
-          continue;
+          throw new Error("Could not save every invoice in this document.");
         }
         thisInvoiceId = newRow.id;
+        createdInvoiceIds.push(thisInvoiceId);
       }
       invoiceIds.push(thisInvoiceId);
 
@@ -1023,7 +1052,7 @@ Return strict JSON only.`;
           .from("invoice_line_items")
           .insert(lineRows)
           .select("id, vendor_id, vendor_product_id, vendor_product_source_key, raw_vendor_item_code, raw_description");
-        if (liErr) console.error(`Failed to insert line items for invoice ${thisInvoiceId}:`, liErr);
+        if (liErr || insertedLines?.length !== lineRows.length) throw new Error("Could not save every invoice line.");
         for (const line of insertedLines ?? []) {
           if (!line.vendor_id || line.vendor_product_id || !line.vendor_product_source_key) continue;
           catalogReviewRows.push({
@@ -1121,7 +1150,7 @@ Return strict JSON only.`;
 
     // 11) Complete the job
     if (jobId) {
-      await admin
+      const { error: completionError } = await admin
         .from("invoice_extraction_jobs")
         .update({
           status: "completed",
@@ -1135,7 +1164,17 @@ Return strict JSON only.`;
           evaluation_status: "needs_review",
         })
         .eq("id", jobId);
+      if (completionError) throw new Error("Could not complete extraction job.");
     }
+
+    // One statement publishes the whole group only after every required write succeeds.
+    const { data: completed, error: completedError } = await admin.from("invoice_analyses")
+      .update({ status: "completed" }).in("id", createdInvoiceIds).eq("status", "processing").select("id");
+    if (completedError || completed?.length !== invoiceIds.length) throw new Error("Could not publish every invoice result.");
+    const { error: publishError } = await admin.from("document_uploads").update({ ...classificationPayload,
+      classification_status: "needs_review", current_classification_revision: nextClassificationRevision,
+    }).eq("id", documentUploadId);
+    if (publishError) throw new Error("Could not publish document classification.");
 
     return NextResponse.json({
       ok: true,
@@ -1152,11 +1191,13 @@ Return strict JSON only.`;
     await admin
       .from("invoice_analyses")
       .update({ status: "failed", top_finding: "We couldn't safely process this file. Please try again." })
-      .eq("id", primaryInvoiceId);
+      .in("id", createdInvoiceIds);
     await admin
       .from("document_uploads")
-      .update({ classification_status: createdDocumentUpload ? "failed" : previousUploadStatus })
+      .update({ classification_status: createdDocumentUpload ? "failed" : previousUploadStatus, current_classification_revision: currentClassificationRevision })
       .eq("id", documentUploadId);
+    // Reuse the next revision on retry; retain all earlier confirmed revisions.
+    await admin.from("document_segments").delete().eq("upload_id", documentUploadId).eq("classification_revision", nextClassificationRevision);
     if (jobId) {
       await admin
         .from("invoice_extraction_jobs")

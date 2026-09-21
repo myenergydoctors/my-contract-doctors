@@ -19,7 +19,7 @@ export async function getExtractionJobForInvoice(invoiceId: string): Promise<Ext
   const supabase = createClient();
   const { data, error } = await supabase
     .from("invoice_extraction_jobs")
-    .select("*")
+    .select("id,status,attempts,started_at,completed_at,error_message,ai_model,ai_tokens_input,ai_tokens_output,ai_cost_cents,created_at")
     .eq("invoice_id", invoiceId)
     .order("created_at", { ascending: false })
     .limit(1)
@@ -32,7 +32,7 @@ export async function getExtractionJobForInvoice(invoiceId: string): Promise<Ext
     startedAt: data.started_at,
     completedAt: data.completed_at,
     errorMessage: data.error_message,
-    rawAiResponse: data.raw_ai_response,
+    rawAiResponse: null,
     aiModel: data.ai_model,
     aiTokensInput: data.ai_tokens_input,
     aiTokensOutput: data.ai_tokens_output,

@@ -71,7 +71,7 @@ export default function AgreementsListPage() {
               </div>
               <div className="bg-off-white rounded-lg px-3 py-2">
                 <div className="font-sans text-[10px] uppercase tracking-wider text-gray-500">Clauses analyzed</div>
-                <div className="font-sans text-sm text-navy mt-0.5">{agr.clauses.length}</div>
+                <div className="font-sans text-sm text-navy mt-0.5">{"findingCount" in agr ? agr.findingCount : agr.clauses.length}</div>
               </div>
             </div>
 
