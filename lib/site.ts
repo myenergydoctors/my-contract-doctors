@@ -18,6 +18,7 @@ export const SITEMAP_ROUTES: { path: string; priority: number; changeFrequency: 
   { path: "/agreement",        priority: 0.9, changeFrequency: "monthly" },
   { path: "/demystifier",      priority: 0.9, changeFrequency: "monthly" },
   { path: "/about",            priority: 0.7, changeFrequency: "monthly" },
+  { path: "/reviews",           priority: 0.7, changeFrequency: "weekly" },
   { path: "/customers",        priority: 0.7, changeFrequency: "monthly" },
   { path: "/industries",       priority: 0.7, changeFrequency: "monthly" },
   { path: "/compare",          priority: 0.7, changeFrequency: "monthly" },

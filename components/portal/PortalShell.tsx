@@ -21,6 +21,7 @@ function buildNav(opts: { unreadNotifications: number; effectivePlan: string }):
     { label: "Insights",      href: "/dashboard/insights",      icon: "◬" },
     { label: "Modules",       href: "/dashboard/modules",       icon: "◫" },
     { label: "Billing",       href: "/dashboard/billing",       icon: "◉" },
+    { label: "Your review", href: "/dashboard/reviews", icon: "☆" },
     { label: "Settings",      href: "/dashboard/settings",      icon: "◐" },
   ];
   if (opts.unreadNotifications > 0) {
@@ -91,6 +92,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const unreadCount = visibleNotifications.filter(n => n.unread).length;
   const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
   if (isAdmin) {
+    navItems.push({ label: "Review moderation", href: "/dashboard/admin/reviews", icon: "★" });
     navItems.push({ label: "Discount codes", href: "/dashboard/admin/discount-codes", icon: "%" });
   }
 

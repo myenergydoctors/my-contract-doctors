@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import ReviewPrompt from "@/components/reviews/ReviewPrompt";
 import { useState } from "react";
 import { mockUser } from "@/lib/mock-data";
 import { useEffectiveData } from "@/lib/use-effective-plan";
@@ -50,6 +51,8 @@ export default function DashboardHome() {
             : <>Here's what's been happening with your contracts and invoices at <span className="text-navy font-medium">{businessName}</span>.</>}
         </p>
       </div>
+
+      {mode === "live" && <ReviewPrompt />}
 
       {/* Plan upgrade banner — shows for non-pro plans with some data */}
       {plan !== "pro" && !empty && (
