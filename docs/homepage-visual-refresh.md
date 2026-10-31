@@ -1,39 +1,31 @@
-# Homepage visual refresh — review draft
+# Homepage visual refresh
 
-The redesign keeps the navy, teal, DM Serif Display, and DM Sans brand system. It replaces the full-size simulated savings dashboard with a photographic hero and service cards, then keeps a smaller, clearly illustrative invoice report below the process explanation. FeaturedReviews remains server-rendered through its existing Suspense slot. The existing annual offer, chat, navigation, and cookie controls remain in the app layout.
+The homepage keeps the navy, teal, DM Serif Display, and DM Sans brand system. A photographic video hero and service cards introduce the items being reviewed, followed by the invoice process and a smaller, clearly illustrative report. FeaturedReviews remains in its existing server-rendered Suspense slot. Annual offers, navigation, chat, and cookie controls remain in the app layout.
 
-## Asset selection and budget
+## Licensed media
 
-Do not purchase or license assets on the user's behalf. The user will license and supply final assets. Target **1-credit standard commercial photos**; do not assume credit cost from a search result or a Standard License label. The exact cost must be checked in the user's account before they license it. Premium, extended-license, and expensive credit-pack selections are outside the photo budget. Video cost is a separate user decision.
+On October 31, 2026, the user licensed and downloaded the following Adobe Stock files and authorized replacing the generated placeholders. The prices below were observed in the user's signed-in account before licensing. No assets were purchased by the agent.
 
-Recommended shopping list:
+| Use | Adobe file ID | Contributor | Observed price | App asset |
+| --- | --- | --- | --- | --- |
+| Uniforms | 1820470742 | CoreRock | Standard License, 1 plan credit | public/images/home/uniforms.webp |
+| Linens | 220790732 | fascinadora | Standard License, 1 plan credit | public/images/home/linens.webp |
+| Floor mats | 2234744105 | ZackZephyr | Standard License, 1 plan credit | public/images/home/mats.webp |
+| Hero footage | 2065739312 | Alessio | 8 plan credits for HD or 4K | public/images/home/laundry-hero.mp4 |
 
-| Placement | Direction | Adobe starting point |
-| --- | --- | --- |
-| Uniform card | Close-up of navy work shirts on a service rack, no visible vendor marks | [Uniform rack photos](https://stock.adobe.com/search?k=commercial+uniform+shirts+rack&filters%5Bcontent_type%3Aphoto%5D=1) |
-| Linen card | White restaurant linens or blue-stripe kitchen towels, natural light | [Kitchen towel photos](https://stock.adobe.com/search?k=folded+commercial+kitchen+towels&filters%5Bcontent_type%3Aphoto%5D=1) |
-| Mat card | Black commercial entrance or kitchen mat in a real workplace | [Commercial mat photos](https://stock.adobe.com/search?k=commercial+entrance+floor+mat&filters%5Bcontent_type%3Aphoto%5D=1) |
-| Hero footage | Slow movement through a garment rack; calm, no vendor branding; leave room at left for copy | [Candidate #2065739312, Alessio](https://stock.adobe.com/video/slow-motion-slider-of-freshly-cleaned-shirts-hanging-in-professional-laundry-facility-rack-of-freshly-laundered-shirts-hanging-inside-a-commercial-laundry-representing-garment-care/2065739312) |
+The mat image replaces rejected asset 2234736112, whose preview had an incomplete gray area. Original licensed files remain in the user's Downloads folder. The app contains optimized web derivatives, not the large source files. The generated draft assets have been removed.
 
-The video candidate is 12 seconds and has an HD option (2048 × 1080). Its credit price is **not verified**. It is a candidate for the user to preview and price, not a purchase recommendation at an assumed budget. Photos above are focused searches, not verified 1-credit selections. Prefer Photos, Exclude Generative AI, commercial use, and standard collection results when selecting replacements.
+## Media delivery
 
-## Current draft assets
+- Hero: 12-second H.264 MP4, 24 fps, approximately 2 MB, no audio, yuv420p, fast-start metadata. The source MOV was approximately 491 MB.
+- Poster: WebP extracted from the web video's first frame, approximately 42 KB.
+- Photos: WebP with embedded metadata removed; Next Image generates responsive delivery sizes. The portrait mat composition is positioned toward the lower part of the image to keep the mat visible in its landscape card.
+- Video mounts only on desktop when reduced-motion and data-saver preferences are off. Its source is not rendered for mobile. A visible keyboard-accessible pause/play button controls playback. The poster remains available on playback failure.
 
-All files under `public/images/home/*-draft.webp` are generated representative imagery made for this layout review, not licensed Adobe photographs or customer images. The uniform, linen, and mat thumbnails are optimized crops of the generated scene. No Adobe preview or watermark has been included in the app.
+## Release
 
-Replace the hero image reference in HeroMedia.tsx and the service image paths in HomeContent.tsx with the licensed files. Keep the license receipt and original Adobe file ID with the project. Do not remove draft naming until the selected replacements are actually supplied.
-
-## Video handoff
-
-After the user supplies the licensed footage, prepare an 8–12 second muted MP4 loop, preferably 1080p and approximately 2–5 MB, plus an optimized poster. Add the local file under public/images/home and set `videoSrc` in HeroMedia.tsx. Playback is currently disabled because `videoSrc` is null.
-
-The component only mounts video on desktop when reduced motion and data saver are off. It includes a pause/play control, an image fallback on video errors, no audio, and no video download for mobile or reduced-motion users. These playback paths still need browser testing with the final footage. The static poster layout has been reviewed on desktop and at 390px mobile width.
+The changes are maintained in the homepage visual refresh pull request. Production is unchanged until that release is merged and deployed. No database or billing changes are included.
 
 ## Verification
 
-- TypeScript passed.
-- Targeted ESLint passed.
-- Webpack production build passed (existing Edge Runtime deprecation warning remains).
-- Desktop and mobile full-page screenshots reviewed.
-- Existing review and annual-offer logic was not modified.
-- Production has not been changed. Final media selection is pending the user.
+TypeScript, targeted ESLint, whitespace checks, and the webpack production build passed. Browser checks confirmed muted desktop playback, pause, resume, complete photos, and a fresh 390px mobile load with no video element and no horizontal overflow. Desktop and mobile screenshots were reviewed. Reduced-motion and data-saver gating remain implemented; those preference overrides were inspected in code rather than emulated in this browser session.

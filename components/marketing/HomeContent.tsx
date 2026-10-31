@@ -7,7 +7,7 @@ import styles from "./HomeContent.module.css";
 const services = [
   { name: "Uniforms & workwear", detail: "Rental, replacement & loss charges", image: "uniforms", position: "center", number: "01" },
   { name: "Towels & linens", detail: "Inventory, minimums & service fees", image: "linens", position: "center", number: "02" },
-  { name: "Floor mats", detail: "Delivery frequency & recurring rentals", image: "mats", position: "center", number: "03" },
+  { name: "Floor mats", detail: "Delivery frequency & recurring rentals", image: "mats", position: "center 72%", number: "03" },
 ];
 
 export default function HomeContent({ testimonials }: { testimonials: ReactNode }) {
@@ -32,7 +32,7 @@ export default function HomeContent({ testimonials }: { testimonials: ReactNode 
       <section className={styles.services} aria-labelledby="services-title">
         <div className={styles.sectionTop}><div><p className={styles.eyebrow}>The everyday essentials. The overlooked costs.</p><h2 id="services-title">You see the service.<br /><em>We help you see the bill.</em></h2></div><p>From the shirts on your team to the mats at your door, small recurring charges deserve a closer look.</p></div>
         <div className={styles.serviceGrid}>{services.map(service => <Link href="/invoice" className={styles.serviceCard} key={service.name}>
-          <div className={styles.servicePhoto}><Image src={`/images/home/${service.image}-draft.webp`} alt="" fill sizes="(max-width: 700px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: service.position }} /><span>{service.number}</span></div>
+          <div className={styles.servicePhoto}><Image src={`/images/home/${service.image}.webp`} alt="" fill sizes="(max-width: 700px) 100vw, 33vw" style={{ objectFit: "cover", objectPosition: service.position }} /><span>{service.number}</span></div>
           <div className={styles.serviceCaption}><h3>{service.name}</h3><span aria-hidden="true">↗</span><p>{service.detail}</p></div>
         </Link>)}</div>
         <p className={styles.also}>Also on your invoice? <span>Shop towels & rags</span><span>Restroom supplies</span><span>Delivery & environmental fees</span></p>

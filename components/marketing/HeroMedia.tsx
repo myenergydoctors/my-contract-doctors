@@ -4,8 +4,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import styles from "./HomeContent.module.css";
 
-// Set only after the selected footage is licensed and added to public/images/home.
-const videoSrc: string | null = null;
+const videoSrc = "/images/home/laundry-hero.mp4";
+const posterSrc = "/images/home/laundry-hero-poster.webp";
 type DataConnection = EventTarget & { saveData?: boolean };
 
 export default function HeroMedia() {
@@ -28,10 +28,10 @@ export default function HeroMedia() {
       connection?.removeEventListener("change", update);
     };
   }, []);
-  const showVideo = Boolean(videoSrc && eligible && !failed);
+  const showVideo = eligible && !failed;
   return <>
-    <Image src="/images/home/service-scene-draft.webp" alt="" fill preload sizes="100vw" className={styles.heroImage} />
-    {showVideo && <video ref={video} className={styles.heroVideo} src={videoSrc!} muted loop playsInline autoPlay preload="none" aria-hidden="true" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => setFailed(true)} />}
+    <Image src={posterSrc} alt="" fill preload sizes="100vw" className={styles.heroImage} />
+    {showVideo && <video ref={video} className={styles.heroVideo} src={videoSrc} poster={posterSrc} muted loop playsInline autoPlay preload="none" aria-hidden="true" onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => setFailed(true)} />}
     {showVideo && <button type="button" className={styles.motionControl} onClick={() => {
       if (!video.current) return;
       if (playing) video.current.pause();
