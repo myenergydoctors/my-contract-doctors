@@ -92,6 +92,7 @@ export default function PortalShell({ children }: { children: React.ReactNode })
   const unreadCount = visibleNotifications.filter(n => n.unread).length;
   const navItems = buildNav({ unreadNotifications: unreadCount, effectivePlan });
   if (isAdmin) {
+    navItems.push({ label: "Annual offers", href: "/dashboard/admin/annual-offers", icon: "%" });
     navItems.push({ label: "Review moderation", href: "/dashboard/admin/reviews", icon: "★" });
     navItems.push({ label: "Discount codes", href: "/dashboard/admin/discount-codes", icon: "%" });
   }

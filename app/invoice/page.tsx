@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import AnnualUpgradeOffer from "@/components/marketing/AnnualUpgradeOffer";
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -510,6 +511,7 @@ function StepScanning({ file, lead }: { file: InvoiceSource | null; lead: LeadCa
       <div style={{maxWidth:560,margin:"0 auto",padding:"80px 24px",textAlign:"center"}}>
         <div style={{width:80,height:80,borderRadius:20,background:C.bluePale,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 28px",fontSize:34}}>▤</div>
         <h2 style={{fontFamily:"'DM Serif Display',serif",fontSize:28,color:C.navy,marginBottom:10,lineHeight:1.2}}>Your current invoice allowance is used.</h2>
+        <AnnualUpgradeOffer source="invoice" />
         <p style={{fontFamily:"'DM Sans',sans-serif",fontSize:15,fontWeight:300,color:C.gray500,marginBottom:24,lineHeight:1.65}}>{errorState.message}</p>
         <div style={{display:"flex",justifyContent:"center",gap:12,flexWrap:"wrap"}}>
           <Link href="/checkout/pro" style={{display:"inline-block",background:C.teal,color:C.white,fontFamily:"'DM Sans',sans-serif",fontSize:14,fontWeight:600,padding:"12px 24px",borderRadius:9,textDecoration:"none"}}>Preview Pro checkout →</Link>

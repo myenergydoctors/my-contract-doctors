@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect } from "react";
+import AnnualUpgradeOffer from "@/components/marketing/AnnualUpgradeOffer";
 
 type PaywallReason =
   | { type: "agreement"; currentPlan: "free" | "agreement" | "pro" }
@@ -64,6 +65,7 @@ export default function PaywallModal({ open, onClose, reason }: PaywallModalProp
 
         {/* Options */}
         <div className="px-6 md:px-8 py-6 flex flex-col gap-3">
+          <AnnualUpgradeOffer source="paywall" />
           {content.options.map((opt, i) => (
             <Link
               key={i}
@@ -123,7 +125,7 @@ function getContent(reason: PaywallReason): ModalContent {
       return {
         eyebrow: "Upgrade required",
         title: "Analyze your contract.",
-        body: "Pick the option that fits — a one-time analysis of this contract, or unlimited contracts with Pro.",
+        body: "Pick the option that fits — a one-time analysis of this contract, or ongoing monitoring with Pro.",
         options: [
           {
             title: "The Agreement",
@@ -135,7 +137,7 @@ function getContent(reason: PaywallReason): ModalContent {
           {
             title: "Pro plan",
             price: "$29/mo",
-            description: "Unlimited contract and invoice analyses, plus Industry Insights and auto-renewal alerts. Cancel anytime.",
+            description: "Up to five invoice analyses per month, one agreement credit per quarter, and eligible insights and alerts. Cancel anytime.",
             cta: "Go Pro",
             href: "/checkout/pro",
             primary: true,
@@ -146,13 +148,13 @@ function getContent(reason: PaywallReason): ModalContent {
     if (reason.currentPlan === "agreement") {
       return {
         eyebrow: "You've used your single analysis",
-        title: "Unlock unlimited contracts.",
+        title: "Keep reviewing with Pro.",
         body: "You're on the one-time Agreement plan. To analyze additional contracts, upgrade to Pro — you'll also get Industry Insights and auto-renewal alerts.",
         options: [
           {
             title: "Pro plan",
             price: "$29/mo",
-            description: "Unlimited contract and invoice analyses, plus everything else Pro includes. Cancel anytime.",
+            description: "Up to five invoice analyses per month, one agreement credit per quarter, saved history, and eligible alerts. Cancel anytime.",
             cta: "Upgrade to Pro",
             href: "/checkout/pro",
             primary: true,

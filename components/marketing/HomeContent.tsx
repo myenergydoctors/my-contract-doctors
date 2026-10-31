@@ -621,85 +621,6 @@ function CTABand() {
 /* ── FOOTER ── */
 
 /* ── EMAIL POPUP ── */
-function EmailPopup() {
-  const [show, setShow] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => { if (!dismissed) setShow(true); }, 5000);
-    return () => clearTimeout(t);
-  }, [dismissed]);
-
-  if (!show || dismissed) return null;
-
-  return (
-    <div style={{
-      position: "fixed", inset: 0, zIndex: 999,
-      background: "rgba(8,30,56,0.7)", backdropFilter: "blur(4px)",
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
-    }}
-      onClick={e => { if (e.target === e.currentTarget) setDismissed(true); }}
-    >
-      <div style={{
-        background: COLORS.white, borderRadius: 20, padding: 44, maxWidth: 440, width: "100%",
-        position: "relative", boxShadow: "0 24px 80px rgba(12,45,84,0.25)",
-        animation: "popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) forwards",
-      }}>
-        <button onClick={() => setDismissed(true)} style={{
-          position: "absolute", top: 16, right: 16, background: "none", border: "none",
-          fontSize: 20, cursor: "pointer", color: COLORS.gray500, lineHeight: 1,
-        }}>×</button>
-
-        {!submitted ? <>
-          <div style={{
-            background: COLORS.tealLight, color: COLORS.teal,
-            fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 600,
-            padding: "5px 14px", borderRadius: 20, display: "inline-block", marginBottom: 16,
-          }}>Save 10% on your first report</div>
-          <h3 style={{
-            fontFamily: "'DM Serif Display', serif", fontSize: 26, color: COLORS.navy,
-            lineHeight: 1.2, marginBottom: 10,
-          }}>Find out how much your contract is costing you</h3>
-          <p style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 300,
-            color: COLORS.gray500, lineHeight: 1.7, marginBottom: 24,
-          }}>
-            Join businesses saving thousands per year. Get tips, insights, and your exclusive 10% discount.
-          </p>
-          <input
-            type="email" placeholder="your@email.com" value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={{
-              width: "100%", padding: "12px 16px", borderRadius: 8, marginBottom: 12,
-              border: `1.5px solid ${COLORS.gray300}`, fontFamily: "'DM Sans', sans-serif", fontSize: 14,
-              outline: "none", color: COLORS.navy,
-            }}
-          />
-          <button onClick={() => setSubmitted(true)} style={{
-            width: "100%", background: COLORS.navy, color: "#fff", border: "none",
-            fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500,
-            padding: "13px", borderRadius: 8, cursor: "pointer", marginBottom: 10,
-          }}>Claim My 10% Discount</button>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: COLORS.gray500, textAlign: "center" }}>No spam. Unsubscribe anytime.</div>
-        </> : <>
-          <div style={{ textAlign: "center", padding: "20px 0" }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>✓</div>
-            <h3 style={{ fontFamily: "'DM Serif Display', serif", fontSize: 24, color: COLORS.navy, marginBottom: 10 }}>You're in!</h3>
-            <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 300, color: COLORS.gray500 }}>Check your inbox for your 10% discount code.</p>
-            <button onClick={() => setDismissed(true)} style={{
-              marginTop: 20, background: COLORS.teal, color: "#fff", border: "none",
-              fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500,
-              padding: "11px 24px", borderRadius: 8, cursor: "pointer",
-            }}>Let's get started →</button>
-          </div>
-        </>}
-      </div>
-    </div>
-  );
-}
-
 /* ── ROOT ── */
 export default function HomeContent({ testimonials }: { testimonials: React.ReactNode }) {
   return (
@@ -749,7 +670,6 @@ export default function HomeContent({ testimonials }: { testimonials: React.Reac
 
       {testimonials}
       <CTABand />
-      <EmailPopup />
     </>
   );
 }

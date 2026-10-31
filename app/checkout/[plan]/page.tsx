@@ -1,13 +1,14 @@
 import { getPlan } from "@/lib/checkout-plans";
 import { notFound } from "next/navigation";
 import CheckoutForm from "./CheckoutForm";
+import { ANNUAL_OFFER_CAMPAIGN } from "@/lib/annual-offer/domain";
 
 export default async function CheckoutPage({
   params,
   searchParams,
 }: {
   params: Promise<{ plan: string }>;
-  searchParams: Promise<{ quantity?: string | string[]; invoice?: string | string[]; agreement?: string | string[] }>;
+  searchParams: Promise<{ offer?: string; quantity?: string | string[]; invoice?: string | string[]; agreement?: string | string[] }>;
 }) {
   const { plan: planId } = await params;
   const query = await searchParams;
@@ -26,5 +27,5 @@ export default async function CheckoutPage({
   const quantity = plan.allowQuantity && Number.isFinite(parsedQuantity)
     ? Math.min(100, Math.max(1, parsedQuantity))
     : 1;
-  return <CheckoutForm plan={plan} initialQuantity={quantity} invoiceId={invoiceId} agreementId={agreementId} />;
+  return <CheckoutForm plan={plan} initialQuantity={quantity} invoiceId={invoiceId} agreementId={agreementId} annualOfferRequested={query.offer === ANNUAL_OFFER_CAMPAIGN} />;
 }

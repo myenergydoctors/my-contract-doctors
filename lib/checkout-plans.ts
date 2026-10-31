@@ -35,13 +35,13 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
   "pro-annual": {
     id: "pro-annual",
     name: "Pro plan — annual",
-    price: "$348.00",
-    priceCents: 34800,
+    price: "$313.20",
+    priceCents: 31320,
     cadence: "annual preview · no charge",
     description: "Everything in Pro, shown with an annual estimate for staging. No payment is taken.",
     features: [
       "Everything in Pro monthly",
-      "Annual listed price: $348 (same as 12 × $29)",
+      "Annual listed price: $313.20 (10% less than 12 × $29)",
       "One annual staging period",
       "No charge or paid access in staging",
     ],
