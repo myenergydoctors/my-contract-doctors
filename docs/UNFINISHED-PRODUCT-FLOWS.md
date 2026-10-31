@@ -22,7 +22,8 @@ project below. This is an initial launch review, not completed customer acceptan
   the acceptance evidence below records its completion on the review branch.
 - Checkout is still intentionally no-charge preview. Paid launch requires an
   owner decision and verified payment fulfillment, cancellation and recovery.
-- The standalone Demystifier remains an incomplete preview product.
+- The Demystifier reader/access flow is completed on the review branch; paid
+  fulfillment remains deferred with Stripe until the final launch stage.
 - Live overview fixes prepared locally remove the fabricated risk average,
   outstanding-action count, mock identity fallback, and unsupported aggregate
   savings. An agreement-only account no longer dereferences a missing invoice.
@@ -93,7 +94,7 @@ implied by this automated result.
   been satisfied by this pass; its implementation is included in #11.
 
 These clean synthetic fixtures do not establish extraction accuracy across real
-customer documents. Legal pages, standalone Demystifier fulfillment, marketing
+customer documents. Legal pages, paid product fulfillment, marketing
 delivery and ongoing invoice/service-history monitoring remain open work.
 Renewal scheduling and notification email verification are documented below.
 
@@ -209,20 +210,19 @@ Status: Important customer-trust and launch work.
 
 ## Priority 3 — Demystifier product flow
 
-Status: Prototype only.
+Status: Reader and server-authoritative access are implemented and tested on the
+review branch. See `docs/DEMYSTIFIER-FLOW.md` and the sanitized acceptance report.
 
-The fake card form and timer-based browser unlock were removed as a billing safety fix. The free preview links to shared no-charge staging checkout. Full access and restore-access still need the dedicated Demystifier implementation.
-
-Needed:
-
-- Continue using the shared, clearly labeled staging checkout in place of the removed fake payment form.
-- Keep the free preview genuinely accessible without implying a purchase occurred.
-- Define a provider-neutral Demystifier entitlement and server-side access endpoint.
-- Restore access for an authenticated purchaser across devices and sessions.
-- Decide whether purchase requires sign-in before checkout or supports claim-after-purchase.
-- Wire every navigation and action, including the invoice-analysis call to action.
-- Keep negotiation emails copyable; do not claim they were sent.
-- Add staged purchase, entitlement, restore-access, locked-content, and failure-path tests.
+- One complete educational clause is free. Six protected clauses and a checklist
+  are delivered only to the verified active owner of an unrevoked entitlement.
+- Restore works across fresh sessions; preview checkout remains $0 and grants
+  nothing. The checkout success page returns to the reader.
+- Draft copying, topic navigation, loading/retry, account isolation, forged claims,
+  revocation and deactivation are covered by automated and browser checks.
+- Stripe/payment fulfillment and production activation remain deferred until the
+  end. QA access uses disposable synthetic server fixtures only.
+- Owner review of the fictional educational content and pricing remains before
+  sale; these examples do not claim to interpret a customer's actual agreement.
 
 ### New-session prompt: Demystifier
 

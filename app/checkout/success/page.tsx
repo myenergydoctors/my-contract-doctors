@@ -28,6 +28,7 @@ export default async function CheckoutSuccessPage({ searchParams }: { searchPara
         <p className="font-sans text-gray-600 mb-6">Sign in and check Billing history for a saved preview. A link alone cannot complete checkout.</p>
       </>}
       <Link href="/dashboard/billing" className="block bg-teal text-white rounded-lg px-5 py-3 no-underline">View Billing history</Link>
+      {checkout?.product_code === "demystifier" && <Link href="/demystifier" className="block mt-4 text-sm text-blue no-underline">Return to the Demystifier free preview →</Link>}
       {checkout && returnPath !== "/dashboard/billing" && <Link href={returnPath} className="block mt-4 text-sm text-blue no-underline">Return to your saved analysis →</Link>}
     </div>
   </div>;
