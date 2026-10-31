@@ -14,6 +14,7 @@ function buildNav(opts: { unreadNotifications: number; effectivePlan: string }):
   const items: NavItem[] = [
     { label: "Overview",      href: "/dashboard",               icon: "▦" },
     { label: "Notifications", href: "/dashboard/notifications", icon: "◔" },
+    { label: "Reminders & email", href: "/dashboard/reminders", icon: "◷" },
     { label: "Invoices",      href: "/dashboard/invoices",      icon: "▤" },
     { label: "Service history", href: "/dashboard/service-history", icon: "↻" },
     { label: "Agreements",    href: "/dashboard/agreements",    icon: "▥" },

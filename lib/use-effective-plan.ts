@@ -67,12 +67,18 @@ export function useEffectiveData(): EffectiveData {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     const onRead = (event: Event) => {
       const ids = (event as CustomEvent<string[]>).detail;
       if (Array.isArray(ids)) setRealNotifications(current => current.map(item => ids.includes(item.id) ? { ...item, unread: false } : item));
     };
+    const refresh = () => {
+      void listNotifications().then(items => { if (!cancelled) { setRealNotifications(items); setNotificationsError(null); } })
+        .catch(() => { if (!cancelled) setNotificationsError("Notifications could not be loaded. Please retry."); });
+    };
     window.addEventListener("mcd:notifications-read", onRead);
-    return () => window.removeEventListener("mcd:notifications-read", onRead);
+    window.addEventListener("mcd:notifications-refresh", refresh);
+    return () => { cancelled = true; window.removeEventListener("mcd:notifications-read", onRead); window.removeEventListener("mcd:notifications-refresh", refresh); };
   }, []);
 
   useEffect(() => {

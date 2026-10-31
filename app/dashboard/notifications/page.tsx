@@ -40,7 +40,7 @@ export default function NotificationsPage() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <p className="font-sans font-light text-gray-500 leading-relaxed">
-            Saved analysis updates appear here. Scheduled renewal reminders and vendor-response alerts are not active yet.
+            Saved analysis updates and enabled renewal reminders appear here. <Link href="/dashboard/reminders" className="text-blue">Manage deadlines and email preferences →</Link>
           </p>
         </div>
         {unreadCount > 0 && (

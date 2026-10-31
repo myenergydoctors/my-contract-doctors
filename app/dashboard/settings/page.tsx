@@ -100,6 +100,7 @@ export default function SettingsPage() {
   );
 
   return <div className="max-w-3xl flex flex-col gap-6">
+    <section className="bg-white border border-gray-200 rounded-2xl p-6"><h2 className="font-serif text-navy text-xl mb-3">Notifications &amp; renewal reminders</h2><Link href="/dashboard/reminders" className="text-blue">Manage email preferences and confirmed renewal deadlines →</Link></section>
     <section className="bg-white border border-gray-200 rounded-2xl p-6">
       <div className="font-sans text-[11px] font-semibold tracking-[0.14em] uppercase text-blue mb-1">Profile</div>
       <h2 className="font-serif text-navy text-xl mb-5">Your information</h2>

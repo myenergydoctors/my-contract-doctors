@@ -53,6 +53,10 @@ for (const fault of ['none', 'multi_success', 'retry_success', 'primary_update',
       return (...args) => { if (['insert', 'update', 'delete', 'upsert'].includes(key)) { operation = key; payload = args[0]; } if (key === 'select') countOnly = Boolean(args[1]?.count); if (['single', 'maybeSingle'].includes(key)) single = true; return query; };
     } });
     return query;
+  }, rpc: async (name, args) => {
+    if (name !== 'record_notification_event') throw new Error('Unexpected RPC');
+    writes.push({ table: 'notifications', operation: 'upsert', payload: args.p_event });
+    return { data: null, error: null };
   }, storage: { from: () => ({ download: async () => ({ data: new Blob([bytes], { type: 'application/pdf' }), error: null }) }) } };
   const stubs = {
     'next/server': { NextResponse: Response },
