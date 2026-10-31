@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import sgMail from "@sendgrid/mail";
+import { SITE } from "@/lib/site";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 
 const MAX_NAME_LENGTH = 100;
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest) {
     // Email to Jesse
     await sgMail.send({
       to: "jesse@myenergydoctors.com",
-      from: "noreply@mycontractdoctors.com",
+      from: SITE.emailFrom,
       subject: `New Contact Form Submission — ${name.replace(/[\r\n]/g, " ")}`,
       html: `
         <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
@@ -110,7 +111,7 @@ export async function POST(req: NextRequest) {
     // Confirmation email to the person who submitted
     await sgMail.send({
       to: email,
-      from: "noreply@mycontractdoctors.com",
+      from: SITE.emailFrom,
       subject: "We received your message — My Contract Doctors",
       html: `
         <div style="font-family: 'DM Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">

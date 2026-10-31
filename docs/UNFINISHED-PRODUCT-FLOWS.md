@@ -1,6 +1,127 @@
 # My Contract Doctors — Unfinished Product Flows
 
-Last updated: September 16, 2026
+Last reviewed: October 31, 2026
+
+## October 31 launch review
+
+Verified against GitHub `myenergydoctors/my-contract-doctors`, Vercel project
+`prj_I1G3a2NTud0y4iUIxM0IOfumFWJh` in OSC Web Design, and the allowed Supabase
+project below. This is an initial launch review, not completed customer acceptance.
+
+- Production is READY at commit `d89407de0c5a67b77787ff917dfc5f7df36c3bcf`
+  (document reliability PR #10). The September reliability handoff's statement
+  that deployment and migration are pending is historical.
+- Supabase migration `20260921120000_protect_analysis_content` is applied.
+  Read-only privilege checks confirm `authenticated` cannot SELECT the full
+  agreement table or the invoice `raw_analysis` column. These checks do not
+  replace a complete customer authorization walkthrough.
+- Account lifecycle PR #9 remains a draft. Production Settings still contains
+  sample profile values and unwired save/password/delete controls; Forgot
+  Password and legal links remain placeholders. Do not describe those account
+  features as released. The real-inbox gate was open at the start of this review;
+  the acceptance evidence below records its completion on the review branch.
+- Checkout is still intentionally no-charge preview. Paid launch requires an
+  owner decision and verified payment fulfillment, cancellation and recovery.
+- The Demystifier reader/access flow is completed on the review branch; paid
+  fulfillment remains deferred with Stripe until the final launch stage.
+- Live overview fixes prepared locally remove the fabricated risk average,
+  outstanding-action count, mock identity fallback, and unsupported aggregate
+  savings. An agreement-only account no longer dereferences a missing invoice.
+  Aggregate savings and action tracking show unavailable until supported.
+- Supabase security review: all listed public tables have RLS enabled. Nine
+  server-mediated tables have no browser policies; do not add permissive policies
+  just to clear informational advisories. The two SECURITY DEFINER helpers
+  inspected check `auth.uid()` and pin their search path. `set_updated_at` still
+  has a mutable search path, and leaked-password protection is disabled.
+
+Launch work still includes honest Live/preview presentation, real account and
+recovery flows, reviewed legal pages and retention policy, consent-aware guide
+delivery, saved onboarding, and acceptance testing on the intended deployment.
+Unreleased notifications, monitoring, benchmarks, service-history operations and
+modules must either be completed or clearly excluded from launch promises.
+
+Initial local baseline: 53 tests passed, 0 failed, 1 opt-in billing integration test
+skipped. No real-inbox, payment, or customer-document accuracy acceptance is
+implied by this automated result.
+
+### Process fixes and acceptance evidence from this pass
+
+- Account-lifecycle implementation from draft PR #9 is included locally, with
+  loading/save failure handling improved. It is not yet released to production.
+- Onboarding now saves business/industry to the owned profile and vendor/spend,
+  step and completion to user-editable onboarding metadata. No metadata field
+  grants access. Refresh/new-session restoration and failed-save behavior are
+  covered; completed users return to the dashboard.
+- Production preview controls are restricted to administrators; non-admins
+  ignore stored preview selections. Development retains the testing controls.
+  Live Insights no longer displays fabricated network statistics.
+- Fixed the reproduced phone-session `42501` permission failure by applying
+  `20261031162908_phone_upload_server_grants.sql` to the allowed Supabase project.
+  Only SELECT/INSERT/UPDATE for `service_role` were granted on the two handoff
+  tables. Browser roles remain denied, and RLS remains enabled.
+- Live document audit: **26 checks passed**, including real AI extraction,
+  physical pages/line amounts, correction/reconfirmation, lead metadata,
+  agreement quotations, free/Pro/one-time/revoked access, fresh sign-in and
+  denied direct raw reads. Synthetic files and account were removed.
+  Evidence: `output/audit/document-flow-results.json`.
+- Local account APIs against the allowed real database: **35 checks passed**,
+  including saved onboarding after fresh sign-in, password-change verification,
+  old-password rejection, reset-proof enforcement, both phone handoffs,
+  wrong/reused/expired links, and deactivation with retained data and blocked
+  sign-in. Evidence: `output/audit/account-flow-results.json`.
+- Browser walkthrough confirmed sign-in, prefilled onboarding, progress after
+  refresh, completion, real Settings values, saved profile edits after refresh,
+  and updated profile identity in the portal header.
+- Automated checks: **57 passed, 0 failed, 2 opt-in integrations skipped**;
+  TypeScript passed, lint had no errors (22 warnings), webpack production build
+  passed. Default Turbopack build is blocked locally by process/port sandbox
+  permissions, so its result is not claimed as passing.
+- Owner approved real-inbox tests using `jesse+mcd…@oscwebdesign.biz` aliases
+  and requested sender `help@mycontractdoctors.com`. Supabase SMTP sender was
+  updated; the received sign-up email has the requested From address and passes
+  SPF/DKIM/DMARC. Contact/deactivation code uses the same named sender. The help
+  mailbox does not yet exist; inbound replies still need a working destination.
+  Delivered signup/recovery/deactivation links have now completed acceptance.
+  Recovery changed the QA password, rejected the old password, accepted the new
+  one, and cleared the recovery cookie. Email-confirmed deactivation completed
+  in the hosted preview; an independent query verified retained profile data,
+  and a new sign-in was blocked. The preview also confirmed non-admin accounts
+  do not see testing controls. Aggregate evidence (no inbox bodies or links):
+  `output/audit/email-flow-results.json`.
+- Review branch: `codex/launch-process-verification`, draft PR #11. Vercel
+  preview and GitHub build/lint checks passed at `e1fe41f`. No production app
+  merge or promotion has been performed. Draft #9's email acceptance gate has
+  been satisfied by this pass; its implementation is included in #11.
+
+These clean synthetic fixtures do not establish extraction accuracy across real
+customer documents. Legal pages, paid product fulfillment, marketing
+delivery and ongoing invoice/service-history monitoring remain open work.
+Renewal scheduling and notification email verification are documented below.
+
+### Notification process follow-up
+
+The review branch now creates owner-bound in-app analysis-ready and failed-attempt
+updates from invoice/agreement processing. Readiness is recorded after required
+analysis publication succeeds. Stable notification IDs and conflict-ignore inserts
+prevent duplicate events or reset read state. Invoice success retries also retry
+notification delivery. Links open the saved-document lists so later reprocessing
+does not leave links to removed revisions.
+
+Notification filters, individual read, Mark all read, sidebar unread counts,
+loading/errors/retry, and honest filter-empty states are wired. Preview controls
+change local sample state only. Confirmed renewal schedules and opted-in analysis
+/renewal emails are implemented and verified on the review preview; production
+activation remains a launch step. Vendor-response alerts remain inactive.
+
+The real-database opt-in notification test passed creation, deduplication, saved
+read state and cross-account isolation. Browser tests confirmed filtering and
+individual/bulk read persistence after refresh; an independent database read
+confirmed all three QA notifications were read. The test accounts and their
+unshared organizations were removed. Evidence:
+`output/audit/notification-flow-results.json`.
+
+Current default suite: 57 passed, 0 failed, 3 opt-in integrations skipped; the
+notification integration was also run explicitly and passed.
 
 This is the working handoff for completing the customer-facing product around the invoice and agreement analysis engines. It separates intentional testing behavior from functionality that still needs to be built.
 
@@ -89,24 +210,23 @@ Status: Important customer-trust and launch work.
 
 ## Priority 3 — Demystifier product flow
 
-Status: Prototype only.
+Status: Reader and server-authoritative access are implemented and tested on the
+review branch. See `docs/DEMYSTIFIER-FLOW.md` and the sanitized acceptance report.
 
-The fake card form and timer-based browser unlock were removed as a billing safety fix. The free preview links to shared no-charge staging checkout. Full access and restore-access still need the dedicated Demystifier implementation.
-
-Needed:
-
-- Continue using the shared, clearly labeled staging checkout in place of the removed fake payment form.
-- Keep the free preview genuinely accessible without implying a purchase occurred.
-- Define a provider-neutral Demystifier entitlement and server-side access endpoint.
-- Restore access for an authenticated purchaser across devices and sessions.
-- Decide whether purchase requires sign-in before checkout or supports claim-after-purchase.
-- Wire every navigation and action, including the invoice-analysis call to action.
-- Keep negotiation emails copyable; do not claim they were sent.
-- Add staged purchase, entitlement, restore-access, locked-content, and failure-path tests.
+- One complete educational clause is free. Six protected clauses and a checklist
+  are delivered only to the verified active owner of an unrevoked entitlement.
+- Restore works across fresh sessions; preview checkout remains $0 and grants
+  nothing. The checkout success page returns to the reader.
+- Draft copying, topic navigation, loading/retry, account isolation, forged claims,
+  revocation and deactivation are covered by automated and browser checks.
+- Stripe/payment fulfillment and production activation remain deferred until the
+  end. QA access uses disposable synthetic server fixtures only.
+- Owner review of the fictional educational content and pricing remains before
+  sale; these examples do not claim to interpret a customer's actual agreement.
 
 ### New-session prompt: Demystifier
 
-> Turn the Demystifier from a prototype into a complete staging product flow. Keep payments in no-charge staging mode and do not select a payment provider. Remove the fake card-number modal and route purchases through the shared provider-neutral preview checkout. Preserve one useful free clause preview, add a server-authoritative Demystifier entitlement, require or capture an authenticated owner, persist staged access across sessions, and provide a restore-access path. Ensure locked clauses cannot be exposed by browser-only state. Wire all calls to action and keep vendor emails as honest copyable templates unless real sending is implemented. Add tests from free preview through staged checkout, entitlement grant, returning-user access, and failure handling. Read the repository's Next.js guidance before changing application code, preserve the working invoice/agreement flows, run the relevant tests and production build, and do not deploy until I approve it.
+> At the final billing stage, connect verified one-time purchase fulfillment to the existing Demystifier entitlement and restore flow. Preserve the free clause, no browser-only unlock, owner isolation, revocation behavior and honest copyable vendor drafts. Confirm the educational content and pricing with the owner before sale, test verified payment fulfillment/refund handling, and leave production activation to the final launch step.
 
 ## Priority 4 — Live dashboard truthfulness
 
@@ -123,16 +243,16 @@ Status: Mixed real and mock data.
 
 ## Priority 5 — Notifications and ongoing monitoring
 
-Status: Storage/read helpers exist; event generation and delivery do not.
+Status: Analysis events, read controls, confirmed renewal scheduling, independent
+email preferences, durable delivery/retries and unsubscribe are implemented.
+Real preview inbox, database isolation, duplicate prevention and suppression
+checks passed. See `docs/NOTIFICATION-DELIVERY.md` and
+`output/audit/renewal-email-flow-results.json`. Production secrets, release and
+first automatic cron-run verification remain launch activation steps.
 
-- Generate in-app notifications when invoice or agreement analysis completes or fails.
-- Implement renewal-window scheduling from confirmed agreement dates.
+Remaining monitoring work:
 - Implement ongoing invoice-versus-agreement monitoring instead of only displaying explanatory text.
 - Generate service-history follow-up reminders and completion notifications.
-- Wire filtering, unread counts, individual read state, and Mark all read.
-- Persist email-alert preferences.
-- Add scheduled jobs and retry/error visibility.
-- Add email delivery only for opted-in events, with unsubscribe/preference handling.
 
 ## Priority 6 — Insights, benchmarks, and comparisons
 

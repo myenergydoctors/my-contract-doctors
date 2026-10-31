@@ -13,6 +13,7 @@ export type ProfileRow = {
   joined_at: string;
   updated_at: string;
   is_admin: boolean;
+  deactivated_at: string | null;
 };
 
 export type DiscountCodeRow = {

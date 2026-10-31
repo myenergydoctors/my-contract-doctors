@@ -10,7 +10,17 @@ import type { Plan } from "./supabase/database.types";
 
 export function useDemoMode(): DemoMode {
   const [mode, setMode] = useState<DemoMode>("live");
-  useEffect(() => setMode(getDemoMode()), []);
+  useEffect(() => {
+    let cancelled = false;
+    if (process.env.NODE_ENV === "development") {
+      setMode(getDemoMode());
+    } else {
+      getProfile().then(profile => {
+        if (!cancelled) setMode(profile?.is_admin ? getDemoMode() : "live");
+      }).catch(() => { /* Keep real data when tester status cannot be verified. */ });
+    }
+    return () => { cancelled = true; };
+  }, []);
   return mode;
 }
 
@@ -43,6 +53,7 @@ type EffectiveData = {
   invoices: (InvoiceForUI | InvoiceAnalysis)[];
   agreements: (AgreementForUI | AgreementAnalysis)[];
   notifications: (NotificationForUI | typeof mockNotifications[0])[];
+  notificationsError: string | null;
   loading: boolean;
 };
 
@@ -52,7 +63,23 @@ export function useEffectiveData(): EffectiveData {
   const [realInvoices, setRealInvoices] = useState<InvoiceForUI[]>([]);
   const [realAgreements, setRealAgreements] = useState<AgreementForUI[]>([]);
   const [realNotifications, setRealNotifications] = useState<NotificationForUI[]>([]);
+  const [notificationsError, setNotificationsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    const onRead = (event: Event) => {
+      const ids = (event as CustomEvent<string[]>).detail;
+      if (Array.isArray(ids)) setRealNotifications(current => current.map(item => ids.includes(item.id) ? { ...item, unread: false } : item));
+    };
+    const refresh = () => {
+      void listNotifications().then(items => { if (!cancelled) { setRealNotifications(items); setNotificationsError(null); } })
+        .catch(() => { if (!cancelled) setNotificationsError("Notifications could not be loaded. Please retry."); });
+    };
+    window.addEventListener("mcd:notifications-read", onRead);
+    window.addEventListener("mcd:notifications-refresh", refresh);
+    return () => { cancelled = true; window.removeEventListener("mcd:notifications-read", onRead); window.removeEventListener("mcd:notifications-refresh", refresh); };
+  }, []);
 
   useEffect(() => {
     if (mode !== "live") {
@@ -65,13 +92,14 @@ export function useEffectiveData(): EffectiveData {
       getProfile(),
       listInvoices(),
       listAgreements(),
-      listNotifications(),
+      listNotifications().then(items => ({ items, error: null as string | null })).catch(() => ({ items: [] as NotificationForUI[], error: "Notifications could not be loaded. Please reload and try again." })),
     ]).then(([profile, invs, agrs, notifs]) => {
       if (cancelled) return;
       setRealPlan(profile?.plan ?? "free");
       setRealInvoices(invs);
       setRealAgreements(agrs);
-      setRealNotifications(notifs);
+      setRealNotifications(notifs.items);
+      setNotificationsError(notifs.error);
       setLoading(false);
     }).catch(() => {
       if (cancelled) return;
@@ -91,6 +119,7 @@ export function useEffectiveData(): EffectiveData {
       invoices: realInvoices,
       agreements: realAgreements,
       notifications: realNotifications,
+      notificationsError,
       loading,
     };
   }
@@ -110,5 +139,5 @@ export function useEffectiveData(): EffectiveData {
     mode === "agreement" ? mockNotifications.filter(n => n.type !== "insight").slice(0, 4) :
     mockNotifications;
 
-  return { mode, plan, invoices, agreements, notifications, loading: false };
+  return { mode, plan, invoices, agreements, notifications, notificationsError: null, loading: false };
 }

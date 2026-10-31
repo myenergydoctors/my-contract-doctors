@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { saveAnalysisNotification } from "@/lib/db/analysis-notifications-server";
 import { readPdfPageText } from "@/lib/pdf-text";
 import { quoteIsOnPage, validAgreementDate } from "@/lib/agreement-evidence";
 import { createClient as createServerClient } from "@/lib/supabase/server";
@@ -143,10 +144,12 @@ export async function POST(request: NextRequest) {
       raw_analysis: parsed, updated_at: new Date().toISOString(),
     }).eq("id", agreementId);
     if (updateError) throw new Error("Agreement result could not be saved.");
+    await saveAnalysisNotification(user.id, "agreement", agreementId, "ready");
     return NextResponse.json({ ok: true, agreement_id: agreementId });
   } catch (caught) {
     console.error("Agreement extraction failed:", caught);
     await admin.from("agreement_analyses").update({ status: "failed", document_quality_notes: "We could not safely analyze this agreement.", updated_at: new Date().toISOString() }).eq("id", agreementId);
+    await saveAnalysisNotification(user.id, "agreement", agreementId, "failed");
     return NextResponse.json({ error: "Agreement analysis failed." }, { status: 500 });
   }
 }

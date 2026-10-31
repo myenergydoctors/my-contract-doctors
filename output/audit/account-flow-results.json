@@ -1,0 +1,147 @@
+{
+  "run": "10472f50-fd29-4a13-9191-7c32f34d9fac",
+  "origin": "http://localhost:3004",
+  "startedAt": "2026-10-31T16:30:46.613Z",
+  "checks": [
+    {
+      "name": "Anonymous onboarding is rejected",
+      "passed": true
+    },
+    {
+      "name": "Onboarding prefills the real profile",
+      "passed": true
+    },
+    {
+      "name": "Onboarding progress saves",
+      "passed": true
+    },
+    {
+      "name": "Fresh sign-in restores all onboarding answers and step",
+      "passed": true
+    },
+    {
+      "name": "Onboarding completion persists",
+      "passed": true
+    },
+    {
+      "name": "Cross-site profile writes are rejected",
+      "passed": true
+    },
+    {
+      "name": "Incorrect current password cannot change credentials",
+      "passed": true
+    },
+    {
+      "name": "Correct current password permits password change",
+      "passed": true
+    },
+    {
+      "name": "Old password stops working",
+      "passed": true
+    },
+    {
+      "name": "New password restores saved account",
+      "passed": true
+    },
+    {
+      "name": "Password reset without recovery proof is rejected",
+      "passed": true
+    },
+    {
+      "name": "invoices: desktop creates a phone upload session",
+      "passed": true
+    },
+    {
+      "name": "invoices: wrong phone token is rejected",
+      "passed": true
+    },
+    {
+      "name": "invoices: phone uploads without desktop cookies",
+      "passed": true
+    },
+    {
+      "name": "invoices: desktop receives the saved phone file",
+      "passed": true
+    },
+    {
+      "name": "invoices: upload link cannot be reused",
+      "passed": true
+    },
+    {
+      "name": "invoices: anonymous desktop polling is denied",
+      "passed": true
+    },
+    {
+      "name": "invoices: expiry test session starts",
+      "passed": true
+    },
+    {
+      "name": "invoices: expired phone link rejects a file",
+      "passed": true
+    },
+    {
+      "name": "invoices: desktop sees the expired state",
+      "passed": true
+    },
+    {
+      "name": "agreements: desktop creates a phone upload session",
+      "passed": true
+    },
+    {
+      "name": "agreements: wrong phone token is rejected",
+      "passed": true
+    },
+    {
+      "name": "agreements: phone uploads without desktop cookies",
+      "passed": true
+    },
+    {
+      "name": "agreements: desktop receives the saved phone file",
+      "passed": true
+    },
+    {
+      "name": "agreements: upload link cannot be reused",
+      "passed": true
+    },
+    {
+      "name": "agreements: anonymous desktop polling is denied",
+      "passed": true
+    },
+    {
+      "name": "agreements: expiry test session starts",
+      "passed": true
+    },
+    {
+      "name": "agreements: expired phone link rejects a file",
+      "passed": true
+    },
+    {
+      "name": "agreements: desktop sees the expired state",
+      "passed": true
+    },
+    {
+      "name": "Deactivation requires the correct confirmation",
+      "passed": true
+    },
+    {
+      "name": "Confirmed deactivation completes",
+      "passed": true
+    },
+    {
+      "name": "Deactivation retains the account data",
+      "passed": true
+    },
+    {
+      "name": "Deactivated account cannot sign in again",
+      "passed": true
+    },
+    {
+      "name": "Synthetic phone files removed",
+      "passed": true
+    },
+    {
+      "name": "Disposable account removed",
+      "passed": true
+    }
+  ]
+}

@@ -70,7 +70,7 @@ export const checkoutPlans: Record<string, CheckoutPlan> = {
     price: "$49.99",
     priceCents: 4999,
     cadence: "one-time payment",
-    description: "Walk through a real uniform agreement clause-by-clause, with plain-English explanations and ready-to-send negotiation emails.",
+    description: "Walk through a fictional service agreement with plain-English explanations and copyable vendor questions to review and customize.",
     features: [
       "Full clause walkthrough",
       "Plain-English explanations",

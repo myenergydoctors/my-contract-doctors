@@ -1,11 +1,18 @@
 "use client";
 import Link from "next/link";
 import { mockInsights } from "@/lib/mock-data";
-import { useEffectivePlan } from "@/lib/use-effective-plan";
+import { useDemoMode, useEffectivePlan } from "@/lib/use-effective-plan";
 
 export default function InsightsPage() {
   const plan = useEffectivePlan();
+  const mode = useDemoMode();
   const locked = plan !== "pro";
+
+  if (mode === "live") return <div className="max-w-3xl bg-white border border-gray-200 rounded-2xl p-8">
+    <h2 className="font-serif text-navy text-2xl mb-3">Industry Insights are not available yet</h2>
+    <p className="font-sans text-gray-600 leading-relaxed mb-5">We do not have a verified benchmark dataset to show here. Your saved analyses remain available; network-wide comparisons and savings statistics will appear only when supported by comparable data.</p>
+    <Link href="/dashboard/invoices" className="font-sans text-sm text-blue">View your saved invoices →</Link>
+  </div>;
 
   return (
     <div className="max-w-6xl">

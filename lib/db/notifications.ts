@@ -45,18 +45,26 @@ export async function listNotifications(): Promise<NotificationForUI[]> {
     .from("notifications")
     .select("*")
     .order("created_at", { ascending: false });
-  if (error || !data) return [];
+  if (error || !data) throw new Error("Notifications could not be loaded. Please retry.");
   return (data as NotificationRow[]).map(toUI);
 }
 
 export async function markAllRead(): Promise<{ ok: boolean }> {
+  return markNotificationsRead();
+}
+
+export async function markNotificationsRead(id?: string): Promise<{ ok: boolean }> {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { ok: false };
-  const { error } = await supabase
+  let query = supabase
     .from("notifications")
     .update({ unread: false })
     .eq("user_id", user.id)
     .eq("unread", true);
-  return { ok: !error };
+  if (id) query = query.eq("id", id);
+  const { data, error } = await query.select("id");
+  if (error) return { ok: false };
+  window.dispatchEvent(new CustomEvent("mcd:notifications-read", { detail: (data ?? []).map(row => row.id) }));
+  return { ok: true };
 }

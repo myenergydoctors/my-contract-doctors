@@ -6,7 +6,12 @@ test("actual invoice route saves complete groups and rejects each injected failu
   const results = await runInvoiceFailureAudit();
   for (const result of results) {
     assert.equal(result.passed, true, `${result.fault}: ${JSON.stringify(result.errors)}`);
-    if (result.fault === 'retry_success') { assert.equal(result.writes.length, 0); assert.equal(result.body.invoice_id, 'saved-invoice'); }
+    if (result.fault === 'retry_success') {
+      assert.equal(result.writes.filter(write => write.table !== 'notifications').length, 0);
+      assert.equal(result.body.invoice_id, 'saved-invoice');
+      assert.ok(result.writes.some(write => write.table === 'notifications' && write.payload?.title === 'Invoice ready for review'));
+    }
+    if (result.status >= 400) assert.equal(result.writes.some(write => write.table === 'notifications' && write.payload?.title === 'Invoice ready for review'), false, `${result.fault} must not notify a successful analysis`);
     if (result.status >= 400) {
       assert.ok(result.writes.some(write => write.table === "invoice_analyses" && write.payload?.status === "failed"), `${result.fault} must mark the attempt failed`);
       assert.ok(result.writes.some(write => write.table === "document_segments" && write.operation === "delete"), `${result.fault} must remove the failed revision for retry`);

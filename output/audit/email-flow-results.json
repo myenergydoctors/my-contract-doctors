@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-31",
+  "scope": "Owner-authorized inbox aliases; allowed Supabase project; local compatible app and hosted preview e1fe41f. No customer records modified.",
+  "sender": "My Contract Doctors <help@mycontractdoctors.com>",
+  "checks": [
+    { "name": "Sign-up confirmation received in the authorized inbox", "passed": true },
+    { "name": "Sign-up mail passed SPF, DKIM and DMARC", "passed": true },
+    { "name": "Delivered sign-up link exchanged PKCE code and established the intended customer session", "passed": true },
+    { "name": "Recovery email received from the requested sender", "passed": true },
+    { "name": "Delivered recovery link opened the protected reset form", "passed": true },
+    { "name": "Recovery password reset succeeded and cleared the recovery cookie", "passed": true },
+    { "name": "Old password rejected and new password accepted after recovery", "passed": true },
+    { "name": "Hosted preview requested the deactivation email without disabling the account immediately", "passed": true },
+    { "name": "Deactivation email received and passed SPF, DKIM and DMARC", "passed": true },
+    { "name": "Delivered deactivation link displayed the owner-bound confirmation in the authenticated preview", "passed": true },
+    { "name": "Confirmation reached the hosted Account deactivated page", "passed": true },
+    { "name": "Independent database check confirmed the QA profile and business data were retained", "passed": true },
+    { "name": "Independent new sign-in was blocked after deactivation", "passed": true }
+  ],
+  "limits": [
+    "The help mailbox does not yet exist; inbound reply handling is not verified.",
+    "No production application promotion or merge was performed."
+  ]
+}

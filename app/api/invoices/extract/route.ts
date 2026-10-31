@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { saveAnalysisNotification } from "@/lib/db/analysis-notifications-server";
 import { validateInvoicePageCoverage } from "@/lib/invoice-page-coverage";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -292,6 +293,7 @@ export async function POST(req: NextRequest) {
     if (savedError) return NextResponse.json({ error: "Could not check the saved invoice result." }, { status: 503 });
     if (saved?.length) {
       if (saved.length !== saved[0].sibling_count || saved[0].sibling_index !== 0) return NextResponse.json({ error: "The saved invoice group is incomplete. Reprocess it from the saved invoice." }, { status: 409 });
+      await Promise.all(saved.map(invoice => saveAnalysisNotification(user.id, "invoice", invoice.id, "ready")));
       return NextResponse.json({ ok: true, reused: true, document_upload_id: existingUpload.id,
         invoice_id: saved[0].id, invoice_ids: saved.map(invoice => invoice.id), invoice_count: saved.length });
     }
@@ -1175,6 +1177,7 @@ Return strict JSON only.`;
       classification_status: "needs_review", current_classification_revision: nextClassificationRevision,
     }).eq("id", documentUploadId);
     if (publishError) throw new Error("Could not publish document classification.");
+    await Promise.all(invoiceIds.map(id => saveAnalysisNotification(user.id, "invoice", id, "ready")));
 
     return NextResponse.json({
       ok: true,
@@ -1208,6 +1211,7 @@ Return strict JSON only.`;
         })
         .eq("id", jobId);
     }
+    await saveAnalysisNotification(user.id, "invoice", primaryInvoiceId, "failed");
     return NextResponse.json({ error: "Extraction failed." }, { status: 500 });
   }
 }

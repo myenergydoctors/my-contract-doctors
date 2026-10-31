@@ -17,8 +17,8 @@ export default function DashboardHome() {
   const [showAgreementPaywall, setShowAgreementPaywall] = useState(false);
 
   // Prefer real user metadata when available; fall back to mock for preview
-  const firstName = realUser?.firstName || mockUser.name.split(" ")[0];
-  const businessName = realUser?.business || mockUser.businessName;
+  const firstName = mode === "live" ? realUser?.firstName || "there" : mockUser.name.split(" ")[0];
+  const businessName = mode === "live" ? realUser?.business || "your business" : mockUser.businessName;
 
   const handleAnalyzeAgreement = (e: React.MouseEvent) => {
     if (plan !== "pro") {
@@ -77,26 +77,26 @@ export default function DashboardHome() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <StatCard
           eyebrow="Identified savings"
-          value={plan === "pro" ? `$${totalSavingsIdentified.toLocaleString()}` : empty ? "$0" : "Locked"}
-          sub={empty ? "Upload an invoice to get started" : plan === "pro" ? "across all contracts and invoices" : "Open an invoice for its free result"}
+          value={mode === "live" ? "Unavailable" : plan === "pro" ? `$${totalSavingsIdentified.toLocaleString()}` : empty ? "$0" : "Locked"}
+          sub={mode === "live" ? "Review opportunities in each saved analysis" : empty ? "Upload an invoice to get started" : plan === "pro" ? "across all contracts and invoices" : "Open an invoice for its free result"}
           accent="teal"
         />
         <StatCard
           eyebrow="Invoices analyzed"
           value={invoices.length.toString()}
-          sub={empty ? "None yet" : `Most recent: ${new Date(invoices[0].uploadedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
+          sub={invoices.length === 0 ? "None yet" : `Most recent: ${new Date(invoices[0].uploadedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`}
           accent="blue"
         />
         <StatCard
           eyebrow="Agreements scored"
           value={agreements.length.toString()}
-          sub={empty ? "None yet" : "Average risk score: 78/100"}
+          sub={agreements.length === 0 ? "None yet" : "Open an agreement to review its risk score"}
           accent="amber"
         />
         <StatCard
           eyebrow="Actions outstanding"
-          value={empty ? "0" : "3"}
-          sub={empty ? "Nothing to do yet" : "2 high priority, 1 medium"}
+          value={mode === "live" ? "Unavailable" : empty ? "0" : "3"}
+          sub={mode === "live" ? "Action completion is not tracked yet" : empty ? "Nothing to do yet" : "2 high priority, 1 medium"}
           accent="red"
         />
       </div>

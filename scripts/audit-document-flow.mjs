@@ -6,6 +6,7 @@ import { createServerClient } from '@supabase/ssr';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
+import { removeDisposableAccount } from './lib/qa-cleanup.mjs';
 
 nextEnv.loadEnvConfig(process.cwd());
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -142,7 +143,7 @@ finally {
     // account's invoice parents first so their correction rows cascade away.
     const removedInvoices = await admin.from('invoice_analyses').delete().eq('user_id', userId);
     check('Disposable invoice and correction records removed', !removedInvoices.error, removedInvoices.error?.message);
-    const removed = await admin.auth.admin.deleteUser(userId); check('Disposable account removed', !removed.error, removed.error?.message);
+    const removed = await removeDisposableAccount(admin, userId); check('Disposable account and unshared QA organizations removed', !removed.error, removed.error?.message);
   }
   results.completedAt = new Date().toISOString();
   await mkdir('output/audit', { recursive: true });

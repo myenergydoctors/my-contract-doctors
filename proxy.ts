@@ -15,8 +15,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization)
      * - public metadata assets
-     * - API routes (they enforce their own authorization)
      */
-    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|icon\\.svg|opengraph-image|api).*)",
+    "/((?!_next/static|_next/image|favicon\\.ico|robots\\.txt|sitemap\\.xml|icon\\.svg|opengraph-image).*)",
   ],
 };

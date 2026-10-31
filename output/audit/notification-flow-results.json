@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-31",
+  "scope": "Local compatible application and the allowed Supabase project; disposable QA accounts only.",
+  "checks": [
+    { "name": "Actual invoice-route regression checks notify readiness only after required publication writes succeed", "passed": true },
+    { "name": "Successful extraction retry reuses the document and retries notification delivery without rewriting analysis data", "passed": true },
+    { "name": "Real database notification creation is idempotent", "passed": true },
+    { "name": "Repeated delivery preserves an existing read state", "passed": true },
+    { "name": "Other accounts cannot read or update the notification", "passed": true },
+    { "name": "Readiness and failure events have distinct stable identities", "passed": true },
+    { "name": "Browser individual read updates persisted data and the sidebar unread badge", "passed": true },
+    { "name": "Analysis filter hides the synthetic system notification", "passed": true },
+    { "name": "Browser Mark all read clears the badge and persists after refresh", "passed": true },
+    { "name": "Unread filter shows the no-matching-items state after refresh", "passed": true }
+  ],
+  "limits": [
+    "This implements in-app analysis updates, not scheduled renewal reminders, vendor-response alerts or notification emails.",
+    "Notification storage failures are logged without changing the saved analysis result. Invoice successful retries also retry event delivery."
+  ]
+}
