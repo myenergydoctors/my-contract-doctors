@@ -1,6 +1,8 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { useEffectiveData } from "@/lib/use-effective-plan";
+import { markNotificationsRead } from "@/lib/db/notifications";
 import EmptyState from "@/components/portal/EmptyState";
 
 const typeMeta = {
@@ -12,8 +14,25 @@ const typeMeta = {
 } as const;
 
 export default function NotificationsPage() {
-  const { notifications: list } = useEffectiveData();
+  const { notifications, notificationsError, mode, loading } = useEffectiveData();
+  const [filter, setFilter] = useState("All");
+  const [previewRead, setPreviewRead] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const list = notifications.map(item => mode !== "live" && previewRead.includes(item.id) ? { ...item, unread: false } : item);
   const unreadCount = list.filter(n => n.unread).length;
+  const filterTypes: Record<string, string> = { Renewals: "renewal", Analyses: "analysis", Savings: "savings", Insights: "insight" };
+  const visible = list.filter(item => filter === "All" || (filter === "Unread" ? item.unread : item.type === filterTypes[filter]));
+  const markRead = async (id?: string) => {
+    if (saving) return;
+    setSaving(true); setError("");
+    try {
+      if (mode === "live") {
+        if (!(await markNotificationsRead(id)).ok) throw new Error("Your read status could not be saved. Please retry.");
+      } else setPreviewRead(current => [...new Set([...current, ...(id ? [id] : list.map(item => item.id))])]);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Your read status could not be saved. Please retry."); }
+    finally { setSaving(false); }
+  };
 
   return (
     <div className="max-w-4xl">
@@ -21,23 +40,27 @@ export default function NotificationsPage() {
       <div className="flex justify-between items-end mb-8">
         <div>
           <p className="font-sans font-light text-gray-500 leading-relaxed">
-            Renewal alerts, finished analyses, and updates from your contracts — all in one place.
+            Saved analysis updates appear here. Scheduled renewal reminders and vendor-response alerts are not active yet.
           </p>
         </div>
         {unreadCount > 0 && (
-          <button className="font-sans text-sm text-blue hover:text-navy bg-transparent border-none cursor-pointer whitespace-nowrap">
+          <button onClick={() => void markRead()} disabled={saving} className="font-sans text-sm text-blue hover:text-navy bg-transparent border-none cursor-pointer whitespace-nowrap disabled:opacity-50">
             Mark all read
           </button>
         )}
       </div>
+      {error && <p role="alert" className="font-sans text-sm text-red mb-4">{error}</p>}
+      {notificationsError && <p role="alert" className="font-sans text-sm text-red mb-4">{notificationsError} <button onClick={() => window.location.reload()} className="underline cursor-pointer">Retry</button></p>}
 
       {/* Filter bar */}
       <div className="flex gap-2 overflow-x-auto pb-3 mb-5 [&::-webkit-scrollbar]:hidden" style={{ scrollbarWidth: "none" }}>
         {["All", "Unread", "Renewals", "Analyses", "Savings", "Insights"].map((f, i) => (
           <button
             key={f}
+            onClick={() => setFilter(f)}
+            aria-pressed={filter === f}
             className={`font-sans text-sm px-4 py-1.5 rounded-full whitespace-nowrap border transition-colors cursor-pointer ${
-              i === 0 ? "bg-navy text-white border-navy" : "bg-white text-gray-700 border-gray-200 hover:bg-off-white"
+              filter === f ? "bg-navy text-white border-navy" : "bg-white text-gray-700 border-gray-200 hover:bg-off-white"
             }`}
           >
             {f}{i === 1 && unreadCount > 0 ? ` (${unreadCount})` : ""}
@@ -46,17 +69,17 @@ export default function NotificationsPage() {
       </div>
 
       {/* List */}
-      {list.length === 0 ? (
+      {loading ? <p role="status" className="font-sans text-sm text-gray-500">Loading notifications…</p> : notificationsError ? null : visible.length === 0 ? (
         <EmptyState
           illustration="bell"
           eyebrow="Quiet for now"
-          title="No notifications yet."
-          body="Once you upload your first invoice or contract, we'll start showing renewal alerts, analysis updates, and vendor responses here."
+          title={list.length ? "No notifications match this filter." : "No notifications yet."}
+          body="Saved analysis updates will appear here when an invoice or agreement finishes processing."
           primaryCta={{ label: "Upload an invoice →", href: "/invoice" }}
         />
       ) : (
       <div className="flex flex-col gap-3">
-        {list.map(n => {
+        {visible.map(n => {
           const meta = typeMeta[n.type];
           return (
             <div key={n.id} className={`bg-white border rounded-2xl p-5 md:p-6 ${n.unread ? "border-blue/30 shadow-sm" : "border-gray-200"}`}>
@@ -79,6 +102,7 @@ export default function NotificationsPage() {
                       {n.actionLabel} →
                     </Link>
                   )}
+                  {n.unread && <button onClick={() => void markRead(n.id)} disabled={saving} className="block mt-3 font-sans text-xs text-blue hover:text-navy cursor-pointer disabled:opacity-50">Mark as read</button>}
                 </div>
               </div>
             </div>
@@ -87,7 +111,7 @@ export default function NotificationsPage() {
       </div>
       )}
 
-      {list.length > 0 && (
+      {list.length > 0 && unreadCount === 0 && (
         <div className="text-center mt-10">
           <p className="font-sans text-sm text-gray-500">You're all caught up.</p>
         </div>

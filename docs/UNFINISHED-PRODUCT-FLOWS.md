@@ -94,7 +94,31 @@ implied by this automated result.
 
 These clean synthetic fixtures do not establish extraction accuracy across real
 customer documents. Legal pages, standalone Demystifier fulfillment, marketing
-delivery, notification generation and scheduled monitoring remain open work.
+delivery, notification emails and scheduled monitoring remain open work.
+
+### Notification process follow-up
+
+The review branch now creates owner-bound in-app analysis-ready and failed-attempt
+updates from invoice/agreement processing. Readiness is recorded after required
+analysis publication succeeds. Stable notification IDs and conflict-ignore inserts
+prevent duplicate events or reset read state. Invoice success retries also retry
+notification delivery. Links open the saved-document lists so later reprocessing
+does not leave links to removed revisions.
+
+Notification filters, individual read, Mark all read, sidebar unread counts,
+loading/errors/retry, and honest filter-empty states are wired. Preview controls
+change local sample state only. Scheduled renewal reminders, vendor-response
+alerts and notification emails remain inactive and are labeled accordingly.
+
+The real-database opt-in notification test passed creation, deduplication, saved
+read state and cross-account isolation. Browser tests confirmed filtering and
+individual/bulk read persistence after refresh; an independent database read
+confirmed all three QA notifications were read. The test accounts and their
+unshared organizations were removed. Evidence:
+`output/audit/notification-flow-results.json`.
+
+Current default suite: 57 passed, 0 failed, 3 opt-in integrations skipped; the
+notification integration was also run explicitly and passed.
 
 This is the working handoff for completing the customer-facing product around the invoice and agreement analysis engines. It separates intentional testing behavior from functionality that still needs to be built.
 

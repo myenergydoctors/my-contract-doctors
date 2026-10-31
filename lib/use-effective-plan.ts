@@ -53,6 +53,7 @@ type EffectiveData = {
   invoices: (InvoiceForUI | InvoiceAnalysis)[];
   agreements: (AgreementForUI | AgreementAnalysis)[];
   notifications: (NotificationForUI | typeof mockNotifications[0])[];
+  notificationsError: string | null;
   loading: boolean;
 };
 
@@ -62,7 +63,17 @@ export function useEffectiveData(): EffectiveData {
   const [realInvoices, setRealInvoices] = useState<InvoiceForUI[]>([]);
   const [realAgreements, setRealAgreements] = useState<AgreementForUI[]>([]);
   const [realNotifications, setRealNotifications] = useState<NotificationForUI[]>([]);
+  const [notificationsError, setNotificationsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const onRead = (event: Event) => {
+      const ids = (event as CustomEvent<string[]>).detail;
+      if (Array.isArray(ids)) setRealNotifications(current => current.map(item => ids.includes(item.id) ? { ...item, unread: false } : item));
+    };
+    window.addEventListener("mcd:notifications-read", onRead);
+    return () => window.removeEventListener("mcd:notifications-read", onRead);
+  }, []);
 
   useEffect(() => {
     if (mode !== "live") {
@@ -75,13 +86,14 @@ export function useEffectiveData(): EffectiveData {
       getProfile(),
       listInvoices(),
       listAgreements(),
-      listNotifications(),
+      listNotifications().then(items => ({ items, error: null as string | null })).catch(() => ({ items: [] as NotificationForUI[], error: "Notifications could not be loaded. Please reload and try again." })),
     ]).then(([profile, invs, agrs, notifs]) => {
       if (cancelled) return;
       setRealPlan(profile?.plan ?? "free");
       setRealInvoices(invs);
       setRealAgreements(agrs);
-      setRealNotifications(notifs);
+      setRealNotifications(notifs.items);
+      setNotificationsError(notifs.error);
       setLoading(false);
     }).catch(() => {
       if (cancelled) return;
@@ -101,6 +113,7 @@ export function useEffectiveData(): EffectiveData {
       invoices: realInvoices,
       agreements: realAgreements,
       notifications: realNotifications,
+      notificationsError,
       loading,
     };
   }
@@ -120,5 +133,5 @@ export function useEffectiveData(): EffectiveData {
     mode === "agreement" ? mockNotifications.filter(n => n.type !== "insight").slice(0, 4) :
     mockNotifications;
 
-  return { mode, plan, invoices, agreements, notifications, loading: false };
+  return { mode, plan, invoices, agreements, notifications, notificationsError: null, loading: false };
 }
