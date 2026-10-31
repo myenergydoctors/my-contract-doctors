@@ -56,7 +56,8 @@ is separately tested with the owner's authorized QA aliases.
 - Delivery/retries: every fifteen minutes, `/api/cron/notification-emails`.
 
 Both cron routes fail closed unless the Authorization header exactly matches
-the private `CRON_SECRET`. Customers can run an account-scoped check through
+the private `CRON_SECRET`. An optional UUID `user_id` query scopes operator QA
+to one account; malformed or empty values fail with HTTP 400. Customers can run an account-scoped check through
 `/api/account/notifications/check`, rate-limited to six checks per hour.
 
 Required server configuration:
@@ -84,9 +85,18 @@ deployments do not run automatic Vercel cron schedules.
   against the allowed real Supabase database. It tests duplicate prevention,
   concurrency, retries/exhaustion, unknown outcomes, consent, deactivation,
   changed/disabled schedules, Pro gating, ownership and CSRF boundaries.
-- Global cron handlers are verified with isolated workers. Invoking them against
-  all shared-project accounts was blocked by approval review; live QA uses the
-  account-scoped check path that calls the same scheduling/delivery functions.
+- Cron handlers are verified with isolated workers and with an explicit, verified
+  disposable-account scope against the local application: missing auth returned
+  401, renewal scheduling returned 200, and mail returned 503 without local
+  SendGrid configuration without claiming jobs. No global shared-project run
+  was performed. Actual provider delivery used the signed-in preview account.
+- Preview browser QA saved both preferences and a confirmed schedule, sent one
+  renewal and one analysis email, and repeated checks sent zero duplicates. Both
+  messages arrived from `help@mycontractdoctors.com` with SPF/DKIM/DMARC passing.
+  Opening unsubscribe did not mutate preferences; confirmation disabled renewal
+  only. Re-enabling the schedule produced a suppressed email with zero attempts.
+  The inbox still contained exactly two messages, and all synthetic records were
+  removed afterward.
 - Browser and actual inbox evidence is recorded separately in
   `output/audit/renewal-email-flow-results.json` after completion.
 

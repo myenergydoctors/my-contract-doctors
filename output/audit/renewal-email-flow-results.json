@@ -1,0 +1,78 @@
+{
+  "verified_at": "2026-10-31",
+  "project": "My Contract Doctors",
+  "branch": "codex/launch-process-verification",
+  "application_commit_tested": "dbbea93d982090aa5e5cba2abd56e5816b0f364d",
+  "preview": "https://my-contract-doctors-plkoleigd-osc-web-design.vercel.app",
+  "scope": "Disposable synthetic account and agreement only; no customer documents or recipients",
+  "browser": {
+    "preferences_saved_and_reloaded": true,
+    "confirmed_pro_schedule_saved": true,
+    "first_check_provider_accepted": 2,
+    "repeat_check_provider_accepted": 0,
+    "unsubscribe_get_read_only": true,
+    "unsubscribe_confirmation": {
+      "renewal_email": false,
+      "analysis_email": true
+    },
+    "disabled_and_reenabled_schedule": true,
+    "new_opted_out_renewal_job": {
+      "status": "suppressed",
+      "attempts": 0
+    }
+  },
+  "inbox": {
+    "messages_received": 2,
+    "categories": [
+      "renewal",
+      "analysis"
+    ],
+    "from": "help@mycontractdoctors.com",
+    "spf": "pass",
+    "dkim": "pass",
+    "dmarc": "pass",
+    "list_unsubscribe_one_click_header": true,
+    "direct_preview_links_without_click_tracking": true,
+    "count_after_repeat_and_opt_out_checks": 2
+  },
+  "local_scoped_cron": {
+    "explicit_verified_qa_user_id": true,
+    "unauthenticated_status": 401,
+    "renewal_authenticated_status": 200,
+    "mail_without_local_provider_key_status": 503,
+    "global_shared_database_cron_invoked": false
+  },
+  "automated": {
+    "default_suite": {
+      "passed": 64,
+      "failed": 0,
+      "skipped_opt_in": 4,
+      "note": "Includes concurrent local customer-review tests; those sources are excluded from this commit."
+    },
+    "renewal_domain_postgres_and_cron_tests": "passed",
+    "live_database_fake_transport_integration": "passed; retry/exhaustion, uncertainty, audited resolution, concurrent claims, opt-out, deactivation, eligibility, ownership and CSRF",
+    "typecheck": "passed",
+    "webpack_production_build": "passed",
+    "lint": {
+      "errors": 0,
+      "existing_warnings": 22
+    }
+  },
+  "cleanup": {
+    "qa_account_deleted": true,
+    "synthetic_agreement_preferences_schedules_notifications_jobs_removed": true,
+    "unshared_qa_organization_removed": true,
+    "private_qa_credentials_deleted": true
+  },
+  "production": {
+    "application_released": false,
+    "email_or_cron_activation_performed": false,
+    "preview_automatic_cron_runs": false,
+    "remaining": [
+      "Configure production notification signing and cron secrets at launch",
+      "Enable production notification delivery and deploy compatible application",
+      "Confirm Vercel cron jobs are enabled and inspect first scheduled runs"
+    ]
+  },
+  "privacy": "No credentials, signed tokens, inbox contents or customer records included."
+}

@@ -94,7 +94,8 @@ implied by this automated result.
 
 These clean synthetic fixtures do not establish extraction accuracy across real
 customer documents. Legal pages, standalone Demystifier fulfillment, marketing
-delivery, notification emails and scheduled monitoring remain open work.
+delivery and ongoing invoice/service-history monitoring remain open work.
+Renewal scheduling and notification email verification are documented below.
 
 ### Notification process follow-up
 
@@ -107,8 +108,9 @@ does not leave links to removed revisions.
 
 Notification filters, individual read, Mark all read, sidebar unread counts,
 loading/errors/retry, and honest filter-empty states are wired. Preview controls
-change local sample state only. Scheduled renewal reminders, vendor-response
-alerts and notification emails remain inactive and are labeled accordingly.
+change local sample state only. Confirmed renewal schedules and opted-in analysis
+/renewal emails are implemented and verified on the review preview; production
+activation remains a launch step. Vendor-response alerts remain inactive.
 
 The real-database opt-in notification test passed creation, deduplication, saved
 read state and cross-account isolation. Browser tests confirmed filtering and
@@ -241,16 +243,16 @@ Status: Mixed real and mock data.
 
 ## Priority 5 — Notifications and ongoing monitoring
 
-Status: Storage/read helpers exist; event generation and delivery do not.
+Status: Analysis events, read controls, confirmed renewal scheduling, independent
+email preferences, durable delivery/retries and unsubscribe are implemented.
+Real preview inbox, database isolation, duplicate prevention and suppression
+checks passed. See `docs/NOTIFICATION-DELIVERY.md` and
+`output/audit/renewal-email-flow-results.json`. Production secrets, release and
+first automatic cron-run verification remain launch activation steps.
 
-- Generate in-app notifications when invoice or agreement analysis completes or fails.
-- Implement renewal-window scheduling from confirmed agreement dates.
+Remaining monitoring work:
 - Implement ongoing invoice-versus-agreement monitoring instead of only displaying explanatory text.
 - Generate service-history follow-up reminders and completion notifications.
-- Wire filtering, unread counts, individual read state, and Mark all read.
-- Persist email-alert preferences.
-- Add scheduled jobs and retry/error visibility.
-- Add email delivery only for opted-in events, with unsubscribe/preference handling.
 
 ## Priority 6 — Insights, benchmarks, and comparisons
 

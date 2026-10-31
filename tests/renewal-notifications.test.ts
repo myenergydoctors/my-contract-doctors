@@ -38,6 +38,9 @@ test("cron routes fail closed without the exact secret and call only their inten
     assert.equal((await renewal.GET(request("Bearer isolated-test-only"))).status, 200);
     assert.equal((await email.GET(request("Bearer isolated-test-only"))).status, 200);
     assert.equal(scheduled, 1); assert.equal(delivered, 1);
+    const scoped = loadRoute("app/api/cron/renewal-reminders/route.ts", { "@/lib/notifications/server": { scheduleRenewalReminders: async (id: string) => { assert.equal(id, "aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa"); return { due: 0 }; } } });
+    assert.equal((await scoped.GET(new NextRequest("https://example.test/api/cron/renewal-reminders?user_id=aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa", { headers: { authorization: "Bearer isolated-test-only" } }))).status, 200);
+    assert.equal((await scoped.GET(new NextRequest("https://example.test/api/cron/renewal-reminders?user_id=", { headers: { authorization: "Bearer isolated-test-only" } }))).status, 400);
   } finally { if (original === undefined) delete process.env.CRON_SECRET; else process.env.CRON_SECRET = original; }
 });
 test("PostgreSQL stores event and delivery intent together, locks claims, and restricts queue control to the server", async () => {
