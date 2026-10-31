@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 // setDemoSession used to fake a sign-in via localStorage. Now that real
 // Supabase auth gates /dashboard, onboarding only renders for users who
 // are already signed in (or who navigate here from /sign-up after email
@@ -13,6 +13,9 @@ const vendors = ["Cintas", "UniFirst", "ALSCO", "ImageFirst", "Aramark", "G&K Se
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const [data, setData] = useState({
     business: "",
     industry: "",
@@ -21,7 +24,33 @@ export default function OnboardingPage() {
   });
   const totalSteps = 4;
 
-  const next = () => setStep(s => Math.min(totalSteps, s + 1));
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/account/onboarding", { cache: "no-store" }).then(async response => {
+      if (response.status === 401) { router.replace("/sign-in?redirect=%2Fonboarding"); return; }
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Your progress could not be loaded.");
+      if (cancelled) return;
+      if (result.completed) { router.replace("/dashboard"); return; }
+      setData({ business: result.business, industry: result.industry, vendor: result.vendor, monthlySpend: result.monthlySpend });
+      setStep(result.step);
+    }).catch(reason => { if (!cancelled) setError(reason.message); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [router]);
+
+  const next = async () => {
+    if (saving) return;
+    setSaving(true); setError("");
+    const nextStep = Math.min(totalSteps, step + 1);
+    try {
+      const response = await fetch("/api/account/onboarding", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...data, step: nextStep, completed: nextStep === totalSteps }) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || "Your progress could not be saved.");
+      setStep(nextStep);
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Your progress could not be saved. Please retry."); }
+    finally { setSaving(false); }
+  };
   const back = () => setStep(s => Math.max(1, s - 1));
   const finish = () => {
     router.push("/dashboard");
@@ -47,13 +76,16 @@ export default function OnboardingPage() {
       {/* Body */}
       <main className="flex-1 px-6 md:px-8 py-10 md:py-16 flex items-start">
         <div className="max-w-xl mx-auto w-full">
+          {error && <p role="alert" className="font-sans text-sm text-red mb-5">{error}</p>}
+          {loading ? <p role="status" className="font-sans text-sm text-gray-500">Loading your progress…</p> : <fieldset disabled={saving} className="min-w-0 border-0 p-0 m-0">
+          {saving && <p role="status" className="font-sans text-sm text-gray-500 mb-4">Saving your progress…</p>}
 
           {/* Step 1 — Business name */}
           {step === 1 && (
             <Step
               eyebrow="Let's get you set up"
               title="What's your business?"
-              subtitle="We'll use this to personalize your dashboard and tailor recommendations."
+              subtitle="We'll save this to your business profile."
             >
               <div className="flex flex-col gap-4">
                 <Field
@@ -78,7 +110,7 @@ export default function OnboardingPage() {
             <Step
               eyebrow="Your current vendor"
               title="Who provides your uniforms or linens today?"
-              subtitle="We'll calibrate our analysis to your specific vendor's contract patterns."
+              subtitle="We'll save your vendor preference. Each uploaded document is analyzed on its own evidence."
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {vendors.map(v => (
@@ -100,7 +132,7 @@ export default function OnboardingPage() {
             <Step
               eyebrow="Quick estimate"
               title="Roughly how much do you spend monthly?"
-              subtitle="A ballpark is fine — we'll use this to estimate your potential savings."
+              subtitle="A ballpark is fine. This is background information, not a savings estimate."
             >
               <div className="grid grid-cols-2 gap-2">
                 {["Under $500", "$500–$1,500", "$1,500–$3,000", "$3,000–$5,000", "$5,000–$10,000", "Over $10,000"].map(opt => (
@@ -127,13 +159,14 @@ export default function OnboardingPage() {
               <div className="flex flex-col gap-3 mb-6">
                 <Action title="Upload your first invoice" body="Get an instant free recommendation on your latest bill." href="/invoice" cta="Upload now" primary />
                 <Action title="Analyze your contract" body="Get a full clause-by-clause breakdown of your service agreement." href="/agreement" cta="Upload contract" />
-                <Action title="Skip and explore the dashboard" body="Get a feel for the platform with our preview data, then come back." onClick={finish} cta="Explore →" />
+                <Action title="Explore the dashboard" body="Your business details are saved. You can upload your documents later." onClick={finish} cta="Explore →" />
               </div>
               <div className="text-center mt-4">
                 <button onClick={back} className="font-sans text-sm text-gray-500 hover:text-navy bg-transparent border-none cursor-pointer">← back</button>
               </div>
             </Step>
           )}
+          </fieldset>}
         </div>
       </main>
     </div>

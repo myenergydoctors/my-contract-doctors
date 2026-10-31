@@ -1,0 +1,261 @@
+{
+  "run": "d7cb1287-6e21-40ed-a7a9-f34f65fad49c",
+  "startedAt": "2026-10-31T16:25:07.000Z",
+  "scope": "https://mycontractdoctors.com; real configured Supabase and Anthropic; synthetic PDFs",
+  "checks": [
+    {
+      "name": "Disposable authenticated free account",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Real invoice extraction returns one logical invoice across two pages",
+      "passed": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "Saved invoice number, totals, status and page coverage match fixture",
+      "passed": true,
+      "detail": {
+        "invoice_number": "QA-20260921-001",
+        "total_due_cents": 5000,
+        "gross_charges_cents": 5000,
+        "status": "completed",
+        "source_page_start": 1,
+        "source_page_end": 2
+      }
+    },
+    {
+      "name": "All three invoice line amounts persist exactly",
+      "passed": true,
+      "detail": [
+        {
+          "id": "01da2336-0208-4730-89c3-d1bf85c15a85",
+          "raw_description": "Shop towel rental",
+          "raw_quantity": 10,
+          "raw_unit_rate": 2.5,
+          "raw_line_total_cents": 2500,
+          "raw_billing_frequency": "weekly"
+        },
+        {
+          "id": "9e756709-e3e4-48be-91e4-d21f0c5ab093",
+          "raw_description": "Apron rental",
+          "raw_quantity": 4,
+          "raw_unit_rate": 5,
+          "raw_line_total_cents": 2000,
+          "raw_billing_frequency": "weekly"
+        },
+        {
+          "id": "63fe6dcf-9293-4618-8dfd-e8ad9b9d5e09",
+          "raw_description": "Service charge (flat weekly fee)",
+          "raw_quantity": 1,
+          "raw_unit_rate": 5,
+          "raw_line_total_cents": 500,
+          "raw_billing_frequency": "weekly"
+        }
+      ]
+    },
+    {
+      "name": "Invoice requires review before results",
+      "passed": true,
+      "detail": {
+        "status": "needs_review",
+        "redIssueCount": 0,
+        "issues": []
+      }
+    },
+    {
+      "name": "Invoice confirmation persists on a fresh read",
+      "passed": true,
+      "detail": {
+        "totals": {
+          "grossChargesCents": 5000,
+          "creditsCents": 0,
+          "pastBalanceCents": 0,
+          "lateFeesCents": 0,
+          "taxesCents": 0,
+          "totalDueCents": 5000,
+          "computedTotalCents": 5000,
+          "differenceCents": 0
+        }
+      }
+    },
+    {
+      "name": "Customer corrections persist and reconcile after reconfirmation",
+      "passed": true,
+      "detail": {
+        "grossChargesCents": 5500,
+        "creditsCents": 0,
+        "pastBalanceCents": 0,
+        "lateFeesCents": 0,
+        "taxesCents": 0,
+        "totalDueCents": 5500,
+        "computedTotalCents": 5500,
+        "differenceCents": 0
+      }
+    },
+    {
+      "name": "Confirmed invoice finding metadata is saved to its lead",
+      "passed": true,
+      "detail": {
+        "finding_count": 3,
+        "free_finding_kind": "service_fee",
+        "result_profiled_at": "2026-10-31T16:25:46.823+00:00"
+      }
+    },
+    {
+      "name": "Agreement metadata and calculated 60-day notice deadline match fixture",
+      "passed": true,
+      "detail": {
+        "page_count": 2,
+        "vendor": "QA Linen Test Vendor",
+        "expiration_date": "2027-09-30",
+        "renewal_notice_days": 60,
+        "renewal_deadline": "2027-08-01",
+        "status": "completed"
+      }
+    },
+    {
+      "name": "Every extracted agreement quote occurs on its cited source page",
+      "passed": true,
+      "detail": [
+        {
+          "kind": "auto_renewal",
+          "page": 1,
+          "quote": "This agreement renews automatically for successive one-year terms unless either party gives written notice at least 60 days before expiration. Notice must be delivered by certified mail to the vendor address."
+        },
+        {
+          "kind": "price_escalation",
+          "page": 1,
+          "quote": "Prices may increase once per year by no more than 3 percent, with 30 days advance written notice to the customer."
+        },
+        {
+          "kind": "early_termination",
+          "page": 2,
+          "quote": "Early termination requires a fixed fee of $200.00. No termination fee applies following an uncured material vendor breach."
+        },
+        {
+          "kind": "fee_rights",
+          "page": 2,
+          "quote": "No additional service fees are permitted without customer written approval."
+        },
+        {
+          "kind": "minimum_commitment",
+          "page": 2,
+          "quote": "No minimum billing applies. Only actual delivered quantities are billed."
+        }
+      ]
+    },
+    {
+      "name": "Agreement findings hidden until confirmation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Agreement list omits raw analysis and paid clause text",
+      "passed": true,
+      "detail": {
+        "count": 1
+      }
+    },
+    {
+      "name": "Free agreement API exposes one finding and no paid email",
+      "passed": true,
+      "detail": {
+        "findingCount": 5,
+        "visible": 1,
+        "locked": 4
+      }
+    },
+    {
+      "name": "Direct customer database read protects paid agreement findings",
+      "passed": true,
+      "detail": {
+        "errorCode": "42501",
+        "rawAnalysisExposed": false
+      }
+    },
+    {
+      "name": "Confirmed agreement finds the same-vendor saved invoice",
+      "passed": true,
+      "detail": {
+        "totalSavedInvoices": 1,
+        "sameVendorInvoices": 1,
+        "floorMatLines": 0,
+        "monitoringChecks": [
+          "Track future unit-rate changes against the agreement's increase language and notice requirements.",
+          "Compare invoice surcharges and add-ons with the agreement's permitted-fee language.",
+          "Check future invoices against the agreement's protections against minimum billing.",
+          "Keep the renewal notice deadline attached to the ongoing vendor record."
+        ]
+      }
+    },
+    {
+      "name": "Pro agreement deliverable has every finding and quote-based email",
+      "passed": true,
+      "detail": {
+        "visible": 5,
+        "emails": 5
+      }
+    },
+    {
+      "name": "No-minimum provision is treated as an existing protection",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Returning customer keeps saved agreement access",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "One-time entitlement unlocks the saved deliverable on a free account",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Revoked one-time entitlement restores the free preview",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Direct raw-content access is denied for document_uploads",
+      "passed": true,
+      "detail": {
+        "code": "42501"
+      }
+    },
+    {
+      "name": "Direct raw-content access is denied for invoice_extraction_jobs",
+      "passed": true,
+      "detail": {
+        "code": "42501"
+      }
+    },
+    {
+      "name": "Direct raw-content access is denied for invoice_analyses",
+      "passed": true,
+      "detail": {
+        "code": "42501"
+      }
+    },
+    {
+      "name": "Synthetic storage files removed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Disposable invoice and correction records removed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Disposable account removed",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "completedAt": "2026-10-31T16:26:39.108Z"
+}

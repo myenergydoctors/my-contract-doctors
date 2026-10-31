@@ -10,7 +10,17 @@ import type { Plan } from "./supabase/database.types";
 
 export function useDemoMode(): DemoMode {
   const [mode, setMode] = useState<DemoMode>("live");
-  useEffect(() => setMode(getDemoMode()), []);
+  useEffect(() => {
+    let cancelled = false;
+    if (process.env.NODE_ENV === "development") {
+      setMode(getDemoMode());
+    } else {
+      getProfile().then(profile => {
+        if (!cancelled) setMode(profile?.is_admin ? getDemoMode() : "live");
+      }).catch(() => { /* Keep real data when tester status cannot be verified. */ });
+    }
+    return () => { cancelled = true; };
+  }, []);
   return mode;
 }
 

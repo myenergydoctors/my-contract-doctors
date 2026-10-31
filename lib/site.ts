@@ -8,6 +8,7 @@ export const SITE = {
     "Upload your uniform or linen service agreement and invoice. We help you understand every clause and line item, identify savings opportunities, and give you the language to negotiate.",
   twitterHandle: "@mycontractdrs",
   email: "hello@mycontractdoctors.com",
+  emailFrom: { email: "help@mycontractdoctors.com", name: "My Contract Doctors" },
 };
 
 // Routes that should appear in the sitemap, with priority + change freq hints.

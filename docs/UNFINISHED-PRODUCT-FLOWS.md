@@ -1,6 +1,89 @@
 # My Contract Doctors — Unfinished Product Flows
 
-Last updated: September 16, 2026
+Last reviewed: October 31, 2026
+
+## October 31 launch review
+
+Verified against GitHub `myenergydoctors/my-contract-doctors`, Vercel project
+`prj_I1G3a2NTud0y4iUIxM0IOfumFWJh` in OSC Web Design, and the allowed Supabase
+project below. This is an initial launch review, not completed customer acceptance.
+
+- Production is READY at commit `d89407de0c5a67b77787ff917dfc5f7df36c3bcf`
+  (document reliability PR #10). The September reliability handoff's statement
+  that deployment and migration are pending is historical.
+- Supabase migration `20260921120000_protect_analysis_content` is applied.
+  Read-only privilege checks confirm `authenticated` cannot SELECT the full
+  agreement table or the invoice `raw_analysis` column. These checks do not
+  replace a complete customer authorization walkthrough.
+- Account lifecycle PR #9 remains a draft. Production Settings still contains
+  sample profile values and unwired save/password/delete controls; Forgot
+  Password and legal links remain placeholders. Do not describe those account
+  features as released. Its real-inbox email-link acceptance gate remains open.
+- Checkout is still intentionally no-charge preview. Paid launch requires an
+  owner decision and verified payment fulfillment, cancellation and recovery.
+- The standalone Demystifier remains an incomplete preview product.
+- Live overview fixes prepared locally remove the fabricated risk average,
+  outstanding-action count, mock identity fallback, and unsupported aggregate
+  savings. An agreement-only account no longer dereferences a missing invoice.
+  Aggregate savings and action tracking show unavailable until supported.
+- Supabase security review: all listed public tables have RLS enabled. Nine
+  server-mediated tables have no browser policies; do not add permissive policies
+  just to clear informational advisories. The two SECURITY DEFINER helpers
+  inspected check `auth.uid()` and pin their search path. `set_updated_at` still
+  has a mutable search path, and leaked-password protection is disabled.
+
+Launch work still includes honest Live/preview presentation, real account and
+recovery flows, reviewed legal pages and retention policy, consent-aware guide
+delivery, saved onboarding, and acceptance testing on the intended deployment.
+Unreleased notifications, monitoring, benchmarks, service-history operations and
+modules must either be completed or clearly excluded from launch promises.
+
+Local baseline: 53 tests passed, 0 failed, 1 opt-in billing integration test
+skipped. No real-inbox, payment, or customer-document accuracy acceptance is
+implied by this automated result.
+
+### Process fixes and acceptance evidence from this pass
+
+- Account-lifecycle implementation from draft PR #9 is included locally, with
+  loading/save failure handling improved. It is not yet released to production.
+- Onboarding now saves business/industry to the owned profile and vendor/spend,
+  step and completion to user-editable onboarding metadata. No metadata field
+  grants access. Refresh/new-session restoration and failed-save behavior are
+  covered; completed users return to the dashboard.
+- Production preview controls are restricted to administrators; non-admins
+  ignore stored preview selections. Development retains the testing controls.
+  Live Insights no longer displays fabricated network statistics.
+- Fixed the reproduced phone-session `42501` permission failure by applying
+  `20261031162908_phone_upload_server_grants.sql` to the allowed Supabase project.
+  Only SELECT/INSERT/UPDATE for `service_role` were granted on the two handoff
+  tables. Browser roles remain denied, and RLS remains enabled.
+- Live document audit: **26 checks passed**, including real AI extraction,
+  physical pages/line amounts, correction/reconfirmation, lead metadata,
+  agreement quotations, free/Pro/one-time/revoked access, fresh sign-in and
+  denied direct raw reads. Synthetic files and account were removed.
+  Evidence: `output/audit/document-flow-results.json`.
+- Local account APIs against the allowed real database: **35 checks passed**,
+  including saved onboarding after fresh sign-in, password-change verification,
+  old-password rejection, reset-proof enforcement, both phone handoffs,
+  wrong/reused/expired links, and deactivation with retained data and blocked
+  sign-in. Evidence: `output/audit/account-flow-results.json`.
+- Browser walkthrough confirmed sign-in, prefilled onboarding, progress after
+  refresh, completion, real Settings values, saved profile edits after refresh,
+  and updated profile identity in the portal header.
+- Automated checks: **56 passed, 0 failed, 2 opt-in integrations skipped**;
+  TypeScript passed, lint had no errors (22 warnings), webpack production build
+  passed. Default Turbopack build is blocked locally by process/port sandbox
+  permissions, so its result is not claimed as passing.
+- Owner approved real-inbox tests using `jesse+mcd…@oscwebdesign.biz` aliases
+  and requested sender `help@mycontractdoctors.com`. Supabase SMTP sender was
+  updated; the received sign-up email has the requested From address and passes
+  SPF/DKIM/DMARC. Contact/deactivation code uses the same named sender. The help
+  mailbox does not yet exist; inbound replies still need a working destination.
+  Delivered-link recovery/deactivation acceptance remains in progress.
+
+These clean synthetic fixtures do not establish extraction accuracy across real
+customer documents. Legal pages, standalone Demystifier fulfillment, marketing
+delivery, notification generation and scheduled monitoring remain open work.
 
 This is the working handoff for completing the customer-facing product around the invoice and agreement analysis engines. It separates intentional testing behavior from functionality that still needs to be built.
 
