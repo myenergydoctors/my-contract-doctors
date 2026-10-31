@@ -53,3 +53,8 @@ No schema migration or new secret is required for this flow.
   saved checkout, full reader, all topics, temporary checklist, refresh and
   revocation. Sanitized results are recorded in
   `output/audit/demystifier-flow-results.json`.
+
+Hosted preview acceptance also passed on commit `73522eb`: signed-out free
+content, a separate account sign-in, saved-access restoration, and the full
+reader/checklist. GitHub build/lint and Vercel checks passed. All disposable QA
+accounts and their billing fixtures were removed after verification.

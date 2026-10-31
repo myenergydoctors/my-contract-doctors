@@ -1,0 +1,87 @@
+{
+  "verified_at": "2026-10-31",
+  "flow": "Demystifier free preview, checkout return, full reader and saved-access restoration",
+  "branch": "codex/launch-process-verification",
+  "application_commit_tested": "73522ebe80343b567a09578469cd16dc599e61a0",
+  "hosted_preview": "https://my-contract-doctors-o8a6fw9bz-osc-web-design.vercel.app/demystifier",
+  "scope": "Disposable synthetic accounts only; no customer records, payments or vendor email",
+  "local_browser": {
+    "free_clause_accessible": true,
+    "locked_clause_hides_explanation_and_draft": true,
+    "draft_copy_feedback_confirmed": true,
+    "sign_in_preserves_return_path": true,
+    "checkout_record_saved": true,
+    "charged_cents": 0,
+    "checkout_did_not_grant_access": true,
+    "checkout_success_returns_to_reader": true,
+    "synthetic_server_fixture_restores_full_reader": true,
+    "all_seven_topics_and_drafts_render": true,
+    "checklist_operates_and_is_labeled_temporary": true,
+    "page_reload_preserves_verified_access": true,
+    "restore_after_revocation_returns_free_clause": true,
+    "invoice_and_agreement_calls_to_action_reach_intended_routes": true
+  },
+  "hosted_browser": {
+    "signed_out_free_clause": true,
+    "separate_sign_in_returns_to_reader": true,
+    "restore_control_reads_saved_entitlement": true,
+    "full_reader_and_checklist_render": true,
+    "protected_renewal_topic_and_draft_render": true
+  },
+  "automated": {
+    "route_security_tests": {
+      "passed": 3,
+      "failed": 0
+    },
+    "live_database_integration": {
+      "passed": 1,
+      "failed": 0,
+      "checks": [
+        "zero-charge no-grant checkout",
+        "idempotent synthetic verified-event fixture",
+        "fresh-session restoration",
+        "cross-account isolation",
+        "browser entitlement writes and provider RPC denied",
+        "forged user metadata does not grant access",
+        "revoked_at and inactive entitlement denied",
+        "deactivated profile denied"
+      ]
+    },
+    "full_local_suite": {
+      "passed": 67,
+      "failed": 0,
+      "skipped_opt_in": 5,
+      "note": "Includes three concurrent customer-review tests whose uncommitted sources are excluded from this review change."
+    },
+    "typecheck": "passed",
+    "production_webpack_build": "passed",
+    "lint": {
+      "errors": 0,
+      "existing_warnings": 22,
+      "new_demystifier_files_warnings": 0
+    },
+    "public_javascript_bundle_scan": {
+      "representative_protected_draft_bodies_found": 0
+    },
+    "github_build": "passed",
+    "github_lint": "passed",
+    "vercel_preview": "ready"
+  },
+  "cleanup": {
+    "integration_accounts_and_billing_fixtures_removed": true,
+    "browser_account_unshared_organization_and_billing_fixtures_removed": true,
+    "private_browser_credentials_deleted": true
+  },
+  "release_boundary": {
+    "new_database_schema": false,
+    "stripe_or_payment_provider_connected": false,
+    "customer_checkout_grants_access": false,
+    "production_application_or_email_cron_activated": false,
+    "remaining": [
+      "Owner review of fictional educational content and pricing before sale",
+      "Verified paid entitlement fulfillment during the deferred final billing stage",
+      "Production deployment and acceptance at final launch stage"
+    ]
+  },
+  "privacy": "No customer documents, account credentials, signed links, inbox contents or private identifiers included."
+}

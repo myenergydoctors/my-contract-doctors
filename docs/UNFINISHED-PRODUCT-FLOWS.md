@@ -226,7 +226,7 @@ review branch. See `docs/DEMYSTIFIER-FLOW.md` and the sanitized acceptance repor
 
 ### New-session prompt: Demystifier
 
-> Turn the Demystifier from a prototype into a complete staging product flow. Keep payments in no-charge staging mode and do not select a payment provider. Remove the fake card-number modal and route purchases through the shared provider-neutral preview checkout. Preserve one useful free clause preview, add a server-authoritative Demystifier entitlement, require or capture an authenticated owner, persist staged access across sessions, and provide a restore-access path. Ensure locked clauses cannot be exposed by browser-only state. Wire all calls to action and keep vendor emails as honest copyable templates unless real sending is implemented. Add tests from free preview through staged checkout, entitlement grant, returning-user access, and failure handling. Read the repository's Next.js guidance before changing application code, preserve the working invoice/agreement flows, run the relevant tests and production build, and do not deploy until I approve it.
+> At the final billing stage, connect verified one-time purchase fulfillment to the existing Demystifier entitlement and restore flow. Preserve the free clause, no browser-only unlock, owner isolation, revocation behavior and honest copyable vendor drafts. Confirm the educational content and pricing with the owner before sale, test verified payment fulfillment/refund handling, and leave production activation to the final launch step.
 
 ## Priority 4 — Live dashboard truthfulness
 
