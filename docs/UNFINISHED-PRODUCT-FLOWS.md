@@ -18,7 +18,8 @@ project below. This is an initial launch review, not completed customer acceptan
 - Account lifecycle PR #9 remains a draft. Production Settings still contains
   sample profile values and unwired save/password/delete controls; Forgot
   Password and legal links remain placeholders. Do not describe those account
-  features as released. Its real-inbox email-link acceptance gate remains open.
+  features as released. The real-inbox gate was open at the start of this review;
+  the acceptance evidence below records its completion on the review branch.
 - Checkout is still intentionally no-charge preview. Paid launch requires an
   owner decision and verified payment fulfillment, cancellation and recovery.
 - The standalone Demystifier remains an incomplete preview product.
@@ -38,7 +39,7 @@ delivery, saved onboarding, and acceptance testing on the intended deployment.
 Unreleased notifications, monitoring, benchmarks, service-history operations and
 modules must either be completed or clearly excluded from launch promises.
 
-Local baseline: 53 tests passed, 0 failed, 1 opt-in billing integration test
+Initial local baseline: 53 tests passed, 0 failed, 1 opt-in billing integration test
 skipped. No real-inbox, payment, or customer-document accuracy acceptance is
 implied by this automated result.
 
@@ -70,7 +71,7 @@ implied by this automated result.
 - Browser walkthrough confirmed sign-in, prefilled onboarding, progress after
   refresh, completion, real Settings values, saved profile edits after refresh,
   and updated profile identity in the portal header.
-- Automated checks: **56 passed, 0 failed, 2 opt-in integrations skipped**;
+- Automated checks: **57 passed, 0 failed, 2 opt-in integrations skipped**;
   TypeScript passed, lint had no errors (22 warnings), webpack production build
   passed. Default Turbopack build is blocked locally by process/port sandbox
   permissions, so its result is not claimed as passing.
@@ -79,7 +80,17 @@ implied by this automated result.
   updated; the received sign-up email has the requested From address and passes
   SPF/DKIM/DMARC. Contact/deactivation code uses the same named sender. The help
   mailbox does not yet exist; inbound replies still need a working destination.
-  Delivered-link recovery/deactivation acceptance remains in progress.
+  Delivered signup/recovery/deactivation links have now completed acceptance.
+  Recovery changed the QA password, rejected the old password, accepted the new
+  one, and cleared the recovery cookie. Email-confirmed deactivation completed
+  in the hosted preview; an independent query verified retained profile data,
+  and a new sign-in was blocked. The preview also confirmed non-admin accounts
+  do not see testing controls. Aggregate evidence (no inbox bodies or links):
+  `output/audit/email-flow-results.json`.
+- Review branch: `codex/launch-process-verification`, draft PR #11. Vercel
+  preview and GitHub build/lint checks passed at `e1fe41f`. No production app
+  merge or promotion has been performed. Draft #9's email acceptance gate has
+  been satisfied by this pass; its implementation is included in #11.
 
 These clean synthetic fixtures do not establish extraction accuracy across real
 customer documents. Legal pages, standalone Demystifier fulfillment, marketing
