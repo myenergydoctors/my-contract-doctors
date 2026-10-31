@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import ReviewPrompt from "@/components/reviews/ReviewPrompt";
+import AnnualUpgradeOffer from "@/components/marketing/AnnualUpgradeOffer";
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getInvoiceWithStatus, listInvoiceSiblings, type InvoiceForUI } from "@/lib/db/invoices";
@@ -480,7 +481,8 @@ function FreeSavingsCard({ recommendation, invoiceId }: { recommendation: FreeSa
           From year two forward, the avoided rental charge would be about <strong className="text-navy">{money(recommendation.laterYearSavingsCents)} per year</strong>. This estimate assumes the rental line can be removed under your agreement. It does not include cleaning, maintenance, shipping, tax, or replacement costs.
         </div>
 
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <AnnualUpgradeOffer source="invoice" invoice={invoiceId} />
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
           <Link
             href={`/checkout/floor-mat?quantity=${recommendation.quantity}&invoice=${encodeURIComponent(invoiceId)}`}
             className="rounded-lg bg-navy px-5 py-3 text-center font-sans text-sm font-medium text-white no-underline hover:opacity-90"
@@ -578,6 +580,7 @@ function FullAnalysisOffer({ invoiceId, lockedFindingCount }: { invoiceId: strin
           ))}
           {lockedFindingCount > 4 && <div className="rounded-lg border border-white/15 bg-white/5 px-4 py-3 font-sans text-sm text-white/70">+ {lockedFindingCount - 4} more</div>}
       </div>}
+      <AnnualUpgradeOffer source="invoice" invoice={invoiceId} />
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
         <Link href={`/checkout/pro?invoice=${encodeURIComponent(invoiceId)}`} className="rounded-lg bg-teal px-5 py-3 text-center font-sans text-sm font-semibold text-white no-underline hover:opacity-90">
           {hasLockedFindings ? "Unlock everything with Pro — $29/month →" : "Continue with Pro — $29/month →"}

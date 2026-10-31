@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import ChatWidget from "@/components/chat/ChatWidget";
 import CookieBanner from "@/components/CookieBanner";
 import StickyCtaBar from "@/components/marketing/StickyCtaBar";
-import ExitIntentPopup from "@/components/marketing/ExitIntentPopup";
+import AnnualOfferPopup from "@/components/marketing/AnnualOfferPopup";
 import OrganizationSchema from "@/components/seo/OrganizationSchema";
 import { SITE } from "@/lib/site";
 
@@ -63,7 +63,7 @@ export default function RootLayout({
         {children}
         <Footer />
         <ChatWidget />
-        <ExitIntentPopup />
+        <AnnualOfferPopup />
         <CookieBanner />
       </body>
     </html>

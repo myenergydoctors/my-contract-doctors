@@ -47,9 +47,13 @@ export async function updateSession(request: NextRequest) {
 
   // If a signed-in user lands on auth pages, send them home
   if ((path === "/sign-in" || path === "/sign-up") && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
-    return NextResponse.redirect(url);
+    const requested = request.nextUrl.searchParams.get("redirect");
+    const destination = requested?.startsWith("/") && !requested.startsWith("//") && !requested.includes("\\")
+      ? new URL(requested, request.url) : new URL("/dashboard", request.url);
+    if (destination.origin !== request.nextUrl.origin || ["/sign-in", "/sign-up"].includes(destination.pathname)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.redirect(destination);
   }
 
   return supabaseResponse;
