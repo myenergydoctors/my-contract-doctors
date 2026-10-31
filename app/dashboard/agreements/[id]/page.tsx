@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import ReviewPrompt from "@/components/reviews/ReviewPrompt";
 import { use, useEffect, useState } from "react";
 
 type EmailTemplate = { subject: string; body: string };
@@ -41,6 +42,7 @@ export default function AgreementDetailPage({ params }: { params: Promise<{ id: 
     <header className="mt-5 mb-7"><div className="font-sans text-xs text-gray-500">{agreement.vendor||"Vendor not identified"}{agreement.agreementNumber?` · Agreement ${agreement.agreementNumber}`:""}</div><h1 className="mt-1 font-serif text-3xl text-navy">{agreement.agreementName||"Service agreement"}</h1><p className="mt-2 max-w-3xl font-sans text-sm leading-6 text-gray-600">{agreement.termLength||"Term not clearly stated"}{agreement.autoRenewal?` · ${agreement.autoRenewal}`:""}</p></header>
     {error&&<div role="alert" className="mb-5 rounded-lg border border-red/30 bg-red-light p-3 font-sans text-sm text-red">{error}</div>}
     {agreement.reviewStatus!=="confirmed"?<ReviewGate agreement={agreement} onConfirm={confirm} confirming={confirming}/>:<ConfirmedResult agreement={agreement}/>}
+    {agreement.status === "completed" && agreement.reviewStatus === "confirmed" && <div className="mt-8"><ReviewPrompt /></div>}
   </div>;
 }
 

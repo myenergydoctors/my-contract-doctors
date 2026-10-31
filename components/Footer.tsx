@@ -18,6 +18,7 @@ const columns = [
     heading: "Solutions",
     links: [
       { label: "Industries",   href: "/industries" },
+      { label: "Reviews", href: "/reviews" },
       { label: "Customers",    href: "/customers" },
       { label: "Compare",      href: "/compare" },
       { label: "Free guide",   href: "/free-guide" },

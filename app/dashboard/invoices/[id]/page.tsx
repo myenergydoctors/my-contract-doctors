@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import ReviewPrompt from "@/components/reviews/ReviewPrompt";
 import { use, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getInvoiceWithStatus, listInvoiceSiblings, type InvoiceForUI } from "@/lib/db/invoices";
@@ -388,6 +389,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
       />
       </>}
       </>}
+      {reviewStatus === "confirmed" && <div className="mt-8"><ReviewPrompt /></div>}
     </div>
   );
 }
