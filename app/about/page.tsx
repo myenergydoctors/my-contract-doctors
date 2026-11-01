@@ -17,7 +17,7 @@ export default function AboutPage() {
           </>
         }
         description="Recurring service agreements are long, complex, and rarely re-read. We help you see what’s worth understanding, questioning, or renegotiating."
-        image="uniforms"
+        image="bakery"
         caption="Built around the expenses behind your working day."
         actions={
           <Link href="/invoice" className={brand.primary}>

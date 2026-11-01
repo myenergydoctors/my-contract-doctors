@@ -1,6 +1,6 @@
 # Public site brand refresh
 
-The public site carries the homepage's navy, teal, serif headings, warm backgrounds, and licensed service photography into the rest of the visitor journey. No additional stock assets were licensed or purchased.
+The public site carries the homepage's navy, teal, serif headings, warm backgrounds, and licensed service photography into the rest of the visitor journey. The original service photography is reused in explanatory sections. People-focused header photography is supplied and licensed by the user; the agent does not purchase or license assets.
 
 ## Presentation changes
 
@@ -27,3 +27,7 @@ Prices, plan entitlements, checkout destinations, invoice/agreement upload and a
 - Signed-out agreement start verified to reach the account gate with its existing sign-up/sign-in redirects.
 - Help and Blog search verified with no-match queries.
 - Licensed images and the existing homepage media are reused; no new paid assets or dependencies were added to the project.
+
+## People-focused header revision
+
+The user supplied AdobeStock_2156102197.jpeg on November 1, 2026, showing a baker handling a bread tray while wearing a work uniform and using a towel. The optimized derivative is public/images/people/bakery.webp (1600 × 1067, approximately 144 KB). Shared headers, account-entry photography, and the free-guide background now use this supplied people image instead of product close-ups. Product images remain in the explanatory sections. The generic product-label overlay was removed from headers. A second user-reported download has not yet appeared in Downloads and is awaiting identification.

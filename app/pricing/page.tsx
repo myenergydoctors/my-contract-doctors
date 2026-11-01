@@ -156,7 +156,7 @@ export default function PricingPage() {
           </>
         }
         description="Start free with a supported preview from your first invoice and agreement. Choose a one-time review or ongoing monitoring when you want to go further."
-        image="linens"
+        image="bakery"
         caption="Every recurring cost deserves a little clarity."
         actions={
           <a href="#plans" className={brand.primary}>

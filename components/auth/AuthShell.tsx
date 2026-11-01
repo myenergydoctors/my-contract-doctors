@@ -21,7 +21,7 @@ export default function AuthShell({
       <aside
         className={`${brand.authAside} hidden lg:flex flex-col justify-between text-white p-12 w-[44%]`}
       >
-        <Image src="/images/home/uniforms.webp" alt="" fill sizes="44vw" />
+        <Image src="/images/people/bakery.webp" alt="" fill sizes="44vw" />
         <Logo href="/" variant="dark-bg" size="lg" />
 
         <div className="max-w-md">

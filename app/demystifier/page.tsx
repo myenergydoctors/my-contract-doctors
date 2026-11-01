@@ -199,7 +199,7 @@ function PrePurchasePage({ onPurchase }) {
           </>
         }
         description="Explore the language in a standard uniform and linen service agreement, with plain-English explanations and questions to bring to your provider."
-        image="uniforms"
+        image="bakery"
         caption="Clearer terms. A more confident conversation."
         actions={
           <>

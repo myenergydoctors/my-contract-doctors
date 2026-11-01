@@ -189,7 +189,7 @@ export default function HelpPage() {
           </>
         }
         description="Find answers about invoices, agreements, your account, and how the review works. Search below or reach out when you need a hand."
-        image="linens"
+        image="bakery"
         caption="The answers behind a more confident review."
         actions={
           <label className={brand.searchField}>

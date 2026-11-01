@@ -25,7 +25,7 @@ export default function FreeGuidePage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-navy-dark to-navy px-6 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
         <div className={brand.guideBackdrop}>
-          <Image src="/images/home/uniforms.webp" alt="" fill sizes="100vw" />
+          <Image src="/images/people/bakery.webp" alt="" fill sizes="100vw" />
         </div>
         <div className="max-w-5xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left: copy */}

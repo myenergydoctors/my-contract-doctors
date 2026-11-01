@@ -92,7 +92,7 @@ export default function ContactPage() {
           </>
         }
         description="Ask us about your agreement, our products, or where to begin. Tell us what you’re working through, and we’ll help you find the next step."
-        image="linens"
+        image="bakery"
         caption="A little clarity starts with a conversation."
       />
 

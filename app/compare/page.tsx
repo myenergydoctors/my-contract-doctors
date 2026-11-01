@@ -56,7 +56,7 @@ const tradeoffs = [
 export default function ComparePage() {
   return (
     <main className={brand.page}>
-      <BrandHero eyebrow="How we compare" title={<>Your contract.<br /><em>Your choice of support.</em></>} description="Review it yourself, work with a consultant, bring in your procurement team, or use My Contract Doctors. Compare the approaches and find the fit for your business." image="uniforms" caption="Choose a clearer path through your service agreement." actions={<Link href="/pricing" className={brand.primary}>Explore our plans ↗</Link>} />
+      <BrandHero eyebrow="How we compare" title={<>Your contract.<br /><em>Your choice of support.</em></>} description="Review it yourself, work with a consultant, bring in your procurement team, or use My Contract Doctors. Compare the approaches and find the fit for your business." image="bakery" caption="Choose a clearer path through your service agreement." actions={<Link href="/pricing" className={brand.primary}>Explore our plans ↗</Link>} />
 
       {/* Tradeoff cards */}
       <section className="px-6 md:px-8 py-16 md:py-24 bg-off-white">

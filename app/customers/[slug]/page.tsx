@@ -33,7 +33,7 @@ export default async function CustomerDetailPage({
         eyebrow={`${c.businessType} · ${c.location}`}
         title={c.headline}
         description={c.subhead}
-        image="linens"
+        image="bakery"
         caption="Service imagery · uniforms, linens, and everyday essentials."
         actions={
           <Link href="/customers" className={brand.secondary}>

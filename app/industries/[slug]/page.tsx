@@ -40,7 +40,7 @@ export default async function IndustryDetailPage({
           </>
         }
         description={ind.intro}
-        image="uniforms"
+        image="bakery"
         actions={
           <Link href="/industries" className={brand.secondary}>
             ← All industries

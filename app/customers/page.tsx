@@ -19,7 +19,7 @@ export default function CustomersPage() {
           </>
         }
         description="Explore the businesses, agreement reviews, and vendor conversations behind these customer stories."
-        image="linens"
+        image="bakery"
         caption="The everyday expenses that deserve a closer look."
         actions={
           <Link href="/reviews" className={brand.primary}>

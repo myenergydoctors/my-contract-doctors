@@ -3,12 +3,16 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import brand from "./BrandSections.module.css";
 
+const headerPhotos = {
+  bakery: { src: "/images/people/bakery.webp", position: "62% center" },
+};
+
 export function BrandHero({
   eyebrow,
   title,
   description,
-  image = "uniforms",
-  imagePosition = "center",
+  image = "bakery",
+  imagePosition,
   caption,
   actions,
   note,
@@ -16,7 +20,7 @@ export function BrandHero({
   eyebrow: string;
   title: ReactNode;
   description: string;
-  image?: "uniforms" | "linens" | "mats";
+  image?: keyof typeof headerPhotos;
   imagePosition?: string;
   caption?: string;
   actions?: ReactNode;
@@ -34,21 +38,18 @@ export function BrandHero({
         </div>
         <div className={brand.heroPhoto}>
           <Image
-            src={`/images/home/${image}.webp`}
+            src={headerPhotos[image].src}
             alt=""
             fill
             preload
             sizes="(max-width: 760px) 100vw, 45vw"
-            style={{ objectFit: "cover", objectPosition: imagePosition }}
+            style={{ objectFit: "cover", objectPosition: imagePosition || headerPhotos[image].position }}
           />
           <div className={brand.photoShade} />
           <div className={brand.photoCaption}>
             <span className={brand.captionRule} />
             {caption || "The everyday service behind every line item."}
           </div>
-          <span className={brand.photoLabel}>
-            Uniforms. Linens. Everyday essentials.
-          </span>
         </div>
       </div>
     </section>
@@ -159,7 +160,7 @@ export function DocumentAccountGate({
             ? "Create a free account or sign in to review your uniform and linen invoice. Your original file, corrections, and saved result stay together, from upload to review."
             : "Create a free account or sign in before uploading your agreement. Your document, clause preview, corrections, and saved analysis stay linked to you."
         }
-        image={invoice ? "uniforms" : "linens"}
+        image="bakery"
         caption={
           invoice
             ? "A closer look at what you pay for, every week."

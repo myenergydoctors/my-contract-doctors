@@ -247,7 +247,7 @@ export default function BlogPostPage() {
         eyebrow={post.category}
         title={post.title}
         description={post.excerpt}
-        image="linens"
+        image="bakery"
         caption="A little more understanding for your next conversation."
         actions={
           <Link href="/blog" className={brand.secondary}>
