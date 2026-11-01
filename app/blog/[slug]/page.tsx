@@ -1,4 +1,6 @@
 "use client";
+import { articlePhotos } from "@/components/marketing/headerPhotos";
+
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { BrandHero } from "@/components/marketing/BrandSections";
@@ -247,7 +249,7 @@ export default function BlogPostPage() {
         eyebrow={post.category}
         title={post.title}
         description={post.excerpt}
-        image="bakery"
+        image={articlePhotos[slug as keyof typeof articlePhotos] ?? "article"}
         caption="A little more understanding for your next conversation."
         actions={
           <Link href="/blog" className={brand.secondary}>

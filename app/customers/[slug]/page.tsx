@@ -1,3 +1,4 @@
+import { customerPhotos } from "@/components/marketing/headerPhotos";
 import { BrandHero } from "@/components/marketing/BrandSections";
 import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
@@ -33,7 +34,9 @@ export default async function CustomerDetailPage({
         eyebrow={`${c.businessType} · ${c.location}`}
         title={c.headline}
         description={c.subhead}
-        image="bakery"
+        image={
+          customerPhotos[slug as keyof typeof customerPhotos] ?? "customer"
+        }
         caption="Service imagery · uniforms, linens, and everyday essentials."
         actions={
           <Link href="/customers" className={brand.secondary}>

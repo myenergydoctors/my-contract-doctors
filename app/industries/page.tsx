@@ -19,7 +19,7 @@ export default function IndustriesPage() {
           </>
         }
         description="Uniforms, linens, mats, and recurring fees show up across industries. Find your industry to explore the agreement terms and invoice questions that matter to your business."
-        image="bakery"
+        image="industries"
         caption="From the shirts on your team to the mats at your door."
       />
 

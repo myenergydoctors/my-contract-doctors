@@ -158,7 +158,7 @@ export default async function ReviewsPage({
           </>
         }
         description="Reviews come from signed-in customers with a completed invoice or agreement analysis, including free analyses. We verify product use, not claims of savings. We publish all ratings that meet our content policy and have the reviewer’s permission."
-        image="bakery"
+        image="reviews"
         caption="The service items behind the stories."
         actions={
           <Link href="/dashboard/reviews" className={brand.primary}>

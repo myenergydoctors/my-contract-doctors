@@ -1,3 +1,4 @@
+import { industryPhotos } from "@/components/marketing/headerPhotos";
 import { BrandHero } from "@/components/marketing/BrandSections";
 import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
@@ -40,7 +41,9 @@ export default async function IndustryDetailPage({
           </>
         }
         description={ind.intro}
-        image="bakery"
+        image={
+          industryPhotos[slug as keyof typeof industryPhotos] ?? "industry"
+        }
         actions={
           <Link href="/industries" className={brand.secondary}>
             ← All industries
