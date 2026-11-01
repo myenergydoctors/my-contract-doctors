@@ -3,15 +3,13 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import brand from "./BrandSections.module.css";
 
-const headerPhotos = {
-  bakery: { src: "/images/people/bakery.webp", position: "62% center" },
-};
+import { headerPhotos } from "./headerPhotos";
 
 export function BrandHero({
   eyebrow,
   title,
   description,
-  image = "bakery",
+  image = "invoice",
   imagePosition,
   caption,
   actions,
@@ -43,7 +41,10 @@ export function BrandHero({
             fill
             preload
             sizes="(max-width: 760px) 100vw, 45vw"
-            style={{ objectFit: "cover", objectPosition: imagePosition || headerPhotos[image].position }}
+            style={{
+              objectFit: "cover",
+              objectPosition: imagePosition || headerPhotos[image].position,
+            }}
           />
           <div className={brand.photoShade} />
           <div className={brand.photoCaption}>
@@ -160,7 +161,7 @@ export function DocumentAccountGate({
             ? "Create a free account or sign in to review your uniform and linen invoice. Your original file, corrections, and saved result stay together, from upload to review."
             : "Create a free account or sign in before uploading your agreement. Your document, clause preview, corrections, and saved analysis stay linked to you."
         }
-        image="bakery"
+        image={kind}
         caption={
           invoice
             ? "A closer look at what you pay for, every week."

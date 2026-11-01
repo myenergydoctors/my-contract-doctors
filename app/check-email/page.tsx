@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AuthShell from "@/components/auth/AuthShell";
 
-export const metadata = { title: "Check your email | My Contract Doctors" };
+export const metadata = { title: "Check your email" };
 
 export default function CheckEmailPage() {
   return (

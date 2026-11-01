@@ -103,7 +103,7 @@ function Landing() {
           </>
         }
         description="Understand the renewal, increase, termination, fee, and replacement language in your actual uniform or linen service agreement. See what deserves your attention before your next vendor conversation."
-        image="bakery"
+        image="agreement"
         caption="The service is familiar. The terms deserve a closer look."
         actions={
           <>

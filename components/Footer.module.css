@@ -1,0 +1,10 @@
+.footer a:focus-visible,
+.footer button:focus-visible {
+  outline: 3px solid #8ce0c7;
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .footer * {
+    transition: none;
+  }
+}

@@ -83,3 +83,12 @@ body {
 .animate-pulse-ring { animation: pulse-ring 2s ease-in-out infinite; }
 .animate-bounce-dot { animation: bounce 1.2s ease-in-out infinite; }
 .animate-spin      { animation: spin 0.7s linear infinite; }
+:root {
+  --marketing-hero-content-height: 600px;
+  --marketing-hero-offset: 112px;
+  --marketing-hero-mobile-copy-height: 520px;
+  --marketing-hero-mobile-photo-height: 270px;
+}
+@media (max-width: 380px) {
+  :root { --marketing-hero-mobile-copy-height: 580px; }
+}

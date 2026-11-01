@@ -1,8 +1,11 @@
-import { BrandHero } from "@/components/marketing/BrandSections";
+import {
+  BrandHero,
+  ProcessSection,
+} from "@/components/marketing/BrandSections";
 import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
 
-export const metadata = { title: "About | My Contract Doctors" };
+export const metadata = { title: "About" };
 
 export default function AboutPage() {
   return (
@@ -17,7 +20,7 @@ export default function AboutPage() {
           </>
         }
         description="Recurring service agreements are long, complex, and rarely re-read. We help you see what’s worth understanding, questioning, or renegotiating."
-        image="bakery"
+        image="about"
         caption="Built around the expenses behind your working day."
         actions={
           <Link href="/invoice" className={brand.primary}>
@@ -66,59 +69,24 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Approach */}
-      <section className="px-6 md:px-8 py-16 md:py-24 bg-white">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-blue block mb-3">
-              Our approach
-            </span>
-            <h2
-              className="font-serif text-navy leading-tight"
-              style={{ fontSize: "clamp(28px,4vw,40px)" }}
-            >
-              Audit, explain, negotiate.
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                num: "01",
-                title: "Audit with AI",
-                body: "We analyze every line of your invoice and every clause of your contract against a database of thousands of agreements in your region. We know what 'normal' looks like — so we know exactly where you're off.",
-              },
-              {
-                num: "02",
-                title: "Explain in plain English",
-                body: "No legal jargon. Every flagged item comes with a clear explanation of the problem, why it matters, and exactly how much it's costing you per year.",
-              },
-              {
-                num: "03",
-                title: "Hand you the script",
-                body: "We draft the dispute letter or negotiation email for you. You hit send, the vendor takes you seriously, and the credit shows up on your next invoice.",
-              },
-            ].map(({ num, title, body }) => (
-              <div
-                key={num}
-                className="bg-off-white border border-gray-200 rounded-2xl p-6 relative overflow-hidden"
-              >
-                <div className="absolute top-2 right-4 font-serif italic text-blue/10 text-6xl leading-none select-none">
-                  {num}
-                </div>
-                <div className="font-sans text-[10px] font-semibold tracking-[0.14em] uppercase text-teal mb-3 relative">
-                  Step {num}
-                </div>
-                <h3 className="font-serif text-navy text-xl leading-tight mb-3 relative">
-                  {title}
-                </h3>
-                <p className="font-sans font-light text-gray-500 text-sm leading-relaxed relative">
-                  {body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProcessSection
+        eyebrow="Our approach"
+        title="Audit, explain, negotiate."
+        steps={[
+          {
+            title: "Audit with AI",
+            body: "We analyze every line of your invoice and every clause of your contract against a database of thousands of agreements in your region. We know what 'normal' looks like — so we know exactly where you're off.",
+          },
+          {
+            title: "Explain in plain English",
+            body: "No legal jargon. Every flagged item comes with a clear explanation of the problem, why it matters, and exactly how much it's costing you per year.",
+          },
+          {
+            title: "Hand you the script",
+            body: "We draft the dispute letter or negotiation email for you. You hit send, the vendor takes you seriously, and the credit shows up on your next invoice.",
+          },
+        ]}
+      />
 
       {/* Stats / Numbers */}
       <section className="px-6 md:px-8 py-16 md:py-24 bg-gradient-to-br from-navy to-navy-dark text-white">
@@ -221,12 +189,11 @@ export default function AboutPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-8 py-20 md:py-28 bg-white text-center">
+      <section
+        className={`${brand.closingCta} px-6 md:px-8 py-20 md:py-28 bg-white text-center`}
+      >
         <div className="max-w-2xl mx-auto">
-          <h2
-            className="font-serif text-navy leading-tight mb-5"
-            style={{ fontSize: "clamp(28px,4vw,44px)" }}
-          >
+          <h2 className="font-serif text-navy leading-tight mb-5">
             Ready to see what we'd find?
           </h2>
           <p className="font-sans font-light text-gray-500 leading-relaxed mb-8">

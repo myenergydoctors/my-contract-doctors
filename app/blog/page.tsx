@@ -192,7 +192,7 @@ export default function BlogIndex() {
           </>
         }
         description="Plain-English guides on uniform and linen agreements, negotiation, and the recurring costs behind your business."
-        image="bakery"
+        image="blog"
         caption="Useful reading for your next vendor conversation."
         actions={
           <label className={brand.searchField}>

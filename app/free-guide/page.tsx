@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
+import { BrandHero } from "@/components/marketing/BrandSections";
 import brand from "@/components/marketing/BrandSections.module.css";
 import { useState } from "react";
 
@@ -22,24 +22,41 @@ export default function FreeGuidePage() {
 
   return (
     <main className={brand.page}>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-navy-dark to-navy px-6 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
-        <div className={brand.guideBackdrop}>
-          <Image src="/images/people/bakery.webp" alt="" fill sizes="100vw" />
-        </div>
-        <div className="max-w-5xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+      <BrandHero
+        eyebrow="Free guide · No card required"
+        title={
+          <>
+            7 clauses worth understanding.
+            <br />
+            <em>Before you sign.</em>
+          </>
+        }
+        description="A practical guide to the terms behind your uniform and linen service. Know what to look for and what to ask at your next renewal."
+        image="guide"
+        caption="Make time for the work that matters."
+        actions={
+          <a href="#get-guide" className={brand.primary}>
+            Get the free guide ↗
+          </a>
+        }
+      />
+      <section
+        id="get-guide"
+        className="bg-navy-dark px-6 md:px-8 py-16 scroll-mt-24"
+      >
+        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left: copy */}
           <div>
             <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">
               Free guide · No card required
             </span>
-            <h1
+            <h2
               className="font-serif text-white leading-tight mb-5"
               style={{ fontSize: "clamp(30px,4.5vw,46px)" }}
             >
               7 clauses worth understanding{" "}
               <em className="italic text-blue-light">before you sign.</em>
-            </h1>
+            </h2>
             <p className="font-sans font-light text-white/70 leading-relaxed text-base mb-6">
               A field-tested PDF guide for small business owners. We break down
               the seven most common high-impact clauses in uniform and linen
@@ -85,10 +102,15 @@ export default function FreeGuidePage() {
                   </div>
                   <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                     <div>
-                      <label className="block font-sans text-xs font-semibold text-gray-700 mb-1.5">
+                      <label
+                        htmlFor="guide-email"
+                        className="block font-sans text-xs font-semibold text-gray-700 mb-1.5"
+                      >
                         Work email
                       </label>
                       <input
+                        id="guide-email"
+                        name="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -98,10 +120,15 @@ export default function FreeGuidePage() {
                       />
                     </div>
                     <div>
-                      <label className="block font-sans text-xs font-semibold text-gray-700 mb-1.5">
+                      <label
+                        htmlFor="guide-business"
+                        className="block font-sans text-xs font-semibold text-gray-700 mb-1.5"
+                      >
                         Business name
                       </label>
                       <input
+                        id="guide-business"
+                        name="business"
                         type="text"
                         value={business}
                         onChange={(e) => setBusiness(e.target.value)}

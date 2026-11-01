@@ -3,7 +3,7 @@ import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
 import { caseStudies } from "@/lib/case-studies";
 
-export const metadata = { title: "Customers | My Contract Doctors" };
+export const metadata = { title: "Customers" };
 
 export default function CustomersPage() {
   const totalSavings = caseStudies.reduce((s, c) => s + c.annualSavings, 0);
@@ -19,7 +19,7 @@ export default function CustomersPage() {
           </>
         }
         description="Explore the businesses, agreement reviews, and vendor conversations behind these customer stories."
-        image="bakery"
+        image="customers"
         caption="The everyday expenses that deserve a closer look."
         actions={
           <Link href="/reviews" className={brand.primary}>
@@ -94,12 +94,11 @@ export default function CustomersPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-8 py-20 md:py-28 bg-gradient-to-br from-navy to-navy-dark text-center">
+      <section
+        className={`${brand.closingCta} px-6 md:px-8 py-20 md:py-28 bg-gradient-to-br from-navy to-navy-dark text-center`}
+      >
         <div className="max-w-2xl mx-auto">
-          <h2
-            className="font-serif text-white leading-tight mb-5"
-            style={{ fontSize: "clamp(28px,4vw,44px)" }}
-          >
+          <h2 className="font-serif text-white leading-tight mb-5">
             See what we'd find in{" "}
             <em className="italic text-blue-light">your</em> contract.
           </h2>

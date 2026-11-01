@@ -1,4 +1,4 @@
-.home{--navy:#0c2d54;--teal:#17a882;color:var(--navy);background:#f8f9f7;font-family:"DM Sans",sans-serif}
+.home{--navy:#0c2d54;--teal:#138568;color:var(--navy);background:#f8f9f7;font-family:"DM Sans",sans-serif}
 .home h1,.home h2,.home h3,.home p{margin:0}
 .home h1,.home h2{font-family:"DM Serif Display",serif;font-weight:400;letter-spacing:-.035em;line-height:1.07}
 .home h2{font-size:clamp(36px,4vw,56px)}
@@ -126,3 +126,10 @@
 @media(prefers-reduced-motion:reduce){.home *{transition:none!important;scroll-behavior:auto!important}
 }
 
+
+/* Keep the homepage opening aligned with the shared marketing hero system. */
+.hero{min-height:calc(var(--marketing-hero-offset) + var(--marketing-hero-content-height));padding-top:var(--marketing-hero-offset)}
+.heroInner{margin:24px auto 94px}
+@media(max-width:760px){.hero{min-height:calc(var(--marketing-hero-offset) + var(--marketing-hero-mobile-copy-height) + var(--marketing-hero-mobile-photo-height))}.heroInner{margin:42px auto 150px}}
+.hero h1{font-size:clamp(40px,4vw,58px)}
+@media(max-width:760px){.hero h1{font-size:clamp(34px,8vw,44px)}}
