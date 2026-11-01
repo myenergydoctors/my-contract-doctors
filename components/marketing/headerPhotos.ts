@@ -2,7 +2,7 @@
 export const headerPhotos = {
   pricing: { src: "/images/people/pricing.webp", position: "55% center" },
   invoice: { src: "/images/people/invoice.webp", position: "42% center" },
-  agreement: { src: "/images/people/agreement.webp", position: "center" },
+  agreement: { src: "/images/people/agreement-mechanic.webp", position: "center" },
   about: { src: "/images/people/about.webp", position: "center" },
   contact: { src: "/images/people/contact.webp", position: "center" },
   industries: { src: "/images/people/industries.webp", position: "center" },
