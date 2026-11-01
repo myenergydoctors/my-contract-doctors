@@ -1,3 +1,5 @@
+import { BrandHero } from "@/components/marketing/BrandSections";
+import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
 import GuaranteeBadge from "@/components/GuaranteeBadge";
 
@@ -53,21 +55,8 @@ const tradeoffs = [
 
 export default function ComparePage() {
   return (
-    <>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-navy-dark to-navy px-6 md:px-8 pt-28 md:pt-36 pb-16 md:pb-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.5) 1px,transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div className="max-w-3xl mx-auto text-center relative z-10">
-          <span className="font-sans text-[11px] font-semibold tracking-[0.16em] uppercase text-teal block mb-4">How we compare</span>
-          <h1 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(32px,4.5vw,52px)" }}>
-            Four ways to review your contracts.<br />
-            <em className="italic text-blue-light">Here's how they stack up.</em>
-          </h1>
-          <p className="font-sans font-light text-white/70 leading-relaxed text-base md:text-lg">
-            DIY, a consultant, your procurement team, or My Contract Doctors. Pick the path that fits your business — we'll show you what each looks like.
-          </p>
-        </div>
-      </section>
+    <main className={brand.page}>
+      <BrandHero eyebrow="How we compare" title={<>Your contract.<br /><em>Your choice of support.</em></>} description="Review it yourself, work with a consultant, bring in your procurement team, or use My Contract Doctors. Compare the approaches and find the fit for your business." image="bakery" caption="Choose a clearer path through your service agreement." actions={<Link href="/pricing" className={brand.primary}>Explore our plans ↗</Link>} />
 
       {/* Tradeoff cards */}
       <section className="px-6 md:px-8 py-16 md:py-24 bg-off-white">
@@ -155,6 +144,6 @@ export default function ComparePage() {
           </div>
         </div>
       </section>
-    </>
+    </main>
   );
 }

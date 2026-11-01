@@ -1,3 +1,5 @@
+import { BrandHero } from "@/components/marketing/BrandSections";
+import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
 import { connection } from "next/server";
 import ReviewCard from "@/components/reviews/ReviewCard";
@@ -145,26 +147,26 @@ export default async function ReviewsPage({
     </div>
   );
   return (
-    <main className="min-h-screen bg-off-white px-6 pb-20 pt-32 md:px-8">
-      <div className="mx-auto max-w-5xl">
-        <p className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-teal">
-          Real experiences. In their words.
-        </p>
-        <h1 className="mt-3 font-serif text-4xl text-navy md:text-5xl">
-          Customer reviews
-        </h1>
-        <p className="mt-5 max-w-3xl font-sans leading-7 text-gray-500">
-          Reviews come from signed-in customers with a completed invoice or
-          agreement analysis, including free analyses. We verify product use,
-          not claims of savings. We publish all ratings that meet our content
-          policy and have the reviewer’s permission.
-        </p>
-        <Link
-          href="/dashboard/reviews"
-          className="mb-9 mt-6 inline-block rounded-lg bg-navy px-5 py-3 font-sans text-sm font-medium text-white"
-        >
-          Share your experience
-        </Link>
+    <main className={brand.page}>
+      <BrandHero
+        eyebrow="Verified use. Honest feedback."
+        title={
+          <>
+            Real experiences.
+            <br />
+            <em>In their own words.</em>
+          </>
+        }
+        description="Reviews come from signed-in customers with a completed invoice or agreement analysis, including free analyses. We verify product use, not claims of savings. We publish all ratings that meet our content policy and have the reviewer’s permission."
+        image="bakery"
+        caption="The service items behind the stories."
+        actions={
+          <Link href="/dashboard/reviews" className={brand.primary}>
+            Share your experience ↗
+          </Link>
+        }
+      />
+      <div className={brand.reviewBody}>
         {content}
         <section className="mt-10 border-t border-gray-200 pt-7">
           <h2 className="font-serif text-2xl text-navy">
