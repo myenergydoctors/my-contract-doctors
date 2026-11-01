@@ -893,3 +893,58 @@
   inset: 0;
   background: linear-gradient(90deg, #081e38f5, #081e38e8 45%, #081e38a6);
 }
+
+/* Carry the shared controls and closing rhythm through older page sections. */
+.page :global(a.bg-teal),
+.page :global(button.bg-teal) {
+  background-color: #138568;
+}
+.page :global(a.rounded-lg),
+.page :global(button.rounded-lg),
+.page :global(input[type="text"]),
+.page :global(input[type="email"]),
+.page :global(input[type="tel"]),
+.page :global(textarea) {
+  border-radius: 4px;
+}
+.page :global(a.bg-teal),
+.page :global(a.bg-navy),
+.page :global(button.bg-teal) {
+  min-height: 48px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  transform: none;
+}
+.closingCta {
+  padding: 85px 48px;
+}
+.closingCta h2 {
+  font-size: clamp(34px, 3.5vw, 48px);
+  line-height: 1.1;
+}
+.closingCta p {
+  font-size: 14px;
+  line-height: 1.85;
+}
+.closingCta a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 15px 23px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+@media (max-width: 760px) {
+  .closingCta {
+    padding: 55px 22px;
+  }
+  .closingCta h2 {
+    font-size: 36px;
+  }
+}

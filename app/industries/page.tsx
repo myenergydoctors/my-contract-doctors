@@ -3,7 +3,7 @@ import brand from "@/components/marketing/BrandSections.module.css";
 import Link from "next/link";
 import { industries } from "@/lib/industries";
 
-export const metadata = { title: "Industries we serve | My Contract Doctors" };
+export const metadata = { title: "Industries we serve" };
 
 export default function IndustriesPage() {
   const list = Object.values(industries);
@@ -59,12 +59,11 @@ export default function IndustriesPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-8 py-20 md:py-28 bg-white text-center">
+      <section
+        className={`${brand.closingCta} px-6 md:px-8 py-20 md:py-28 bg-white text-center`}
+      >
         <div className="max-w-2xl mx-auto">
-          <h2
-            className="font-serif text-navy leading-tight mb-5"
-            style={{ fontSize: "clamp(28px,4vw,44px)" }}
-          >
+          <h2 className="font-serif text-navy leading-tight mb-5">
             Don't see your industry?
           </h2>
           <p className="font-sans font-light text-gray-500 leading-relaxed mb-8">

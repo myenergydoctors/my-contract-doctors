@@ -255,12 +255,11 @@ export default function HelpPage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-8 py-16 md:py-24 bg-white text-center">
+      <section
+        className={`${brand.closingCta} px-6 md:px-8 py-16 md:py-24 bg-white text-center`}
+      >
         <div className="max-w-2xl mx-auto">
-          <h2
-            className="font-serif text-navy leading-tight mb-5"
-            style={{ fontSize: "clamp(26px,3.5vw,38px)" }}
-          >
+          <h2 className="font-serif text-navy leading-tight mb-5">
             Still have questions?
           </h2>
           <p className="font-sans font-light text-gray-500 leading-relaxed mb-8">
@@ -292,6 +291,7 @@ function Article({ q, a }: { q: string; a: string }) {
   return (
     <div className="border-b last:border-b-0 border-gray-100">
       <button
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className="w-full bg-transparent border-none py-4 flex justify-between items-center cursor-pointer gap-3 text-left"
       >

@@ -123,9 +123,9 @@ export default function ComparePage() {
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-8 py-20 md:py-28 bg-gradient-to-br from-navy to-navy-dark text-center">
+      <section className={`${brand.closingCta} px-6 md:px-8 py-20 md:py-28 bg-gradient-to-br from-navy to-navy-dark text-center`}>
         <div className="max-w-2xl mx-auto">
-          <h2 className="font-serif text-white leading-tight mb-5" style={{ fontSize: "clamp(28px,4vw,44px)" }}>
+          <h2 className="font-serif text-white leading-tight mb-5">
             Try us. <em className="italic text-blue-light">Free.</em>
           </h2>
           <p className="font-sans font-light text-white/70 leading-relaxed mb-6">

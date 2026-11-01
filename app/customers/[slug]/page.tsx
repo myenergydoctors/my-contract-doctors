@@ -13,9 +13,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const c = getCaseStudy(slug);
   return {
-    title: c
-      ? `${c.business} — Customer story | My Contract Doctors`
-      : "Customer story",
+    title: c ? `${c.business} — Customer story` : "Customer story",
   };
 }
 
@@ -161,12 +159,11 @@ export default async function CustomerDetailPage({
       </section>
 
       {/* CTA */}
-      <section className="px-6 md:px-8 py-20 md:py-28 bg-gradient-to-br from-navy to-navy-dark text-center">
+      <section
+        className={`${brand.closingCta} px-6 md:px-8 py-20 md:py-28 bg-gradient-to-br from-navy to-navy-dark text-center`}
+      >
         <div className="max-w-2xl mx-auto">
-          <h2
-            className="font-serif text-white leading-tight mb-5"
-            style={{ fontSize: "clamp(28px,4vw,44px)" }}
-          >
+          <h2 className="font-serif text-white leading-tight mb-5">
             See what's in <em className="italic text-blue-light">your</em>{" "}
             contract.
           </h2>

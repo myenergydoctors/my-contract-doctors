@@ -34,3 +34,9 @@ Downloaded November 1, 2026. All are free under the [Pexels license](https://www
 ## Verification
 
 Desktop checks: top-level interior heroes measure 712px at the default browser width. At 900px, pricing, invoice, agreement, article and customer-story heroes also measure 712px. At 390px, sampled top-level pages and article/industry/story detail pages measure 902px without horizontal overflow. Production build, TypeScript and lint are checked before PR completion. Existing lint warnings are outside this visual change. Free-guide form retains its existing mock submission behavior and is now reached below the shared header.
+
+## Public-site consistency pass
+
+The same release also updates tablet navigation (menu below 1200px, current-page indicators, Escape-to-close, collapsed links excluded from keyboard navigation), footer text contrast and accordion focus behavior, control colors/corners, and the closing CTA spacing/type scale. The About approach now uses the same ProcessSection as invoice onboarding. Contact and guide labels are associated with their inputs; contact errors are described to assistive technology. The dummy contact phone card was removed. Public-page and article metadata now produce one consistent branded browser title.
+
+Verification: production webpack build and TypeScript pass. Browser checks at 390px covered 13 top-level public routes with 902px heroes and no horizontal overflow. Checked tablet menu opening/Escape dismissal, footer accordion expansion, contact empty-field validation (without sending a message), and annual pricing ($26.10/month effective; $313.20/year). Existing lint warnings remain.

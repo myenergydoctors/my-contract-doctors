@@ -102,10 +102,15 @@ export default function FreeGuidePage() {
                   </div>
                   <form onSubmit={handleSubmit} className="flex flex-col gap-3">
                     <div>
-                      <label className="block font-sans text-xs font-semibold text-gray-700 mb-1.5">
+                      <label
+                        htmlFor="guide-email"
+                        className="block font-sans text-xs font-semibold text-gray-700 mb-1.5"
+                      >
                         Work email
                       </label>
                       <input
+                        id="guide-email"
+                        name="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
@@ -115,10 +120,15 @@ export default function FreeGuidePage() {
                       />
                     </div>
                     <div>
-                      <label className="block font-sans text-xs font-semibold text-gray-700 mb-1.5">
+                      <label
+                        htmlFor="guide-business"
+                        className="block font-sans text-xs font-semibold text-gray-700 mb-1.5"
+                      >
                         Business name
                       </label>
                       <input
+                        id="guide-business"
+                        name="business"
                         type="text"
                         value={business}
                         onChange={(e) => setBusiness(e.target.value)}

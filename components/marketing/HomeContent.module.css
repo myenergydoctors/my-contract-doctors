@@ -1,4 +1,4 @@
-.home{--navy:#0c2d54;--teal:#17a882;color:var(--navy);background:#f8f9f7;font-family:"DM Sans",sans-serif}
+.home{--navy:#0c2d54;--teal:#138568;color:var(--navy);background:#f8f9f7;font-family:"DM Sans",sans-serif}
 .home h1,.home h2,.home h3,.home p{margin:0}
 .home h1,.home h2{font-family:"DM Serif Display",serif;font-weight:400;letter-spacing:-.035em;line-height:1.07}
 .home h2{font-size:clamp(36px,4vw,56px)}

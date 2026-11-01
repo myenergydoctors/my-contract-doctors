@@ -1,0 +1,47 @@
+.nav a:focus-visible,
+.nav button:focus-visible {
+  outline: 3px solid #8ce0c7;
+  outline-offset: 4px;
+}
+.desktopLinks {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.desktopLinks a {
+  white-space: nowrap;
+}
+.nav a[aria-current="page"] {
+  color: #8ce0c7;
+  text-decoration: underline;
+  text-underline-offset: 7px;
+  text-decoration-thickness: 1px;
+}
+.menuToggle,
+.mobilePanel {
+  display: none;
+}
+@media (max-width: 1199px) {
+  .desktopLinks {
+    display: none;
+  }
+  .menuToggle {
+    display: flex;
+  }
+  .mobilePanel {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+  }
+  .mobilePanel[data-open="true"] {
+    max-height: min(600px, calc(100dvh - 68px));
+    overflow-y: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav,
+  .nav * {
+    transition: none;
+  }
+}

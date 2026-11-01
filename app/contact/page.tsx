@@ -125,10 +125,19 @@ export default function ContactPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
                   <div>
-                    <label className="font-sans text-xs font-semibold text-gray-700 block mb-1.5">
+                    <label
+                      htmlFor="contact-name"
+                      className="font-sans text-xs font-semibold text-gray-700 block mb-1.5"
+                    >
                       Full name *
                     </label>
                     <input
+                      id="contact-name"
+                      aria-invalid={Boolean(errors.name)}
+                      aria-describedby={
+                        errors.name ? "contact-name-error" : undefined
+                      }
+                      name="name"
                       type="text"
                       placeholder="Jane Smith"
                       value={form.name}
@@ -145,16 +154,24 @@ export default function ContactPage() {
                       }
                     />
                     {errors.name && (
-                      <p className="font-sans text-[11px] text-red mt-1">
+                      <p
+                        id="contact-name-error"
+                        className="font-sans text-[11px] text-red mt-1"
+                      >
                         {errors.name}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="font-sans text-xs font-semibold text-gray-700 block mb-1.5">
+                    <label
+                      htmlFor="contact-phone"
+                      className="font-sans text-xs font-semibold text-gray-700 block mb-1.5"
+                    >
                       Phone number
                     </label>
                     <input
+                      id="contact-phone"
+                      name="phone"
                       type="tel"
                       placeholder="(555) 000-0000"
                       value={form.phone}
@@ -168,10 +185,19 @@ export default function ContactPage() {
                 </div>
 
                 <div className="mb-5">
-                  <label className="font-sans text-xs font-semibold text-gray-700 block mb-1.5">
+                  <label
+                    htmlFor="contact-email"
+                    className="font-sans text-xs font-semibold text-gray-700 block mb-1.5"
+                  >
                     Email address *
                   </label>
                   <input
+                    id="contact-email"
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={
+                      errors.email ? "contact-email-error" : undefined
+                    }
+                    name="email"
                     type="email"
                     placeholder="jane@yourbusiness.com"
                     value={form.email}
@@ -188,17 +214,29 @@ export default function ContactPage() {
                     }
                   />
                   {errors.email && (
-                    <p className="font-sans text-[11px] text-red mt-1">
+                    <p
+                      id="contact-email-error"
+                      className="font-sans text-[11px] text-red mt-1"
+                    >
                       {errors.email}
                     </p>
                   )}
                 </div>
 
                 <div className="mb-6">
-                  <label className="font-sans text-xs font-semibold text-gray-700 block mb-1.5">
+                  <label
+                    htmlFor="contact-message"
+                    className="font-sans text-xs font-semibold text-gray-700 block mb-1.5"
+                  >
                     How can we help? *
                   </label>
                   <textarea
+                    id="contact-message"
+                    aria-invalid={Boolean(errors.message)}
+                    aria-describedby={
+                      errors.message ? "contact-message-error" : undefined
+                    }
+                    name="message"
                     placeholder="Tell us about your situation — which vendor you use, what you're trying to understand, or any questions you have about your agreement or invoice..."
                     value={form.message}
                     onChange={set("message")}
@@ -215,7 +253,10 @@ export default function ContactPage() {
                     }
                   />
                   {errors.message && (
-                    <p className="font-sans text-[11px] text-red mt-1">
+                    <p
+                      id="contact-message-error"
+                      className="font-sans text-[11px] text-red mt-1"
+                    >
                       {errors.message}
                     </p>
                   )}
@@ -277,12 +318,6 @@ export default function ContactPage() {
             {/* Contact cards */}
             <div className="flex flex-col gap-3.5 mb-10">
               {[
-                {
-                  icon: "📞",
-                  label: "Phone",
-                  value: "(XXX) XXX-XXXX",
-                  sub: "Monday–Friday, 9am–5pm EST",
-                },
                 {
                   icon: "✉️",
                   label: "Email",
@@ -376,6 +411,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
   return (
     <div className="border-b border-gray-200">
       <button
+        aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
         className="w-full bg-transparent border-none py-4 flex justify-between items-center cursor-pointer gap-3"
       >
